@@ -23,6 +23,10 @@ import {
   UpdateTopicDto,
 } from './dto/forums-command.dto';
 import {
+  CreateTopicCommandResponseDto,
+  ForumTopicCommandResponseDto,
+} from './dto/forums-command-response.dto';
+import {
   buildForumsMemberTargetPrincipal,
   buildForumsPrincipal,
   ForumsAccessDecision,
@@ -42,6 +46,7 @@ import {
   ForumsNotificationPublishError,
   ForumsWatchNotificationService,
 } from './forums-watch-notification.service';
+import { ForumsModerationService } from './forums-moderation.service';
 import { IdentityAccessService } from './identity-access.service';
 import { MemberHandleService } from './member-handle.service';
 
@@ -91,9 +96,9 @@ interface RequireActorOptions {
 }
 
 /**
- * Result returned after topic creation.
+ * Internal persisted rows produced by topic creation before response mapping.
  */
-export interface CreateTopicResult {
+interface CreateTopicPersistenceResult {
   topic: Topic;
   starterPost: Post;
 }
@@ -111,10 +116,11 @@ export interface TopicWatchResult {
  * Command-side service for forum content, watch, and read-state mutations.
  *
  * The service keeps transactional write shapes local while delegating
- * action-level authorization to the shared forums access policy. Human content
- * authors must resolve to members, while scoped M2M content authors use a
- * stable system snapshot and member-targeted state commands evaluate the
- * explicit target member after Members and Identity both resolve it.
+ * action-level authorization to the shared forums access policy and runtime
+ * ban/lock decisions to the shared moderation service. Human content authors
+ * must resolve to members, while scoped M2M content authors use a stable system
+ * snapshot and member-targeted state commands evaluate the explicit target
+ * member after Members and Identity both resolve it.
  */
 @Injectable()
 export class ForumsCommandService {
@@ -130,6 +136,7 @@ export class ForumsCommandService {
    * @param identityAccessService Adapter for strict target identity and role lookup.
    * @param memberHandleService Adapter for member-domain handle lookups.
    * @param notificationService Post-commit forum watch notification publisher.
+   * @param moderationService Shared runtime ban and lock gate.
    * @throws Does not throw directly; dependencies are resolved by Nest.
    */
   constructor(
@@ -140,6 +147,7 @@ export class ForumsCommandService {
     private readonly identityAccessService: IdentityAccessService,
     private readonly memberHandleService: MemberHandleService,
     private readonly notificationService: ForumsWatchNotificationService,
+    private readonly moderationService: ForumsModerationService,
   ) {}
 
   /**
@@ -151,17 +159,25 @@ export class ForumsCommandService {
    *
    * @param dto Topic metadata and starter-post content.
    * @param user Authenticated token payload for the acting member.
-   * @returns The created topic and starter post after any child-topic notification attempt settles.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
+   * @returns The created topic command response and starter post after any child-topic notification attempt settles.
    * @throws UnauthorizedException when no authenticated command caller is present.
    * @throws BadRequestException when topic fields or parent linkage are invalid.
-   * @throws ForbiddenException when shared policy denies topic creation.
+   * @throws ForbiddenException when shared policy, moderation bans, or parent lock state deny topic creation.
    * @throws NotFoundException when the parent topic does not exist or is hidden.
    */
   async createTopic(
     dto: CreateTopicDto,
     user: JwtUser | undefined,
-  ): Promise<CreateTopicResult> {
+    trustedClientIp?: string,
+  ): Promise<CreateTopicCommandResponseDto> {
     const principal = this.requirePrincipal(user);
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
     const author = await this.resolveContentAuthor(user);
     const title = this.normalizeRequiredText(dto.title, 'title', 255);
     const content = this.normalizeRequiredText(dto.content, 'content');
@@ -209,71 +225,82 @@ export class ForumsCommandService {
       this.assertAllowed(createDecisions.canControlAnnouncement);
     }
 
-    const result = await this.db.$transaction(async (tx) => {
-      if (parentTopicId) {
-        await this.ensureActiveTopic(tx, parentTopicId);
-      }
+    if (parentContext) {
+      this.assertAllowed(
+        await this.moderationService.decideForLockedTopicMutation(
+          principal,
+          parentContext,
+        ),
+      );
+    }
 
-      const topic = await tx.topic.create({
-        data: {
-          parentTopicId,
-          challengeId: restrictions.storedChallengeId,
-          roleName: restrictions.storedRoleName,
-          title,
-          isAnnouncement: dto.isAnnouncement ?? false,
-          authorMemberId: author.memberId,
-          authorHandle: author.handle,
-        },
-      });
+    const result: CreateTopicPersistenceResult = await this.db.$transaction(
+      async (tx) => {
+        if (parentTopicId) {
+          await this.ensureActiveTopic(tx, parentTopicId);
+        }
 
-      await this.createClosureRows(tx, topic.id, parentTopicId);
+        const topic = await tx.topic.create({
+          data: {
+            parentTopicId,
+            challengeId: restrictions.storedChallengeId,
+            roleName: restrictions.storedRoleName,
+            title,
+            isAnnouncement: dto.isAnnouncement ?? false,
+            authorMemberId: author.memberId,
+            authorHandle: author.handle,
+          },
+        });
 
-      const starterPost = await tx.post.create({
-        data: {
-          topicId: topic.id,
-          parentType: POST_PARENT_TOPIC,
-          parentId: topic.id,
-          authorMemberId: author.memberId,
-          authorHandle: author.handle,
-          content,
-        },
-      });
+        await this.createClosureRows(tx, topic.id, parentTopicId);
 
-      if (author.seedMemberState) {
-        await tx.topicWatch.upsert({
-          where: {
-            topicId_memberId: {
+        const starterPost = await tx.post.create({
+          data: {
+            topicId: topic.id,
+            parentType: POST_PARENT_TOPIC,
+            parentId: topic.id,
+            authorMemberId: author.memberId,
+            authorHandle: author.handle,
+            content,
+          },
+        });
+
+        if (author.seedMemberState) {
+          await tx.topicWatch.upsert({
+            where: {
+              topicId_memberId: {
+                topicId: topic.id,
+                memberId: author.memberId,
+              },
+            },
+            create: {
               topicId: topic.id,
               memberId: author.memberId,
             },
-          },
-          create: {
-            topicId: topic.id,
-            memberId: author.memberId,
-          },
-          update: {},
-        });
+            update: {},
+          });
 
-        await tx.topicReadState.upsert({
-          where: {
-            topicId_memberId: {
+          await tx.topicReadState.upsert({
+            where: {
+              topicId_memberId: {
+                topicId: topic.id,
+                memberId: author.memberId,
+              },
+            },
+            create: {
               topicId: topic.id,
               memberId: author.memberId,
+              lastReadAt: starterPost.createdAt,
             },
-          },
-          create: {
-            topicId: topic.id,
-            memberId: author.memberId,
-            lastReadAt: starterPost.createdAt,
-          },
-          update: {
-            lastReadAt: starterPost.createdAt,
-          },
-        });
-      }
+            update: {
+              lastReadAt: starterPost.createdAt,
+            },
+          });
+        }
 
-      return { topic, starterPost };
-    });
+        return { topic, starterPost };
+      },
+    );
 
     if (parentTopicId) {
       await this.publishPostNotificationBestEffort(
@@ -289,7 +316,10 @@ export class ForumsCommandService {
       );
     }
 
-    return result;
+    return {
+      topic: this.mapTopicCommandResponse(result.topic),
+      starterPost: result.starterPost,
+    };
   }
 
   /**
@@ -298,17 +328,26 @@ export class ForumsCommandService {
    * @param topicId Topic id to update.
    * @param dto Mutable topic fields.
    * @param user Authenticated token payload for the acting member.
-   * @returns The updated topic row.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
+   * @returns The stable topic command response.
    * @throws UnauthorizedException when no authenticated command caller is present.
    * @throws BadRequestException when no mutable fields are supplied.
+   * @throws ForbiddenException when shared policy, moderation bans, or topic lock state deny the update.
    * @throws NotFoundException when the topic does not exist or is hidden.
    */
   async updateTopic(
     topicId: string,
     dto: UpdateTopicDto,
     user: JwtUser | undefined,
-  ): Promise<Topic> {
+    trustedClientIp?: string,
+  ): Promise<ForumTopicCommandResponseDto> {
     const principal = this.requirePrincipal(user);
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
     await this.requireActor(user);
     const context = await this.topicContextService.loadTopicContext(
       topicId,
@@ -320,6 +359,12 @@ export class ForumsCommandService {
     );
 
     this.assertAllowed(topicDecisions.canUpdateTopic);
+    this.assertAllowed(
+      await this.moderationService.decideForLockedTopicMutation(
+        principal,
+        context,
+      ),
+    );
 
     const data: {
       title?: string;
@@ -357,7 +402,7 @@ export class ForumsCommandService {
       throw new BadRequestException('At least one topic field is required.');
     }
 
-    return this.db.$transaction(async (tx) => {
+    const topic = await this.db.$transaction(async (tx) => {
       await this.ensureActiveTopic(tx, topicId);
 
       return tx.topic.update({
@@ -365,6 +410,8 @@ export class ForumsCommandService {
         data,
       });
     });
+
+    return this.mapTopicCommandResponse(topic);
   }
 
   /**
@@ -372,15 +419,24 @@ export class ForumsCommandService {
    *
    * @param topicId Topic id to soft delete.
    * @param user Authenticated token payload for the acting member.
-   * @returns The updated topic row with delete metadata.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
+   * @returns The stable topic command response with delete metadata.
    * @throws UnauthorizedException when no authenticated command caller is present.
+   * @throws ForbiddenException when shared policy, moderation bans, or topic lock state deny the delete.
    * @throws NotFoundException when the topic does not exist or is already hidden.
    */
   async softDeleteTopic(
     topicId: string,
     user: JwtUser | undefined,
-  ): Promise<Topic> {
+    trustedClientIp?: string,
+  ): Promise<ForumTopicCommandResponseDto> {
     const principal = this.requirePrincipal(user);
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
     const actor = await this.requireActor(user);
     const context = await this.topicContextService.loadTopicContext(
       topicId,
@@ -392,8 +448,14 @@ export class ForumsCommandService {
     );
 
     this.assertAllowed(topicDecisions.canDeleteTopic);
+    this.assertAllowed(
+      await this.moderationService.decideForLockedTopicMutation(
+        principal,
+        context,
+      ),
+    );
 
-    return this.db.$transaction(async (tx) => {
+    const topic = await this.db.$transaction(async (tx) => {
       await this.ensureActiveTopic(tx, topicId);
 
       return tx.topic.update({
@@ -404,6 +466,8 @@ export class ForumsCommandService {
         },
       });
     });
+
+    return this.mapTopicCommandResponse(topic);
   }
 
   /**
@@ -412,17 +476,26 @@ export class ForumsCommandService {
    * @param topicId Owning topic id.
    * @param dto Post content and optional polymorphic parent target.
    * @param user Authenticated token payload for the acting member.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns The created post row after the best-effort notification attempt settles.
    * @throws UnauthorizedException when no authenticated command caller is present.
    * @throws BadRequestException when parent linkage or content is invalid.
+   * @throws ForbiddenException when shared policy, moderation bans, or topic lock state deny the post.
    * @throws NotFoundException when the topic or parent post does not exist.
    */
   async createPost(
     topicId: string,
     dto: CreatePostDto,
     user: JwtUser | undefined,
+    trustedClientIp?: string,
   ): Promise<Post> {
     const principal = this.requirePrincipal(user);
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
     const author = await this.resolveContentAuthor(user);
     const content = this.normalizeRequiredText(dto.content, 'content');
     const context = await this.topicContextService.loadTopicContext(
@@ -435,6 +508,12 @@ export class ForumsCommandService {
     );
 
     this.assertAllowed(topicDecisions.canCreatePost);
+    this.assertAllowed(
+      await this.moderationService.decideForLockedTopicMutation(
+        principal,
+        context,
+      ),
+    );
 
     const post = await this.db.$transaction(async (tx) => {
       await this.ensureActiveTopic(tx, topicId);
@@ -493,17 +572,26 @@ export class ForumsCommandService {
    * @param postId Post id to update.
    * @param dto Updated markdown content.
    * @param user Authenticated token payload for the acting member.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns The updated post row.
    * @throws UnauthorizedException when no authenticated command caller is present.
    * @throws BadRequestException when content is invalid.
+   * @throws ForbiddenException when shared policy, moderation bans, or topic lock state deny the update.
    * @throws NotFoundException when the post or its topic does not exist or is hidden.
    */
   async updatePost(
     postId: string,
     dto: UpdatePostDto,
     user: JwtUser | undefined,
+    trustedClientIp?: string,
   ): Promise<Post> {
     const principal = this.requirePrincipal(user);
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
     await this.requireActor(user);
     const content = this.normalizeRequiredText(dto.content, 'content');
     const context = await this.topicContextService.loadPostContext(
@@ -516,6 +604,12 @@ export class ForumsCommandService {
     );
 
     this.assertAllowed(postDecisions.canUpdatePost);
+    this.assertAllowed(
+      await this.moderationService.decideForLockedTopicMutation(
+        principal,
+        context,
+      ),
+    );
 
     return this.db.$transaction(async (tx) => {
       const post = await this.ensureMutablePost(tx, postId);
@@ -532,12 +626,24 @@ export class ForumsCommandService {
    *
    * @param postId Post id to delete.
    * @param user Authenticated token payload for the acting member.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns The deleted post row with blank content.
    * @throws UnauthorizedException when no authenticated command caller is present.
+   * @throws ForbiddenException when shared policy, moderation bans, or topic lock state deny the delete.
    * @throws NotFoundException when the post or its topic does not exist or is hidden.
    */
-  async deletePost(postId: string, user: JwtUser | undefined): Promise<Post> {
+  async deletePost(
+    postId: string,
+    user: JwtUser | undefined,
+    trustedClientIp?: string,
+  ): Promise<Post> {
     const principal = this.requirePrincipal(user);
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
     const actor = await this.requireActor(user);
     const context = await this.topicContextService.loadPostContext(
       postId,
@@ -549,6 +655,12 @@ export class ForumsCommandService {
     );
 
     this.assertAllowed(postDecisions.canDeletePost);
+    this.assertAllowed(
+      await this.moderationService.decideForLockedTopicMutation(
+        principal,
+        context,
+      ),
+    );
 
     return this.db.$transaction(async (tx) => {
       const post = await this.ensurePostInActiveTopic(tx, postId);
@@ -574,18 +686,32 @@ export class ForumsCommandService {
    * @param topicId Topic id to watch.
    * @param dto Optional target member body; required for scoped M2M callers.
    * @param user Authenticated token payload for the acting member.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns A watch-state result for the member/topic pair.
    * @throws UnauthorizedException when no authenticated command caller is present.
    * @throws BadRequestException when a scoped M2M caller omits the target member id or the target cannot be resolved in Members and Identity.
+   * @throws ForbiddenException when shared policy or moderation bans deny the watch.
    * @throws NotFoundException when the topic does not exist or is hidden.
    */
   async addTopicWatch(
     topicId: string,
     dto: MemberTargetDto | undefined,
     user: JwtUser | undefined,
+    trustedClientIp?: string,
   ): Promise<TopicWatch> {
     const principal = this.requirePrincipal(user);
+    if (!principal.isMachine) {
+      this.assertAllowed(
+        await this.moderationService.decideForRequestActorBan(
+          principal,
+          trustedClientIp,
+        ),
+      );
+    }
     const target = await this.resolveMemberCommandTarget(principal, user, dto);
+    this.assertAllowed(
+      await this.moderationService.decideForTargetMemberBan(target.memberId),
+    );
     const context = await this.topicContextService.loadTopicContext(
       topicId,
       target.principal,
@@ -623,18 +749,32 @@ export class ForumsCommandService {
    * @param topicId Topic id to unwatch.
    * @param dto Optional target member body; required for scoped M2M callers.
    * @param user Authenticated token payload for the acting member.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns The resulting watch state for the member/topic pair.
    * @throws UnauthorizedException when no authenticated command caller is present.
    * @throws BadRequestException when a scoped M2M caller omits the target member id or the target cannot be resolved in Members and Identity.
+   * @throws ForbiddenException when shared policy or moderation bans deny the watch update.
    * @throws NotFoundException when the topic does not exist or is hidden.
    */
   async removeTopicWatch(
     topicId: string,
     dto: MemberTargetDto | undefined,
     user: JwtUser | undefined,
+    trustedClientIp?: string,
   ): Promise<TopicWatchResult> {
     const principal = this.requirePrincipal(user);
+    if (!principal.isMachine) {
+      this.assertAllowed(
+        await this.moderationService.decideForRequestActorBan(
+          principal,
+          trustedClientIp,
+        ),
+      );
+    }
     const target = await this.resolveMemberCommandTarget(principal, user, dto);
+    this.assertAllowed(
+      await this.moderationService.decideForTargetMemberBan(target.memberId),
+    );
     const context = await this.topicContextService.loadTopicContext(
       topicId,
       target.principal,
@@ -671,18 +811,32 @@ export class ForumsCommandService {
    * @param topicId Topic id to mark as read.
    * @param dto Optional target member body; required for scoped M2M callers.
    * @param user Authenticated token payload for the acting member.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns The upserted read-state row.
    * @throws UnauthorizedException when no authenticated command caller is present.
    * @throws BadRequestException when a scoped M2M caller omits the target member id or the target cannot be resolved in Members and Identity.
+   * @throws ForbiddenException when shared policy or moderation bans deny the read-state update.
    * @throws NotFoundException when the topic does not exist or is hidden.
    */
   async markTopicRead(
     topicId: string,
     dto: MemberTargetDto | undefined,
     user: JwtUser | undefined,
+    trustedClientIp?: string,
   ): Promise<TopicReadState> {
     const principal = this.requirePrincipal(user);
+    if (!principal.isMachine) {
+      this.assertAllowed(
+        await this.moderationService.decideForRequestActorBan(
+          principal,
+          trustedClientIp,
+        ),
+      );
+    }
     const target = await this.resolveMemberCommandTarget(principal, user, dto);
+    this.assertAllowed(
+      await this.moderationService.decideForTargetMemberBan(target.memberId),
+    );
     const lastReadAt = new Date();
     const context = await this.topicContextService.loadTopicContext(
       topicId,
@@ -752,6 +906,30 @@ export class ForumsCommandService {
         `${operationName} notification failed for topic ${topic.id}, post ${post.id}, attemptedRecipientCount=${attemptedRecipientCount}: ${message}`,
       );
     }
+  }
+
+  /**
+   * Maps persisted topic rows into the public command response contract.
+   *
+   * @param topic Persisted topic row returned by Prisma.
+   * @returns Topic command response without storage-only moderation columns.
+   * @throws Does not throw.
+   */
+  private mapTopicCommandResponse(topic: Topic): ForumTopicCommandResponseDto {
+    return {
+      id: topic.id,
+      parentTopicId: topic.parentTopicId,
+      challengeId: topic.challengeId,
+      roleName: topic.roleName,
+      title: topic.title,
+      isAnnouncement: topic.isAnnouncement,
+      authorMemberId: topic.authorMemberId,
+      authorHandle: topic.authorHandle,
+      createdAt: topic.createdAt,
+      updatedAt: topic.updatedAt,
+      deletedAt: topic.deletedAt,
+      deletedByMemberId: topic.deletedByMemberId,
+    };
   }
 
   /**

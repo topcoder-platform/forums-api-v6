@@ -127,12 +127,33 @@ exports.Prisma.TopicScalarFieldEnum = {
   roleName: 'roleName',
   title: 'title',
   isAnnouncement: 'isAnnouncement',
+  locked: 'locked',
+  lockedAt: 'lockedAt',
+  lockedByMemberId: 'lockedByMemberId',
   authorMemberId: 'authorMemberId',
   authorHandle: 'authorHandle',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt',
   deletedByMemberId: 'deletedByMemberId'
+};
+
+exports.Prisma.MemberBanScalarFieldEnum = {
+  id: 'id',
+  memberId: 'memberId',
+  createdAt: 'createdAt',
+  createdByMemberId: 'createdByMemberId',
+  removedAt: 'removedAt',
+  removedByMemberId: 'removedByMemberId'
+};
+
+exports.Prisma.IpBanScalarFieldEnum = {
+  id: 'id',
+  ipAddress: 'ipAddress',
+  createdAt: 'createdAt',
+  createdByMemberId: 'createdByMemberId',
+  removedAt: 'removedAt',
+  removedByMemberId: 'removedByMemberId'
 };
 
 exports.Prisma.PostScalarFieldEnum = {
@@ -186,6 +207,8 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   Topic: 'Topic',
+  MemberBan: 'MemberBan',
+  IpBan: 'IpBan',
   Post: 'Post',
   TopicClosure: 'TopicClosure',
   TopicWatch: 'TopicWatch',

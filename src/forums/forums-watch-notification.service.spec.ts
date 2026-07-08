@@ -19,6 +19,9 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
     roleName: null,
     title: 'Topic title',
     isAnnouncement: false,
+    locked: false,
+    lockedAt: null,
+    lockedByMemberId: null,
     authorMemberId: '1',
     authorHandle: 'author',
     createdAt,
@@ -91,6 +94,9 @@ function createService(templateId: string | null = 'template-id') {
       .fn()
       .mockResolvedValue({ allowed: true }),
   };
+  const moderationService = {
+    decideForTargetMemberBan: jest.fn().mockResolvedValue({ allowed: true }),
+  };
   const eventBusService = {
     postEvent: jest.fn().mockResolvedValue(undefined),
   };
@@ -106,6 +112,7 @@ function createService(templateId: string | null = 'template-id') {
     memberDirectoryService as any,
     identityAccessService as any,
     accessPolicyService as any,
+    moderationService as any,
     eventBusService as any,
     configService as any,
   );
@@ -117,6 +124,7 @@ function createService(templateId: string | null = 'template-id') {
     eventBusService,
     identityAccessService,
     memberDirectoryService,
+    moderationService,
     service,
   };
 }
@@ -218,6 +226,58 @@ describe('ForumsWatchNotificationService', () => {
       },
     );
     expect(eventBusService.postEvent).not.toHaveBeenCalled();
+  });
+
+  it('filters banned watched members out of recipient email events', async () => {
+    const {
+      db,
+      eventBusService,
+      identityAccessService,
+      memberDirectoryService,
+      moderationService,
+      service,
+    } = createService();
+    db.topicWatch.findMany.mockResolvedValue([
+      { memberId: '2' },
+      { memberId: '3' },
+    ]);
+    memberDirectoryService.getMembersByIds.mockResolvedValue([
+      { memberId: '2', email: 'two@example.com', handle: 'two' },
+      { memberId: '3', email: 'three@example.com', handle: 'three' },
+    ]);
+    moderationService.decideForTargetMemberBan.mockImplementation(
+      (memberId: string) =>
+        Promise.resolve(
+          memberId === '3'
+            ? { allowed: false, reason: 'Forums access is restricted.' }
+            : { allowed: true },
+        ),
+    );
+
+    const result = await service.publishPostNotification({
+      topic: makeTopic(),
+      post: makePost(),
+      restrictions: {
+        challengeId: null,
+        roleName: null,
+        hasRestrictionConflict: false,
+      },
+      operationName: 'createPost',
+    });
+
+    expect(result).toEqual({ attemptedRecipientCount: 1, published: true });
+    expect(moderationService.decideForTargetMemberBan).toHaveBeenCalledWith(
+      '3',
+    );
+    expect(identityAccessService.getMemberRoleNames).not.toHaveBeenCalledWith(
+      '3',
+    );
+    expect(eventBusService.postEvent).toHaveBeenCalledWith(
+      'external.action.email',
+      expect.objectContaining({
+        recipients: ['two@example.com'],
+      }),
+    );
   });
 
   it('skips a failing recipient authorization lookup without suppressing other recipients', async () => {

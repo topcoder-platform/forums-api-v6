@@ -13,6 +13,7 @@ export const FORUMS_SCOPE_UPDATE_POST = 'update:forums-posts';
 export const FORUMS_SCOPE_DELETE_POST = 'delete:forums-posts';
 export const FORUMS_SCOPE_ADD_WATCH = 'add:forums-topic-watch';
 export const FORUMS_SCOPE_REMOVE_WATCH = 'remove:forums-topic-watch';
+export const FORUMS_SCOPE_MODERATE = 'moderate:forums';
 
 export const BATCH_1_FORUMS_SCOPES = [
   FORUMS_SCOPE_CREATE,

@@ -21,6 +21,9 @@ model Topic {
   roleName          String?   @db.VarChar(128)
   title             String    @db.VarChar(255)
   isAnnouncement    Boolean   @default(false)
+  locked            Boolean   @default(false)
+  lockedAt          DateTime?
+  lockedByMemberId  String?   @db.VarChar(64)
   authorMemberId    String    @db.VarChar(64)
   authorHandle      String    @db.VarChar(128)
   createdAt         DateTime  @default(now())
@@ -41,6 +44,32 @@ model Topic {
   @@index([roleName])
   @@index([deletedAt])
   @@index([isAnnouncement, createdAt])
+  @@schema("forums")
+}
+
+model MemberBan {
+  id                String    @id @default(dbgenerated("nanoid()")) @db.VarChar(14)
+  memberId          String    @db.VarChar(64)
+  createdAt         DateTime  @default(now())
+  createdByMemberId String?   @db.VarChar(64)
+  removedAt         DateTime?
+  removedByMemberId String?   @db.VarChar(64)
+
+  @@index([memberId])
+  @@index([removedAt])
+  @@schema("forums")
+}
+
+model IpBan {
+  id                String    @id @default(dbgenerated("nanoid()")) @db.VarChar(14)
+  ipAddress         String    @db.VarChar(45)
+  createdAt         DateTime  @default(now())
+  createdByMemberId String?   @db.VarChar(64)
+  removedAt         DateTime?
+  removedByMemberId String?   @db.VarChar(64)
+
+  @@index([ipAddress])
+  @@index([removedAt])
   @@schema("forums")
 }
 

@@ -1,11 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
- * Topic row returned by command-side forum endpoints.
+ * Topic response returned by command-side forum endpoints.
  *
- * The DTO documents the persisted topic fields returned after create, update,
- * and soft-delete commands. It is used only for Swagger response metadata; the
- * service still returns the persisted Prisma row shape.
+ * The DTO documents the stable command response returned after create, update,
+ * and soft-delete commands. Storage-only moderation fields such as topic lock
+ * persistence columns stay internal until the command contract explicitly
+ * exposes API-facing lock metadata.
  */
 export class ForumTopicCommandResponseDto {
   @ApiProperty({ description: 'Topic id.' })
@@ -125,7 +126,7 @@ export class ForumPostCommandResponseDto {
  */
 export class CreateTopicCommandResponseDto {
   @ApiProperty({
-    description: 'Created topic row.',
+    description: 'Created topic command response.',
     type: ForumTopicCommandResponseDto,
   })
   topic: ForumTopicCommandResponseDto;

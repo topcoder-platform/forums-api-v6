@@ -22,6 +22,9 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
     roleName: null,
     title: 'Topic title',
     isAnnouncement: false,
+    locked: false,
+    lockedAt: null,
+    lockedByMemberId: null,
     authorMemberId: '1',
     authorHandle: 'author',
     createdAt,
@@ -70,7 +73,7 @@ function createCommandService(order: string[] = []) {
     topic: {
       findUnique: jest.fn().mockResolvedValue(topic),
       create: jest.fn().mockResolvedValue(topic),
-      update: jest.fn(),
+      update: jest.fn().mockResolvedValue(topic),
     },
     post: {
       create: jest.fn().mockImplementation(() => {
@@ -78,8 +81,8 @@ function createCommandService(order: string[] = []) {
         return post;
       }),
       findFirst: jest.fn(),
-      findUnique: jest.fn(),
-      update: jest.fn(),
+      findUnique: jest.fn().mockResolvedValue(post),
+      update: jest.fn().mockResolvedValue(post),
     },
     topicClosure: {
       findFirst: jest.fn().mockResolvedValue(null),
@@ -111,19 +114,30 @@ function createCommandService(order: string[] = []) {
         return result;
       },
     ),
+    topicClosure: {
+      findMany: jest.fn().mockResolvedValue([]),
+    },
   };
   const accessPolicyService = {
     decideForTopic: jest.fn().mockResolvedValue({
       canAddWatch: { allowed: true },
       canCreatePost: { allowed: true },
+      canControlAnnouncement: { allowed: true },
+      canDeleteTopic: { allowed: true },
       canMarkRead: { allowed: true },
       canRemoveWatch: { allowed: true },
+      canUpdateTopic: { allowed: true },
+    }),
+    decideForPost: jest.fn().mockResolvedValue({
+      canDeletePost: { allowed: true },
+      canUpdatePost: { allowed: true },
     }),
     decideForCreateTopic: jest.fn().mockResolvedValue({
       canCreateChildTopic: { allowed: true },
       canCreateTopLevelTopic: { allowed: true },
       canControlAnnouncement: { allowed: true },
     }),
+    decideForRestrictions: jest.fn().mockResolvedValue({ allowed: true }),
   };
   const topicContextService = {
     loadTopicContext: jest.fn().mockResolvedValue({
@@ -136,6 +150,19 @@ function createCommandService(order: string[] = []) {
       hasDeletedAncestor: false,
       hasRestrictionConflict: false,
       isTopicAuthor: true,
+    }),
+    loadPostContext: jest.fn().mockResolvedValue({
+      topic,
+      ancestors: [topic],
+      effectiveChallengeId: null,
+      effectiveRoleName: null,
+      ancestorChallengeId: null,
+      ancestorRoleName: null,
+      hasDeletedAncestor: false,
+      hasRestrictionConflict: false,
+      isTopicAuthor: true,
+      post,
+      isPostAuthor: true,
     }),
   };
   const memberDirectoryService = {
@@ -163,6 +190,13 @@ function createCommandService(order: string[] = []) {
       return Promise.resolve();
     }),
   };
+  const moderationService = {
+    decideForRequestActorBan: jest.fn().mockResolvedValue({ allowed: true }),
+    decideForTargetMemberBan: jest.fn().mockResolvedValue({ allowed: true }),
+    decideForLockedTopicMutation: jest.fn().mockResolvedValue({
+      allowed: true,
+    }),
+  };
   const service = new ForumsCommandService(
     db as any,
     accessPolicyService as any,
@@ -171,6 +205,7 @@ function createCommandService(order: string[] = []) {
     identityAccessService as any,
     memberHandleService as any,
     notificationService as any,
+    moderationService as any,
   );
 
   return {
@@ -178,6 +213,7 @@ function createCommandService(order: string[] = []) {
     db,
     identityAccessService,
     memberDirectoryService,
+    moderationService,
     notificationService,
     service,
     topic,
@@ -316,6 +352,43 @@ describe('ForumsCommandService notification boundary', () => {
     expect(notificationService.publishPostNotification).not.toHaveBeenCalled();
   });
 
+  it('omits topic lock persistence fields from createTopic command responses', async () => {
+    const { service, tx } = createCommandService();
+    tx.topic.create.mockResolvedValue(
+      makeTopic({
+        locked: true,
+        lockedAt: new Date('2026-06-04T01:00:00.000Z'),
+        lockedByMemberId: '99',
+      }),
+    );
+
+    const result = await service.createTopic(
+      {
+        title: 'Top-level topic',
+        content: 'Starter content',
+      },
+      user,
+    );
+
+    expect(result.topic).toEqual({
+      id: 'topic-1',
+      parentTopicId: null,
+      challengeId: null,
+      roleName: null,
+      title: 'Topic title',
+      isAnnouncement: false,
+      authorMemberId: '1',
+      authorHandle: 'author',
+      createdAt,
+      updatedAt: createdAt,
+      deletedAt: null,
+      deletedByMemberId: null,
+    });
+    expect(result.topic).not.toHaveProperty('locked');
+    expect(result.topic).not.toHaveProperty('lockedAt');
+    expect(result.topic).not.toHaveProperty('lockedByMemberId');
+  });
+
   it('returns the content write result when notification publishing fails', async () => {
     const errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
     const { notificationService, service } = createCommandService();
@@ -333,6 +406,157 @@ describe('ForumsCommandService notification boundary', () => {
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('createPost notification failed'),
     );
+  });
+
+  it('rejects banned writes before context loading, writes, or notifications', async () => {
+    const {
+      db,
+      moderationService,
+      notificationService,
+      service,
+      topicContextService,
+    } = createCommandService();
+    moderationService.decideForRequestActorBan.mockResolvedValue({
+      allowed: false,
+      reason: 'Forums access is restricted.',
+    });
+
+    await expect(
+      service.createPost(
+        'topic-1',
+        { content: 'Persisted content' },
+        user,
+        '203.0.113.10',
+      ),
+    ).rejects.toThrow('Forums access is restricted.');
+
+    expect(moderationService.decideForRequestActorBan).toHaveBeenCalledWith(
+      expect.objectContaining({ memberId: '1' }),
+      '203.0.113.10',
+    );
+    expect(topicContextService.loadTopicContext).not.toHaveBeenCalled();
+    expect(db.$transaction).not.toHaveBeenCalled();
+    expect(notificationService.publishPostNotification).not.toHaveBeenCalled();
+  });
+
+  it('rejects child-topic creation under a locked parent before writes or notifications', async () => {
+    const { db, moderationService, notificationService, service } =
+      createCommandService();
+    moderationService.decideForLockedTopicMutation.mockResolvedValue({
+      allowed: false,
+      reason: 'Topic is locked.',
+    });
+
+    await expect(
+      service.createTopic(
+        {
+          title: 'Child topic',
+          content: 'Starter content',
+          parentTopicId: 'parent-1',
+        },
+        user,
+      ),
+    ).rejects.toThrow('Topic is locked.');
+
+    expect(moderationService.decideForLockedTopicMutation).toHaveBeenCalledWith(
+      expect.objectContaining({ memberId: '1' }),
+      expect.objectContaining({
+        topic: expect.objectContaining({ id: 'topic-1' }),
+      }),
+    );
+    expect(db.$transaction).not.toHaveBeenCalled();
+    expect(notificationService.publishPostNotification).not.toHaveBeenCalled();
+  });
+
+  it('rejects locked topic updates for ordinary members before writes', async () => {
+    const { db, moderationService, service, tx } = createCommandService();
+    moderationService.decideForLockedTopicMutation.mockResolvedValue({
+      allowed: false,
+      reason: 'Topic is locked.',
+    });
+
+    await expect(
+      service.updateTopic('topic-1', { title: 'Updated title' }, user),
+    ).rejects.toThrow('Topic is locked.');
+
+    expect(db.$transaction).not.toHaveBeenCalled();
+    expect(tx.topic.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects locked role updates before restriction or descendant checks', async () => {
+    const { accessPolicyService, db, moderationService, service } =
+      createCommandService();
+    moderationService.decideForLockedTopicMutation.mockResolvedValue({
+      allowed: false,
+      reason: 'Topic is locked.',
+    });
+    accessPolicyService.decideForRestrictions.mockResolvedValue({
+      allowed: false,
+      reason: 'Hidden candidate restriction.',
+    });
+
+    await expect(
+      service.updateTopic('topic-1', { roleName: 'reviewer' }, user),
+    ).rejects.toThrow('Topic is locked.');
+
+    expect(accessPolicyService.decideForRestrictions).not.toHaveBeenCalled();
+    expect(db.topicClosure.findMany).not.toHaveBeenCalled();
+    expect(db.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('rejects locked post updates for ordinary members before writes', async () => {
+    const { db, moderationService, service, tx } = createCommandService();
+    moderationService.decideForLockedTopicMutation.mockResolvedValue({
+      allowed: false,
+      reason: 'Topic is locked.',
+    });
+
+    await expect(
+      service.updatePost('post-1', { content: 'Updated content' }, user),
+    ).rejects.toThrow('Topic is locked.');
+
+    expect(db.$transaction).not.toHaveBeenCalled();
+    expect(tx.post.update).not.toHaveBeenCalled();
+  });
+
+  it('allows administrator lock bypass decisions to continue to writes', async () => {
+    const { moderationService, service, tx } = createCommandService();
+    const adminUser: JwtUser = {
+      ...user,
+      roles: ['administrator'],
+    };
+
+    await expect(
+      service.updateTopic('topic-1', { title: 'Updated title' }, adminUser),
+    ).resolves.toEqual(expect.objectContaining({ id: 'topic-1' }));
+
+    expect(moderationService.decideForLockedTopicMutation).toHaveBeenCalledWith(
+      expect.objectContaining({ isAdmin: true }),
+      expect.any(Object),
+    );
+    expect(tx.topic.update).toHaveBeenCalled();
+  });
+
+  it('allows eligible challenge-copilot lock bypass decisions to continue to writes', async () => {
+    const { moderationService, service, tx } = createCommandService();
+    const copilotUser: JwtUser = {
+      ...user,
+      roles: ['copilot'],
+    };
+
+    await expect(
+      service.createPost(
+        'topic-1',
+        { content: 'Persisted content' },
+        copilotUser,
+      ),
+    ).resolves.toEqual(expect.objectContaining({ id: 'post-1' }));
+
+    expect(moderationService.decideForLockedTopicMutation).toHaveBeenCalledWith(
+      expect.objectContaining({ roles: ['copilot'] }),
+      expect.any(Object),
+    );
+    expect(tx.post.create).toHaveBeenCalled();
   });
 });
 
@@ -508,6 +732,34 @@ describe('ForumsCommandService member-targeted state commands', () => {
       await expect(
         commandCase.run(fixture.service, rejectionCase.memberId),
       ).rejects.toThrow('Invalid member target.');
+      expect(
+        fixture.topicContextService.loadTopicContext,
+      ).not.toHaveBeenCalled();
+      expect(fixture.db.$transaction).not.toHaveBeenCalled();
+      expect(fixture.tx.topicWatch.upsert).not.toHaveBeenCalled();
+      expect(fixture.tx.topicWatch.deleteMany).not.toHaveBeenCalled();
+      expect(fixture.tx.topicReadState.upsert).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(commandCases)(
+    '$name rejects banned target members before loading context or writing state',
+    async ({ run }) => {
+      const fixture = createCommandService();
+      fixture.moderationService.decideForTargetMemberBan.mockResolvedValue({
+        allowed: false,
+        reason: 'Forums access is restricted.',
+      });
+
+      await expect(run(fixture.service, '2')).rejects.toThrow(
+        'Forums access is restricted.',
+      );
+      expect(
+        fixture.moderationService.decideForRequestActorBan,
+      ).not.toHaveBeenCalled();
+      expect(
+        fixture.moderationService.decideForTargetMemberBan,
+      ).toHaveBeenCalledWith('2');
       expect(
         fixture.topicContextService.loadTopicContext,
       ).not.toHaveBeenCalled();

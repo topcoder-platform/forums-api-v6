@@ -19,6 +19,16 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type Topic = $Result.DefaultSelection<Prisma.$TopicPayload>
 /**
+ * Model MemberBan
+ * 
+ */
+export type MemberBan = $Result.DefaultSelection<Prisma.$MemberBanPayload>
+/**
+ * Model IpBan
+ * 
+ */
+export type IpBan = $Result.DefaultSelection<Prisma.$IpBanPayload>
+/**
  * Model Post
  * 
  */
@@ -169,6 +179,26 @@ export class PrismaClient<
     * ```
     */
   get topic(): Prisma.TopicDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.memberBan`: Exposes CRUD operations for the **MemberBan** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MemberBans
+    * const memberBans = await prisma.memberBan.findMany()
+    * ```
+    */
+  get memberBan(): Prisma.MemberBanDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.ipBan`: Exposes CRUD operations for the **IpBan** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more IpBans
+    * const ipBans = await prisma.ipBan.findMany()
+    * ```
+    */
+  get ipBan(): Prisma.IpBanDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.post`: Exposes CRUD operations for the **Post** model.
@@ -644,6 +674,8 @@ export namespace Prisma {
 
   export const ModelName: {
     Topic: 'Topic',
+    MemberBan: 'MemberBan',
+    IpBan: 'IpBan',
     Post: 'Post',
     TopicClosure: 'TopicClosure',
     TopicWatch: 'TopicWatch',
@@ -663,7 +695,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "topic" | "post" | "topicClosure" | "topicWatch" | "topicReadState"
+      modelProps: "topic" | "memberBan" | "ipBan" | "post" | "topicClosure" | "topicWatch" | "topicReadState"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -738,6 +770,154 @@ export namespace Prisma {
           count: {
             args: Prisma.TopicCountArgs<ExtArgs>
             result: $Utils.Optional<TopicCountAggregateOutputType> | number
+          }
+        }
+      }
+      MemberBan: {
+        payload: Prisma.$MemberBanPayload<ExtArgs>
+        fields: Prisma.MemberBanFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MemberBanFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MemberBanFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload>
+          }
+          findFirst: {
+            args: Prisma.MemberBanFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MemberBanFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload>
+          }
+          findMany: {
+            args: Prisma.MemberBanFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload>[]
+          }
+          create: {
+            args: Prisma.MemberBanCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload>
+          }
+          createMany: {
+            args: Prisma.MemberBanCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MemberBanCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload>[]
+          }
+          delete: {
+            args: Prisma.MemberBanDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload>
+          }
+          update: {
+            args: Prisma.MemberBanUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload>
+          }
+          deleteMany: {
+            args: Prisma.MemberBanDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MemberBanUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.MemberBanUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload>[]
+          }
+          upsert: {
+            args: Prisma.MemberBanUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MemberBanPayload>
+          }
+          aggregate: {
+            args: Prisma.MemberBanAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMemberBan>
+          }
+          groupBy: {
+            args: Prisma.MemberBanGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MemberBanGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MemberBanCountArgs<ExtArgs>
+            result: $Utils.Optional<MemberBanCountAggregateOutputType> | number
+          }
+        }
+      }
+      IpBan: {
+        payload: Prisma.$IpBanPayload<ExtArgs>
+        fields: Prisma.IpBanFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.IpBanFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.IpBanFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          findFirst: {
+            args: Prisma.IpBanFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.IpBanFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          findMany: {
+            args: Prisma.IpBanFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>[]
+          }
+          create: {
+            args: Prisma.IpBanCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          createMany: {
+            args: Prisma.IpBanCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.IpBanCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>[]
+          }
+          delete: {
+            args: Prisma.IpBanDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          update: {
+            args: Prisma.IpBanUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          deleteMany: {
+            args: Prisma.IpBanDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.IpBanUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.IpBanUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>[]
+          }
+          upsert: {
+            args: Prisma.IpBanUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$IpBanPayload>
+          }
+          aggregate: {
+            args: Prisma.IpBanAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateIpBan>
+          }
+          groupBy: {
+            args: Prisma.IpBanGroupByArgs<ExtArgs>
+            result: $Utils.Optional<IpBanGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.IpBanCountArgs<ExtArgs>
+            result: $Utils.Optional<IpBanCountAggregateOutputType> | number
           }
         }
       }
@@ -1146,6 +1326,8 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     topic?: TopicOmit
+    memberBan?: MemberBanOmit
+    ipBan?: IpBanOmit
     post?: PostOmit
     topicClosure?: TopicClosureOmit
     topicWatch?: TopicWatchOmit
@@ -1322,6 +1504,9 @@ export namespace Prisma {
     roleName: string | null
     title: string | null
     isAnnouncement: boolean | null
+    locked: boolean | null
+    lockedAt: Date | null
+    lockedByMemberId: string | null
     authorMemberId: string | null
     authorHandle: string | null
     createdAt: Date | null
@@ -1337,6 +1522,9 @@ export namespace Prisma {
     roleName: string | null
     title: string | null
     isAnnouncement: boolean | null
+    locked: boolean | null
+    lockedAt: Date | null
+    lockedByMemberId: string | null
     authorMemberId: string | null
     authorHandle: string | null
     createdAt: Date | null
@@ -1352,6 +1540,9 @@ export namespace Prisma {
     roleName: number
     title: number
     isAnnouncement: number
+    locked: number
+    lockedAt: number
+    lockedByMemberId: number
     authorMemberId: number
     authorHandle: number
     createdAt: number
@@ -1369,6 +1560,9 @@ export namespace Prisma {
     roleName?: true
     title?: true
     isAnnouncement?: true
+    locked?: true
+    lockedAt?: true
+    lockedByMemberId?: true
     authorMemberId?: true
     authorHandle?: true
     createdAt?: true
@@ -1384,6 +1578,9 @@ export namespace Prisma {
     roleName?: true
     title?: true
     isAnnouncement?: true
+    locked?: true
+    lockedAt?: true
+    lockedByMemberId?: true
     authorMemberId?: true
     authorHandle?: true
     createdAt?: true
@@ -1399,6 +1596,9 @@ export namespace Prisma {
     roleName?: true
     title?: true
     isAnnouncement?: true
+    locked?: true
+    lockedAt?: true
+    lockedByMemberId?: true
     authorMemberId?: true
     authorHandle?: true
     createdAt?: true
@@ -1487,6 +1687,9 @@ export namespace Prisma {
     roleName: string | null
     title: string
     isAnnouncement: boolean
+    locked: boolean
+    lockedAt: Date | null
+    lockedByMemberId: string | null
     authorMemberId: string
     authorHandle: string
     createdAt: Date
@@ -1519,6 +1722,9 @@ export namespace Prisma {
     roleName?: boolean
     title?: boolean
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: boolean
+    lockedByMemberId?: boolean
     authorMemberId?: boolean
     authorHandle?: boolean
     createdAt?: boolean
@@ -1542,6 +1748,9 @@ export namespace Prisma {
     roleName?: boolean
     title?: boolean
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: boolean
+    lockedByMemberId?: boolean
     authorMemberId?: boolean
     authorHandle?: boolean
     createdAt?: boolean
@@ -1558,6 +1767,9 @@ export namespace Prisma {
     roleName?: boolean
     title?: boolean
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: boolean
+    lockedByMemberId?: boolean
     authorMemberId?: boolean
     authorHandle?: boolean
     createdAt?: boolean
@@ -1574,6 +1786,9 @@ export namespace Prisma {
     roleName?: boolean
     title?: boolean
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: boolean
+    lockedByMemberId?: boolean
     authorMemberId?: boolean
     authorHandle?: boolean
     createdAt?: boolean
@@ -1582,7 +1797,7 @@ export namespace Prisma {
     deletedByMemberId?: boolean
   }
 
-  export type TopicOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "parentTopicId" | "challengeId" | "roleName" | "title" | "isAnnouncement" | "authorMemberId" | "authorHandle" | "createdAt" | "updatedAt" | "deletedAt" | "deletedByMemberId", ExtArgs["result"]["topic"]>
+  export type TopicOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "parentTopicId" | "challengeId" | "roleName" | "title" | "isAnnouncement" | "locked" | "lockedAt" | "lockedByMemberId" | "authorMemberId" | "authorHandle" | "createdAt" | "updatedAt" | "deletedAt" | "deletedByMemberId", ExtArgs["result"]["topic"]>
   export type TopicInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     parentTopic?: boolean | Topic$parentTopicArgs<ExtArgs>
     childTopics?: boolean | Topic$childTopicsArgs<ExtArgs>
@@ -1618,6 +1833,9 @@ export namespace Prisma {
       roleName: string | null
       title: string
       isAnnouncement: boolean
+      locked: boolean
+      lockedAt: Date | null
+      lockedByMemberId: string | null
       authorMemberId: string
       authorHandle: string
       createdAt: Date
@@ -2060,6 +2278,9 @@ export namespace Prisma {
     readonly roleName: FieldRef<"Topic", 'String'>
     readonly title: FieldRef<"Topic", 'String'>
     readonly isAnnouncement: FieldRef<"Topic", 'Boolean'>
+    readonly locked: FieldRef<"Topic", 'Boolean'>
+    readonly lockedAt: FieldRef<"Topic", 'DateTime'>
+    readonly lockedByMemberId: FieldRef<"Topic", 'String'>
     readonly authorMemberId: FieldRef<"Topic", 'String'>
     readonly authorHandle: FieldRef<"Topic", 'String'>
     readonly createdAt: FieldRef<"Topic", 'DateTime'>
@@ -2645,6 +2866,2032 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: TopicInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model MemberBan
+   */
+
+  export type AggregateMemberBan = {
+    _count: MemberBanCountAggregateOutputType | null
+    _min: MemberBanMinAggregateOutputType | null
+    _max: MemberBanMaxAggregateOutputType | null
+  }
+
+  export type MemberBanMinAggregateOutputType = {
+    id: string | null
+    memberId: string | null
+    createdAt: Date | null
+    createdByMemberId: string | null
+    removedAt: Date | null
+    removedByMemberId: string | null
+  }
+
+  export type MemberBanMaxAggregateOutputType = {
+    id: string | null
+    memberId: string | null
+    createdAt: Date | null
+    createdByMemberId: string | null
+    removedAt: Date | null
+    removedByMemberId: string | null
+  }
+
+  export type MemberBanCountAggregateOutputType = {
+    id: number
+    memberId: number
+    createdAt: number
+    createdByMemberId: number
+    removedAt: number
+    removedByMemberId: number
+    _all: number
+  }
+
+
+  export type MemberBanMinAggregateInputType = {
+    id?: true
+    memberId?: true
+    createdAt?: true
+    createdByMemberId?: true
+    removedAt?: true
+    removedByMemberId?: true
+  }
+
+  export type MemberBanMaxAggregateInputType = {
+    id?: true
+    memberId?: true
+    createdAt?: true
+    createdByMemberId?: true
+    removedAt?: true
+    removedByMemberId?: true
+  }
+
+  export type MemberBanCountAggregateInputType = {
+    id?: true
+    memberId?: true
+    createdAt?: true
+    createdByMemberId?: true
+    removedAt?: true
+    removedByMemberId?: true
+    _all?: true
+  }
+
+  export type MemberBanAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MemberBan to aggregate.
+     */
+    where?: MemberBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MemberBans to fetch.
+     */
+    orderBy?: MemberBanOrderByWithRelationInput | MemberBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MemberBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MemberBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MemberBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MemberBans
+    **/
+    _count?: true | MemberBanCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MemberBanMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MemberBanMaxAggregateInputType
+  }
+
+  export type GetMemberBanAggregateType<T extends MemberBanAggregateArgs> = {
+        [P in keyof T & keyof AggregateMemberBan]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMemberBan[P]>
+      : GetScalarType<T[P], AggregateMemberBan[P]>
+  }
+
+
+
+
+  export type MemberBanGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MemberBanWhereInput
+    orderBy?: MemberBanOrderByWithAggregationInput | MemberBanOrderByWithAggregationInput[]
+    by: MemberBanScalarFieldEnum[] | MemberBanScalarFieldEnum
+    having?: MemberBanScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MemberBanCountAggregateInputType | true
+    _min?: MemberBanMinAggregateInputType
+    _max?: MemberBanMaxAggregateInputType
+  }
+
+  export type MemberBanGroupByOutputType = {
+    id: string
+    memberId: string
+    createdAt: Date
+    createdByMemberId: string | null
+    removedAt: Date | null
+    removedByMemberId: string | null
+    _count: MemberBanCountAggregateOutputType | null
+    _min: MemberBanMinAggregateOutputType | null
+    _max: MemberBanMaxAggregateOutputType | null
+  }
+
+  type GetMemberBanGroupByPayload<T extends MemberBanGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MemberBanGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MemberBanGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MemberBanGroupByOutputType[P]>
+            : GetScalarType<T[P], MemberBanGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MemberBanSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    memberId?: boolean
+    createdAt?: boolean
+    createdByMemberId?: boolean
+    removedAt?: boolean
+    removedByMemberId?: boolean
+  }, ExtArgs["result"]["memberBan"]>
+
+  export type MemberBanSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    memberId?: boolean
+    createdAt?: boolean
+    createdByMemberId?: boolean
+    removedAt?: boolean
+    removedByMemberId?: boolean
+  }, ExtArgs["result"]["memberBan"]>
+
+  export type MemberBanSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    memberId?: boolean
+    createdAt?: boolean
+    createdByMemberId?: boolean
+    removedAt?: boolean
+    removedByMemberId?: boolean
+  }, ExtArgs["result"]["memberBan"]>
+
+  export type MemberBanSelectScalar = {
+    id?: boolean
+    memberId?: boolean
+    createdAt?: boolean
+    createdByMemberId?: boolean
+    removedAt?: boolean
+    removedByMemberId?: boolean
+  }
+
+  export type MemberBanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "memberId" | "createdAt" | "createdByMemberId" | "removedAt" | "removedByMemberId", ExtArgs["result"]["memberBan"]>
+
+  export type $MemberBanPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MemberBan"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      memberId: string
+      createdAt: Date
+      createdByMemberId: string | null
+      removedAt: Date | null
+      removedByMemberId: string | null
+    }, ExtArgs["result"]["memberBan"]>
+    composites: {}
+  }
+
+  type MemberBanGetPayload<S extends boolean | null | undefined | MemberBanDefaultArgs> = $Result.GetResult<Prisma.$MemberBanPayload, S>
+
+  type MemberBanCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MemberBanFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MemberBanCountAggregateInputType | true
+    }
+
+  export interface MemberBanDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MemberBan'], meta: { name: 'MemberBan' } }
+    /**
+     * Find zero or one MemberBan that matches the filter.
+     * @param {MemberBanFindUniqueArgs} args - Arguments to find a MemberBan
+     * @example
+     * // Get one MemberBan
+     * const memberBan = await prisma.memberBan.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MemberBanFindUniqueArgs>(args: SelectSubset<T, MemberBanFindUniqueArgs<ExtArgs>>): Prisma__MemberBanClient<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MemberBan that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MemberBanFindUniqueOrThrowArgs} args - Arguments to find a MemberBan
+     * @example
+     * // Get one MemberBan
+     * const memberBan = await prisma.memberBan.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MemberBanFindUniqueOrThrowArgs>(args: SelectSubset<T, MemberBanFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MemberBanClient<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MemberBan that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberBanFindFirstArgs} args - Arguments to find a MemberBan
+     * @example
+     * // Get one MemberBan
+     * const memberBan = await prisma.memberBan.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MemberBanFindFirstArgs>(args?: SelectSubset<T, MemberBanFindFirstArgs<ExtArgs>>): Prisma__MemberBanClient<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MemberBan that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberBanFindFirstOrThrowArgs} args - Arguments to find a MemberBan
+     * @example
+     * // Get one MemberBan
+     * const memberBan = await prisma.memberBan.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MemberBanFindFirstOrThrowArgs>(args?: SelectSubset<T, MemberBanFindFirstOrThrowArgs<ExtArgs>>): Prisma__MemberBanClient<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MemberBans that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberBanFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MemberBans
+     * const memberBans = await prisma.memberBan.findMany()
+     * 
+     * // Get first 10 MemberBans
+     * const memberBans = await prisma.memberBan.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const memberBanWithIdOnly = await prisma.memberBan.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MemberBanFindManyArgs>(args?: SelectSubset<T, MemberBanFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MemberBan.
+     * @param {MemberBanCreateArgs} args - Arguments to create a MemberBan.
+     * @example
+     * // Create one MemberBan
+     * const MemberBan = await prisma.memberBan.create({
+     *   data: {
+     *     // ... data to create a MemberBan
+     *   }
+     * })
+     * 
+     */
+    create<T extends MemberBanCreateArgs>(args: SelectSubset<T, MemberBanCreateArgs<ExtArgs>>): Prisma__MemberBanClient<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MemberBans.
+     * @param {MemberBanCreateManyArgs} args - Arguments to create many MemberBans.
+     * @example
+     * // Create many MemberBans
+     * const memberBan = await prisma.memberBan.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MemberBanCreateManyArgs>(args?: SelectSubset<T, MemberBanCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many MemberBans and returns the data saved in the database.
+     * @param {MemberBanCreateManyAndReturnArgs} args - Arguments to create many MemberBans.
+     * @example
+     * // Create many MemberBans
+     * const memberBan = await prisma.memberBan.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many MemberBans and only return the `id`
+     * const memberBanWithIdOnly = await prisma.memberBan.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MemberBanCreateManyAndReturnArgs>(args?: SelectSubset<T, MemberBanCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a MemberBan.
+     * @param {MemberBanDeleteArgs} args - Arguments to delete one MemberBan.
+     * @example
+     * // Delete one MemberBan
+     * const MemberBan = await prisma.memberBan.delete({
+     *   where: {
+     *     // ... filter to delete one MemberBan
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MemberBanDeleteArgs>(args: SelectSubset<T, MemberBanDeleteArgs<ExtArgs>>): Prisma__MemberBanClient<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MemberBan.
+     * @param {MemberBanUpdateArgs} args - Arguments to update one MemberBan.
+     * @example
+     * // Update one MemberBan
+     * const memberBan = await prisma.memberBan.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MemberBanUpdateArgs>(args: SelectSubset<T, MemberBanUpdateArgs<ExtArgs>>): Prisma__MemberBanClient<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MemberBans.
+     * @param {MemberBanDeleteManyArgs} args - Arguments to filter MemberBans to delete.
+     * @example
+     * // Delete a few MemberBans
+     * const { count } = await prisma.memberBan.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MemberBanDeleteManyArgs>(args?: SelectSubset<T, MemberBanDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MemberBans.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberBanUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MemberBans
+     * const memberBan = await prisma.memberBan.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MemberBanUpdateManyArgs>(args: SelectSubset<T, MemberBanUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MemberBans and returns the data updated in the database.
+     * @param {MemberBanUpdateManyAndReturnArgs} args - Arguments to update many MemberBans.
+     * @example
+     * // Update many MemberBans
+     * const memberBan = await prisma.memberBan.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more MemberBans and only return the `id`
+     * const memberBanWithIdOnly = await prisma.memberBan.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MemberBanUpdateManyAndReturnArgs>(args: SelectSubset<T, MemberBanUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one MemberBan.
+     * @param {MemberBanUpsertArgs} args - Arguments to update or create a MemberBan.
+     * @example
+     * // Update or create a MemberBan
+     * const memberBan = await prisma.memberBan.upsert({
+     *   create: {
+     *     // ... data to create a MemberBan
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MemberBan we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MemberBanUpsertArgs>(args: SelectSubset<T, MemberBanUpsertArgs<ExtArgs>>): Prisma__MemberBanClient<$Result.GetResult<Prisma.$MemberBanPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MemberBans.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberBanCountArgs} args - Arguments to filter MemberBans to count.
+     * @example
+     * // Count the number of MemberBans
+     * const count = await prisma.memberBan.count({
+     *   where: {
+     *     // ... the filter for the MemberBans we want to count
+     *   }
+     * })
+    **/
+    count<T extends MemberBanCountArgs>(
+      args?: Subset<T, MemberBanCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MemberBanCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MemberBan.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberBanAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MemberBanAggregateArgs>(args: Subset<T, MemberBanAggregateArgs>): Prisma.PrismaPromise<GetMemberBanAggregateType<T>>
+
+    /**
+     * Group by MemberBan.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemberBanGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MemberBanGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MemberBanGroupByArgs['orderBy'] }
+        : { orderBy?: MemberBanGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MemberBanGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMemberBanGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MemberBan model
+   */
+  readonly fields: MemberBanFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MemberBan.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MemberBanClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MemberBan model
+   */
+  interface MemberBanFieldRefs {
+    readonly id: FieldRef<"MemberBan", 'String'>
+    readonly memberId: FieldRef<"MemberBan", 'String'>
+    readonly createdAt: FieldRef<"MemberBan", 'DateTime'>
+    readonly createdByMemberId: FieldRef<"MemberBan", 'String'>
+    readonly removedAt: FieldRef<"MemberBan", 'DateTime'>
+    readonly removedByMemberId: FieldRef<"MemberBan", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MemberBan findUnique
+   */
+  export type MemberBanFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * Filter, which MemberBan to fetch.
+     */
+    where: MemberBanWhereUniqueInput
+  }
+
+  /**
+   * MemberBan findUniqueOrThrow
+   */
+  export type MemberBanFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * Filter, which MemberBan to fetch.
+     */
+    where: MemberBanWhereUniqueInput
+  }
+
+  /**
+   * MemberBan findFirst
+   */
+  export type MemberBanFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * Filter, which MemberBan to fetch.
+     */
+    where?: MemberBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MemberBans to fetch.
+     */
+    orderBy?: MemberBanOrderByWithRelationInput | MemberBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MemberBans.
+     */
+    cursor?: MemberBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MemberBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MemberBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MemberBans.
+     */
+    distinct?: MemberBanScalarFieldEnum | MemberBanScalarFieldEnum[]
+  }
+
+  /**
+   * MemberBan findFirstOrThrow
+   */
+  export type MemberBanFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * Filter, which MemberBan to fetch.
+     */
+    where?: MemberBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MemberBans to fetch.
+     */
+    orderBy?: MemberBanOrderByWithRelationInput | MemberBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MemberBans.
+     */
+    cursor?: MemberBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MemberBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MemberBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MemberBans.
+     */
+    distinct?: MemberBanScalarFieldEnum | MemberBanScalarFieldEnum[]
+  }
+
+  /**
+   * MemberBan findMany
+   */
+  export type MemberBanFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * Filter, which MemberBans to fetch.
+     */
+    where?: MemberBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MemberBans to fetch.
+     */
+    orderBy?: MemberBanOrderByWithRelationInput | MemberBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MemberBans.
+     */
+    cursor?: MemberBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MemberBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MemberBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MemberBans.
+     */
+    distinct?: MemberBanScalarFieldEnum | MemberBanScalarFieldEnum[]
+  }
+
+  /**
+   * MemberBan create
+   */
+  export type MemberBanCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * The data needed to create a MemberBan.
+     */
+    data: XOR<MemberBanCreateInput, MemberBanUncheckedCreateInput>
+  }
+
+  /**
+   * MemberBan createMany
+   */
+  export type MemberBanCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MemberBans.
+     */
+    data: MemberBanCreateManyInput | MemberBanCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MemberBan createManyAndReturn
+   */
+  export type MemberBanCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * The data used to create many MemberBans.
+     */
+    data: MemberBanCreateManyInput | MemberBanCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MemberBan update
+   */
+  export type MemberBanUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * The data needed to update a MemberBan.
+     */
+    data: XOR<MemberBanUpdateInput, MemberBanUncheckedUpdateInput>
+    /**
+     * Choose, which MemberBan to update.
+     */
+    where: MemberBanWhereUniqueInput
+  }
+
+  /**
+   * MemberBan updateMany
+   */
+  export type MemberBanUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MemberBans.
+     */
+    data: XOR<MemberBanUpdateManyMutationInput, MemberBanUncheckedUpdateManyInput>
+    /**
+     * Filter which MemberBans to update
+     */
+    where?: MemberBanWhereInput
+    /**
+     * Limit how many MemberBans to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MemberBan updateManyAndReturn
+   */
+  export type MemberBanUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * The data used to update MemberBans.
+     */
+    data: XOR<MemberBanUpdateManyMutationInput, MemberBanUncheckedUpdateManyInput>
+    /**
+     * Filter which MemberBans to update
+     */
+    where?: MemberBanWhereInput
+    /**
+     * Limit how many MemberBans to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MemberBan upsert
+   */
+  export type MemberBanUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * The filter to search for the MemberBan to update in case it exists.
+     */
+    where: MemberBanWhereUniqueInput
+    /**
+     * In case the MemberBan found by the `where` argument doesn't exist, create a new MemberBan with this data.
+     */
+    create: XOR<MemberBanCreateInput, MemberBanUncheckedCreateInput>
+    /**
+     * In case the MemberBan was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MemberBanUpdateInput, MemberBanUncheckedUpdateInput>
+  }
+
+  /**
+   * MemberBan delete
+   */
+  export type MemberBanDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+    /**
+     * Filter which MemberBan to delete.
+     */
+    where: MemberBanWhereUniqueInput
+  }
+
+  /**
+   * MemberBan deleteMany
+   */
+  export type MemberBanDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MemberBans to delete
+     */
+    where?: MemberBanWhereInput
+    /**
+     * Limit how many MemberBans to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MemberBan without action
+   */
+  export type MemberBanDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MemberBan
+     */
+    select?: MemberBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MemberBan
+     */
+    omit?: MemberBanOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model IpBan
+   */
+
+  export type AggregateIpBan = {
+    _count: IpBanCountAggregateOutputType | null
+    _min: IpBanMinAggregateOutputType | null
+    _max: IpBanMaxAggregateOutputType | null
+  }
+
+  export type IpBanMinAggregateOutputType = {
+    id: string | null
+    ipAddress: string | null
+    createdAt: Date | null
+    createdByMemberId: string | null
+    removedAt: Date | null
+    removedByMemberId: string | null
+  }
+
+  export type IpBanMaxAggregateOutputType = {
+    id: string | null
+    ipAddress: string | null
+    createdAt: Date | null
+    createdByMemberId: string | null
+    removedAt: Date | null
+    removedByMemberId: string | null
+  }
+
+  export type IpBanCountAggregateOutputType = {
+    id: number
+    ipAddress: number
+    createdAt: number
+    createdByMemberId: number
+    removedAt: number
+    removedByMemberId: number
+    _all: number
+  }
+
+
+  export type IpBanMinAggregateInputType = {
+    id?: true
+    ipAddress?: true
+    createdAt?: true
+    createdByMemberId?: true
+    removedAt?: true
+    removedByMemberId?: true
+  }
+
+  export type IpBanMaxAggregateInputType = {
+    id?: true
+    ipAddress?: true
+    createdAt?: true
+    createdByMemberId?: true
+    removedAt?: true
+    removedByMemberId?: true
+  }
+
+  export type IpBanCountAggregateInputType = {
+    id?: true
+    ipAddress?: true
+    createdAt?: true
+    createdByMemberId?: true
+    removedAt?: true
+    removedByMemberId?: true
+    _all?: true
+  }
+
+  export type IpBanAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which IpBan to aggregate.
+     */
+    where?: IpBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpBans to fetch.
+     */
+    orderBy?: IpBanOrderByWithRelationInput | IpBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: IpBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned IpBans
+    **/
+    _count?: true | IpBanCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: IpBanMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: IpBanMaxAggregateInputType
+  }
+
+  export type GetIpBanAggregateType<T extends IpBanAggregateArgs> = {
+        [P in keyof T & keyof AggregateIpBan]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateIpBan[P]>
+      : GetScalarType<T[P], AggregateIpBan[P]>
+  }
+
+
+
+
+  export type IpBanGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: IpBanWhereInput
+    orderBy?: IpBanOrderByWithAggregationInput | IpBanOrderByWithAggregationInput[]
+    by: IpBanScalarFieldEnum[] | IpBanScalarFieldEnum
+    having?: IpBanScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: IpBanCountAggregateInputType | true
+    _min?: IpBanMinAggregateInputType
+    _max?: IpBanMaxAggregateInputType
+  }
+
+  export type IpBanGroupByOutputType = {
+    id: string
+    ipAddress: string
+    createdAt: Date
+    createdByMemberId: string | null
+    removedAt: Date | null
+    removedByMemberId: string | null
+    _count: IpBanCountAggregateOutputType | null
+    _min: IpBanMinAggregateOutputType | null
+    _max: IpBanMaxAggregateOutputType | null
+  }
+
+  type GetIpBanGroupByPayload<T extends IpBanGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<IpBanGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof IpBanGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], IpBanGroupByOutputType[P]>
+            : GetScalarType<T[P], IpBanGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type IpBanSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ipAddress?: boolean
+    createdAt?: boolean
+    createdByMemberId?: boolean
+    removedAt?: boolean
+    removedByMemberId?: boolean
+  }, ExtArgs["result"]["ipBan"]>
+
+  export type IpBanSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ipAddress?: boolean
+    createdAt?: boolean
+    createdByMemberId?: boolean
+    removedAt?: boolean
+    removedByMemberId?: boolean
+  }, ExtArgs["result"]["ipBan"]>
+
+  export type IpBanSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ipAddress?: boolean
+    createdAt?: boolean
+    createdByMemberId?: boolean
+    removedAt?: boolean
+    removedByMemberId?: boolean
+  }, ExtArgs["result"]["ipBan"]>
+
+  export type IpBanSelectScalar = {
+    id?: boolean
+    ipAddress?: boolean
+    createdAt?: boolean
+    createdByMemberId?: boolean
+    removedAt?: boolean
+    removedByMemberId?: boolean
+  }
+
+  export type IpBanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ipAddress" | "createdAt" | "createdByMemberId" | "removedAt" | "removedByMemberId", ExtArgs["result"]["ipBan"]>
+
+  export type $IpBanPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "IpBan"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      ipAddress: string
+      createdAt: Date
+      createdByMemberId: string | null
+      removedAt: Date | null
+      removedByMemberId: string | null
+    }, ExtArgs["result"]["ipBan"]>
+    composites: {}
+  }
+
+  type IpBanGetPayload<S extends boolean | null | undefined | IpBanDefaultArgs> = $Result.GetResult<Prisma.$IpBanPayload, S>
+
+  type IpBanCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<IpBanFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: IpBanCountAggregateInputType | true
+    }
+
+  export interface IpBanDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['IpBan'], meta: { name: 'IpBan' } }
+    /**
+     * Find zero or one IpBan that matches the filter.
+     * @param {IpBanFindUniqueArgs} args - Arguments to find a IpBan
+     * @example
+     * // Get one IpBan
+     * const ipBan = await prisma.ipBan.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends IpBanFindUniqueArgs>(args: SelectSubset<T, IpBanFindUniqueArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one IpBan that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {IpBanFindUniqueOrThrowArgs} args - Arguments to find a IpBan
+     * @example
+     * // Get one IpBan
+     * const ipBan = await prisma.ipBan.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends IpBanFindUniqueOrThrowArgs>(args: SelectSubset<T, IpBanFindUniqueOrThrowArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first IpBan that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanFindFirstArgs} args - Arguments to find a IpBan
+     * @example
+     * // Get one IpBan
+     * const ipBan = await prisma.ipBan.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends IpBanFindFirstArgs>(args?: SelectSubset<T, IpBanFindFirstArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first IpBan that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanFindFirstOrThrowArgs} args - Arguments to find a IpBan
+     * @example
+     * // Get one IpBan
+     * const ipBan = await prisma.ipBan.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends IpBanFindFirstOrThrowArgs>(args?: SelectSubset<T, IpBanFindFirstOrThrowArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more IpBans that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all IpBans
+     * const ipBans = await prisma.ipBan.findMany()
+     * 
+     * // Get first 10 IpBans
+     * const ipBans = await prisma.ipBan.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const ipBanWithIdOnly = await prisma.ipBan.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends IpBanFindManyArgs>(args?: SelectSubset<T, IpBanFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a IpBan.
+     * @param {IpBanCreateArgs} args - Arguments to create a IpBan.
+     * @example
+     * // Create one IpBan
+     * const IpBan = await prisma.ipBan.create({
+     *   data: {
+     *     // ... data to create a IpBan
+     *   }
+     * })
+     * 
+     */
+    create<T extends IpBanCreateArgs>(args: SelectSubset<T, IpBanCreateArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many IpBans.
+     * @param {IpBanCreateManyArgs} args - Arguments to create many IpBans.
+     * @example
+     * // Create many IpBans
+     * const ipBan = await prisma.ipBan.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends IpBanCreateManyArgs>(args?: SelectSubset<T, IpBanCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many IpBans and returns the data saved in the database.
+     * @param {IpBanCreateManyAndReturnArgs} args - Arguments to create many IpBans.
+     * @example
+     * // Create many IpBans
+     * const ipBan = await prisma.ipBan.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many IpBans and only return the `id`
+     * const ipBanWithIdOnly = await prisma.ipBan.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends IpBanCreateManyAndReturnArgs>(args?: SelectSubset<T, IpBanCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a IpBan.
+     * @param {IpBanDeleteArgs} args - Arguments to delete one IpBan.
+     * @example
+     * // Delete one IpBan
+     * const IpBan = await prisma.ipBan.delete({
+     *   where: {
+     *     // ... filter to delete one IpBan
+     *   }
+     * })
+     * 
+     */
+    delete<T extends IpBanDeleteArgs>(args: SelectSubset<T, IpBanDeleteArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one IpBan.
+     * @param {IpBanUpdateArgs} args - Arguments to update one IpBan.
+     * @example
+     * // Update one IpBan
+     * const ipBan = await prisma.ipBan.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends IpBanUpdateArgs>(args: SelectSubset<T, IpBanUpdateArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more IpBans.
+     * @param {IpBanDeleteManyArgs} args - Arguments to filter IpBans to delete.
+     * @example
+     * // Delete a few IpBans
+     * const { count } = await prisma.ipBan.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends IpBanDeleteManyArgs>(args?: SelectSubset<T, IpBanDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more IpBans.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many IpBans
+     * const ipBan = await prisma.ipBan.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends IpBanUpdateManyArgs>(args: SelectSubset<T, IpBanUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more IpBans and returns the data updated in the database.
+     * @param {IpBanUpdateManyAndReturnArgs} args - Arguments to update many IpBans.
+     * @example
+     * // Update many IpBans
+     * const ipBan = await prisma.ipBan.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more IpBans and only return the `id`
+     * const ipBanWithIdOnly = await prisma.ipBan.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends IpBanUpdateManyAndReturnArgs>(args: SelectSubset<T, IpBanUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one IpBan.
+     * @param {IpBanUpsertArgs} args - Arguments to update or create a IpBan.
+     * @example
+     * // Update or create a IpBan
+     * const ipBan = await prisma.ipBan.upsert({
+     *   create: {
+     *     // ... data to create a IpBan
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the IpBan we want to update
+     *   }
+     * })
+     */
+    upsert<T extends IpBanUpsertArgs>(args: SelectSubset<T, IpBanUpsertArgs<ExtArgs>>): Prisma__IpBanClient<$Result.GetResult<Prisma.$IpBanPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of IpBans.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanCountArgs} args - Arguments to filter IpBans to count.
+     * @example
+     * // Count the number of IpBans
+     * const count = await prisma.ipBan.count({
+     *   where: {
+     *     // ... the filter for the IpBans we want to count
+     *   }
+     * })
+    **/
+    count<T extends IpBanCountArgs>(
+      args?: Subset<T, IpBanCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], IpBanCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a IpBan.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends IpBanAggregateArgs>(args: Subset<T, IpBanAggregateArgs>): Prisma.PrismaPromise<GetIpBanAggregateType<T>>
+
+    /**
+     * Group by IpBan.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {IpBanGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends IpBanGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: IpBanGroupByArgs['orderBy'] }
+        : { orderBy?: IpBanGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, IpBanGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetIpBanGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the IpBan model
+   */
+  readonly fields: IpBanFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for IpBan.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__IpBanClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the IpBan model
+   */
+  interface IpBanFieldRefs {
+    readonly id: FieldRef<"IpBan", 'String'>
+    readonly ipAddress: FieldRef<"IpBan", 'String'>
+    readonly createdAt: FieldRef<"IpBan", 'DateTime'>
+    readonly createdByMemberId: FieldRef<"IpBan", 'String'>
+    readonly removedAt: FieldRef<"IpBan", 'DateTime'>
+    readonly removedByMemberId: FieldRef<"IpBan", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * IpBan findUnique
+   */
+  export type IpBanFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter, which IpBan to fetch.
+     */
+    where: IpBanWhereUniqueInput
+  }
+
+  /**
+   * IpBan findUniqueOrThrow
+   */
+  export type IpBanFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter, which IpBan to fetch.
+     */
+    where: IpBanWhereUniqueInput
+  }
+
+  /**
+   * IpBan findFirst
+   */
+  export type IpBanFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter, which IpBan to fetch.
+     */
+    where?: IpBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpBans to fetch.
+     */
+    orderBy?: IpBanOrderByWithRelationInput | IpBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for IpBans.
+     */
+    cursor?: IpBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IpBans.
+     */
+    distinct?: IpBanScalarFieldEnum | IpBanScalarFieldEnum[]
+  }
+
+  /**
+   * IpBan findFirstOrThrow
+   */
+  export type IpBanFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter, which IpBan to fetch.
+     */
+    where?: IpBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpBans to fetch.
+     */
+    orderBy?: IpBanOrderByWithRelationInput | IpBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for IpBans.
+     */
+    cursor?: IpBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IpBans.
+     */
+    distinct?: IpBanScalarFieldEnum | IpBanScalarFieldEnum[]
+  }
+
+  /**
+   * IpBan findMany
+   */
+  export type IpBanFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter, which IpBans to fetch.
+     */
+    where?: IpBanWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of IpBans to fetch.
+     */
+    orderBy?: IpBanOrderByWithRelationInput | IpBanOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing IpBans.
+     */
+    cursor?: IpBanWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` IpBans from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` IpBans.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of IpBans.
+     */
+    distinct?: IpBanScalarFieldEnum | IpBanScalarFieldEnum[]
+  }
+
+  /**
+   * IpBan create
+   */
+  export type IpBanCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * The data needed to create a IpBan.
+     */
+    data: XOR<IpBanCreateInput, IpBanUncheckedCreateInput>
+  }
+
+  /**
+   * IpBan createMany
+   */
+  export type IpBanCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many IpBans.
+     */
+    data: IpBanCreateManyInput | IpBanCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * IpBan createManyAndReturn
+   */
+  export type IpBanCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * The data used to create many IpBans.
+     */
+    data: IpBanCreateManyInput | IpBanCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * IpBan update
+   */
+  export type IpBanUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * The data needed to update a IpBan.
+     */
+    data: XOR<IpBanUpdateInput, IpBanUncheckedUpdateInput>
+    /**
+     * Choose, which IpBan to update.
+     */
+    where: IpBanWhereUniqueInput
+  }
+
+  /**
+   * IpBan updateMany
+   */
+  export type IpBanUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update IpBans.
+     */
+    data: XOR<IpBanUpdateManyMutationInput, IpBanUncheckedUpdateManyInput>
+    /**
+     * Filter which IpBans to update
+     */
+    where?: IpBanWhereInput
+    /**
+     * Limit how many IpBans to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * IpBan updateManyAndReturn
+   */
+  export type IpBanUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * The data used to update IpBans.
+     */
+    data: XOR<IpBanUpdateManyMutationInput, IpBanUncheckedUpdateManyInput>
+    /**
+     * Filter which IpBans to update
+     */
+    where?: IpBanWhereInput
+    /**
+     * Limit how many IpBans to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * IpBan upsert
+   */
+  export type IpBanUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * The filter to search for the IpBan to update in case it exists.
+     */
+    where: IpBanWhereUniqueInput
+    /**
+     * In case the IpBan found by the `where` argument doesn't exist, create a new IpBan with this data.
+     */
+    create: XOR<IpBanCreateInput, IpBanUncheckedCreateInput>
+    /**
+     * In case the IpBan was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<IpBanUpdateInput, IpBanUncheckedUpdateInput>
+  }
+
+  /**
+   * IpBan delete
+   */
+  export type IpBanDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
+    /**
+     * Filter which IpBan to delete.
+     */
+    where: IpBanWhereUniqueInput
+  }
+
+  /**
+   * IpBan deleteMany
+   */
+  export type IpBanDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which IpBans to delete
+     */
+    where?: IpBanWhereInput
+    /**
+     * Limit how many IpBans to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * IpBan without action
+   */
+  export type IpBanDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the IpBan
+     */
+    select?: IpBanSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the IpBan
+     */
+    omit?: IpBanOmit<ExtArgs> | null
   }
 
 
@@ -6976,6 +9223,9 @@ export namespace Prisma {
     roleName: 'roleName',
     title: 'title',
     isAnnouncement: 'isAnnouncement',
+    locked: 'locked',
+    lockedAt: 'lockedAt',
+    lockedByMemberId: 'lockedByMemberId',
     authorMemberId: 'authorMemberId',
     authorHandle: 'authorHandle',
     createdAt: 'createdAt',
@@ -6985,6 +9235,30 @@ export namespace Prisma {
   };
 
   export type TopicScalarFieldEnum = (typeof TopicScalarFieldEnum)[keyof typeof TopicScalarFieldEnum]
+
+
+  export const MemberBanScalarFieldEnum: {
+    id: 'id',
+    memberId: 'memberId',
+    createdAt: 'createdAt',
+    createdByMemberId: 'createdByMemberId',
+    removedAt: 'removedAt',
+    removedByMemberId: 'removedByMemberId'
+  };
+
+  export type MemberBanScalarFieldEnum = (typeof MemberBanScalarFieldEnum)[keyof typeof MemberBanScalarFieldEnum]
+
+
+  export const IpBanScalarFieldEnum: {
+    id: 'id',
+    ipAddress: 'ipAddress',
+    createdAt: 'createdAt',
+    createdByMemberId: 'createdByMemberId',
+    removedAt: 'removedAt',
+    removedByMemberId: 'removedByMemberId'
+  };
+
+  export type IpBanScalarFieldEnum = (typeof IpBanScalarFieldEnum)[keyof typeof IpBanScalarFieldEnum]
 
 
   export const PostScalarFieldEnum: {
@@ -7137,6 +9411,9 @@ export namespace Prisma {
     roleName?: StringNullableFilter<"Topic"> | string | null
     title?: StringFilter<"Topic"> | string
     isAnnouncement?: BoolFilter<"Topic"> | boolean
+    locked?: BoolFilter<"Topic"> | boolean
+    lockedAt?: DateTimeNullableFilter<"Topic"> | Date | string | null
+    lockedByMemberId?: StringNullableFilter<"Topic"> | string | null
     authorMemberId?: StringFilter<"Topic"> | string
     authorHandle?: StringFilter<"Topic"> | string
     createdAt?: DateTimeFilter<"Topic"> | Date | string
@@ -7159,6 +9436,9 @@ export namespace Prisma {
     roleName?: SortOrderInput | SortOrder
     title?: SortOrder
     isAnnouncement?: SortOrder
+    locked?: SortOrder
+    lockedAt?: SortOrderInput | SortOrder
+    lockedByMemberId?: SortOrderInput | SortOrder
     authorMemberId?: SortOrder
     authorHandle?: SortOrder
     createdAt?: SortOrder
@@ -7184,6 +9464,9 @@ export namespace Prisma {
     roleName?: StringNullableFilter<"Topic"> | string | null
     title?: StringFilter<"Topic"> | string
     isAnnouncement?: BoolFilter<"Topic"> | boolean
+    locked?: BoolFilter<"Topic"> | boolean
+    lockedAt?: DateTimeNullableFilter<"Topic"> | Date | string | null
+    lockedByMemberId?: StringNullableFilter<"Topic"> | string | null
     authorMemberId?: StringFilter<"Topic"> | string
     authorHandle?: StringFilter<"Topic"> | string
     createdAt?: DateTimeFilter<"Topic"> | Date | string
@@ -7206,6 +9489,9 @@ export namespace Prisma {
     roleName?: SortOrderInput | SortOrder
     title?: SortOrder
     isAnnouncement?: SortOrder
+    locked?: SortOrder
+    lockedAt?: SortOrderInput | SortOrder
+    lockedByMemberId?: SortOrderInput | SortOrder
     authorMemberId?: SortOrder
     authorHandle?: SortOrder
     createdAt?: SortOrder
@@ -7227,12 +9513,129 @@ export namespace Prisma {
     roleName?: StringNullableWithAggregatesFilter<"Topic"> | string | null
     title?: StringWithAggregatesFilter<"Topic"> | string
     isAnnouncement?: BoolWithAggregatesFilter<"Topic"> | boolean
+    locked?: BoolWithAggregatesFilter<"Topic"> | boolean
+    lockedAt?: DateTimeNullableWithAggregatesFilter<"Topic"> | Date | string | null
+    lockedByMemberId?: StringNullableWithAggregatesFilter<"Topic"> | string | null
     authorMemberId?: StringWithAggregatesFilter<"Topic"> | string
     authorHandle?: StringWithAggregatesFilter<"Topic"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Topic"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Topic"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Topic"> | Date | string | null
     deletedByMemberId?: StringNullableWithAggregatesFilter<"Topic"> | string | null
+  }
+
+  export type MemberBanWhereInput = {
+    AND?: MemberBanWhereInput | MemberBanWhereInput[]
+    OR?: MemberBanWhereInput[]
+    NOT?: MemberBanWhereInput | MemberBanWhereInput[]
+    id?: StringFilter<"MemberBan"> | string
+    memberId?: StringFilter<"MemberBan"> | string
+    createdAt?: DateTimeFilter<"MemberBan"> | Date | string
+    createdByMemberId?: StringNullableFilter<"MemberBan"> | string | null
+    removedAt?: DateTimeNullableFilter<"MemberBan"> | Date | string | null
+    removedByMemberId?: StringNullableFilter<"MemberBan"> | string | null
+  }
+
+  export type MemberBanOrderByWithRelationInput = {
+    id?: SortOrder
+    memberId?: SortOrder
+    createdAt?: SortOrder
+    createdByMemberId?: SortOrderInput | SortOrder
+    removedAt?: SortOrderInput | SortOrder
+    removedByMemberId?: SortOrderInput | SortOrder
+  }
+
+  export type MemberBanWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: MemberBanWhereInput | MemberBanWhereInput[]
+    OR?: MemberBanWhereInput[]
+    NOT?: MemberBanWhereInput | MemberBanWhereInput[]
+    memberId?: StringFilter<"MemberBan"> | string
+    createdAt?: DateTimeFilter<"MemberBan"> | Date | string
+    createdByMemberId?: StringNullableFilter<"MemberBan"> | string | null
+    removedAt?: DateTimeNullableFilter<"MemberBan"> | Date | string | null
+    removedByMemberId?: StringNullableFilter<"MemberBan"> | string | null
+  }, "id">
+
+  export type MemberBanOrderByWithAggregationInput = {
+    id?: SortOrder
+    memberId?: SortOrder
+    createdAt?: SortOrder
+    createdByMemberId?: SortOrderInput | SortOrder
+    removedAt?: SortOrderInput | SortOrder
+    removedByMemberId?: SortOrderInput | SortOrder
+    _count?: MemberBanCountOrderByAggregateInput
+    _max?: MemberBanMaxOrderByAggregateInput
+    _min?: MemberBanMinOrderByAggregateInput
+  }
+
+  export type MemberBanScalarWhereWithAggregatesInput = {
+    AND?: MemberBanScalarWhereWithAggregatesInput | MemberBanScalarWhereWithAggregatesInput[]
+    OR?: MemberBanScalarWhereWithAggregatesInput[]
+    NOT?: MemberBanScalarWhereWithAggregatesInput | MemberBanScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MemberBan"> | string
+    memberId?: StringWithAggregatesFilter<"MemberBan"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"MemberBan"> | Date | string
+    createdByMemberId?: StringNullableWithAggregatesFilter<"MemberBan"> | string | null
+    removedAt?: DateTimeNullableWithAggregatesFilter<"MemberBan"> | Date | string | null
+    removedByMemberId?: StringNullableWithAggregatesFilter<"MemberBan"> | string | null
+  }
+
+  export type IpBanWhereInput = {
+    AND?: IpBanWhereInput | IpBanWhereInput[]
+    OR?: IpBanWhereInput[]
+    NOT?: IpBanWhereInput | IpBanWhereInput[]
+    id?: StringFilter<"IpBan"> | string
+    ipAddress?: StringFilter<"IpBan"> | string
+    createdAt?: DateTimeFilter<"IpBan"> | Date | string
+    createdByMemberId?: StringNullableFilter<"IpBan"> | string | null
+    removedAt?: DateTimeNullableFilter<"IpBan"> | Date | string | null
+    removedByMemberId?: StringNullableFilter<"IpBan"> | string | null
+  }
+
+  export type IpBanOrderByWithRelationInput = {
+    id?: SortOrder
+    ipAddress?: SortOrder
+    createdAt?: SortOrder
+    createdByMemberId?: SortOrderInput | SortOrder
+    removedAt?: SortOrderInput | SortOrder
+    removedByMemberId?: SortOrderInput | SortOrder
+  }
+
+  export type IpBanWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: IpBanWhereInput | IpBanWhereInput[]
+    OR?: IpBanWhereInput[]
+    NOT?: IpBanWhereInput | IpBanWhereInput[]
+    ipAddress?: StringFilter<"IpBan"> | string
+    createdAt?: DateTimeFilter<"IpBan"> | Date | string
+    createdByMemberId?: StringNullableFilter<"IpBan"> | string | null
+    removedAt?: DateTimeNullableFilter<"IpBan"> | Date | string | null
+    removedByMemberId?: StringNullableFilter<"IpBan"> | string | null
+  }, "id">
+
+  export type IpBanOrderByWithAggregationInput = {
+    id?: SortOrder
+    ipAddress?: SortOrder
+    createdAt?: SortOrder
+    createdByMemberId?: SortOrderInput | SortOrder
+    removedAt?: SortOrderInput | SortOrder
+    removedByMemberId?: SortOrderInput | SortOrder
+    _count?: IpBanCountOrderByAggregateInput
+    _max?: IpBanMaxOrderByAggregateInput
+    _min?: IpBanMinOrderByAggregateInput
+  }
+
+  export type IpBanScalarWhereWithAggregatesInput = {
+    AND?: IpBanScalarWhereWithAggregatesInput | IpBanScalarWhereWithAggregatesInput[]
+    OR?: IpBanScalarWhereWithAggregatesInput[]
+    NOT?: IpBanScalarWhereWithAggregatesInput | IpBanScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"IpBan"> | string
+    ipAddress?: StringWithAggregatesFilter<"IpBan"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"IpBan"> | Date | string
+    createdByMemberId?: StringNullableWithAggregatesFilter<"IpBan"> | string | null
+    removedAt?: DateTimeNullableWithAggregatesFilter<"IpBan"> | Date | string | null
+    removedByMemberId?: StringNullableWithAggregatesFilter<"IpBan"> | string | null
   }
 
   export type PostWhereInput = {
@@ -7474,6 +9877,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -7496,6 +9902,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -7516,6 +9925,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7538,6 +9950,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7559,6 +9974,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -7573,6 +9991,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7588,12 +10009,141 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MemberBanCreateInput = {
+    id?: string
+    memberId: string
+    createdAt?: Date | string
+    createdByMemberId?: string | null
+    removedAt?: Date | string | null
+    removedByMemberId?: string | null
+  }
+
+  export type MemberBanUncheckedCreateInput = {
+    id?: string
+    memberId: string
+    createdAt?: Date | string
+    createdByMemberId?: string | null
+    removedAt?: Date | string | null
+    removedByMemberId?: string | null
+  }
+
+  export type MemberBanUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    removedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    removedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MemberBanUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    removedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    removedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MemberBanCreateManyInput = {
+    id?: string
+    memberId: string
+    createdAt?: Date | string
+    createdByMemberId?: string | null
+    removedAt?: Date | string | null
+    removedByMemberId?: string | null
+  }
+
+  export type MemberBanUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    removedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    removedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MemberBanUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    removedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    removedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type IpBanCreateInput = {
+    id?: string
+    ipAddress: string
+    createdAt?: Date | string
+    createdByMemberId?: string | null
+    removedAt?: Date | string | null
+    removedByMemberId?: string | null
+  }
+
+  export type IpBanUncheckedCreateInput = {
+    id?: string
+    ipAddress: string
+    createdAt?: Date | string
+    createdByMemberId?: string | null
+    removedAt?: Date | string | null
+    removedByMemberId?: string | null
+  }
+
+  export type IpBanUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ipAddress?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    removedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    removedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type IpBanUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ipAddress?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    removedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    removedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type IpBanCreateManyInput = {
+    id?: string
+    ipAddress: string
+    createdAt?: Date | string
+    createdByMemberId?: string | null
+    removedAt?: Date | string | null
+    removedByMemberId?: string | null
+  }
+
+  export type IpBanUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ipAddress?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    removedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    removedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type IpBanUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ipAddress?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    removedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    removedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PostCreateInput = {
@@ -7857,17 +10407,6 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
-  export type DateTimeFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
-  }
-
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -7877,6 +10416,17 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type DateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
   export type TopicNullableScalarRelationFilter = {
@@ -7946,6 +10496,9 @@ export namespace Prisma {
     roleName?: SortOrder
     title?: SortOrder
     isAnnouncement?: SortOrder
+    locked?: SortOrder
+    lockedAt?: SortOrder
+    lockedByMemberId?: SortOrder
     authorMemberId?: SortOrder
     authorHandle?: SortOrder
     createdAt?: SortOrder
@@ -7961,6 +10514,9 @@ export namespace Prisma {
     roleName?: SortOrder
     title?: SortOrder
     isAnnouncement?: SortOrder
+    locked?: SortOrder
+    lockedAt?: SortOrder
+    lockedByMemberId?: SortOrder
     authorMemberId?: SortOrder
     authorHandle?: SortOrder
     createdAt?: SortOrder
@@ -7976,6 +10532,9 @@ export namespace Prisma {
     roleName?: SortOrder
     title?: SortOrder
     isAnnouncement?: SortOrder
+    locked?: SortOrder
+    lockedAt?: SortOrder
+    lockedByMemberId?: SortOrder
     authorMemberId?: SortOrder
     authorHandle?: SortOrder
     createdAt?: SortOrder
@@ -8028,6 +10587,20 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -8042,18 +10615,58 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  export type MemberBanCountOrderByAggregateInput = {
+    id?: SortOrder
+    memberId?: SortOrder
+    createdAt?: SortOrder
+    createdByMemberId?: SortOrder
+    removedAt?: SortOrder
+    removedByMemberId?: SortOrder
+  }
+
+  export type MemberBanMaxOrderByAggregateInput = {
+    id?: SortOrder
+    memberId?: SortOrder
+    createdAt?: SortOrder
+    createdByMemberId?: SortOrder
+    removedAt?: SortOrder
+    removedByMemberId?: SortOrder
+  }
+
+  export type MemberBanMinOrderByAggregateInput = {
+    id?: SortOrder
+    memberId?: SortOrder
+    createdAt?: SortOrder
+    createdByMemberId?: SortOrder
+    removedAt?: SortOrder
+    removedByMemberId?: SortOrder
+  }
+
+  export type IpBanCountOrderByAggregateInput = {
+    id?: SortOrder
+    ipAddress?: SortOrder
+    createdAt?: SortOrder
+    createdByMemberId?: SortOrder
+    removedAt?: SortOrder
+    removedByMemberId?: SortOrder
+  }
+
+  export type IpBanMaxOrderByAggregateInput = {
+    id?: SortOrder
+    ipAddress?: SortOrder
+    createdAt?: SortOrder
+    createdByMemberId?: SortOrder
+    removedAt?: SortOrder
+    removedByMemberId?: SortOrder
+  }
+
+  export type IpBanMinOrderByAggregateInput = {
+    id?: SortOrder
+    ipAddress?: SortOrder
+    createdAt?: SortOrder
+    createdByMemberId?: SortOrder
+    removedAt?: SortOrder
+    removedByMemberId?: SortOrder
   }
 
   export type TopicScalarRelationFilter = {
@@ -8312,12 +10925,12 @@ export namespace Prisma {
     set?: boolean
   }
 
-  export type DateTimeFieldUpdateOperationsInput = {
-    set?: Date | string
-  }
-
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
+  }
+
+  export type DateTimeFieldUpdateOperationsInput = {
+    set?: Date | string
   }
 
   export type TopicUpdateOneWithoutChildTopicsNestedInput = {
@@ -8609,17 +11222,6 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
-  export type NestedDateTimeFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
-  }
-
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -8629,6 +11231,17 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedDateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
@@ -8695,20 +11308,6 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedDateTimeFilter<$PrismaModel>
-    _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -8721,6 +11320,20 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -8756,6 +11369,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -8777,6 +11393,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -8801,6 +11420,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -8821,6 +11443,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -8980,6 +11605,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9001,6 +11629,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9040,6 +11671,9 @@ export namespace Prisma {
     roleName?: StringNullableFilter<"Topic"> | string | null
     title?: StringFilter<"Topic"> | string
     isAnnouncement?: BoolFilter<"Topic"> | boolean
+    locked?: BoolFilter<"Topic"> | boolean
+    lockedAt?: DateTimeNullableFilter<"Topic"> | Date | string | null
+    lockedByMemberId?: StringNullableFilter<"Topic"> | string | null
     authorMemberId?: StringFilter<"Topic"> | string
     authorHandle?: StringFilter<"Topic"> | string
     createdAt?: DateTimeFilter<"Topic"> | Date | string
@@ -9179,6 +11813,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9200,6 +11837,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9235,6 +11875,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9256,6 +11899,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9275,6 +11921,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9296,6 +11945,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9320,6 +11972,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9341,6 +11996,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9376,6 +12034,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9397,6 +12058,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9427,6 +12091,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9448,6 +12115,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9467,6 +12137,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9488,6 +12161,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9523,6 +12199,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9544,6 +12223,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9563,6 +12245,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9584,6 +12269,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9619,6 +12307,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9640,6 +12331,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9659,6 +12353,9 @@ export namespace Prisma {
     roleName?: string | null
     title: string
     isAnnouncement?: boolean
+    locked?: boolean
+    lockedAt?: Date | string | null
+    lockedByMemberId?: string | null
     authorMemberId: string
     authorHandle: string
     createdAt?: Date | string
@@ -9707,6 +12404,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9727,6 +12427,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -9747,6 +12450,9 @@ export namespace Prisma {
     roleName?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     isAnnouncement?: BoolFieldUpdateOperationsInput | boolean
+    locked?: BoolFieldUpdateOperationsInput | boolean
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     authorMemberId?: StringFieldUpdateOperationsInput | string
     authorHandle?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

@@ -12,6 +12,7 @@ import {
   ForumsMemberDirectoryService,
   ForumsNotificationMember,
 } from './forums-member-directory.service';
+import { ForumsModerationService } from './forums-moderation.service';
 import { IdentityAccessService } from './identity-access.service';
 
 const EMAIL_EVENT_TOPIC = 'external.action.email';
@@ -70,8 +71,10 @@ export class ForumsNotificationPublishError extends Error {
  *
  * The service resolves explicit watches on the created post's topic and all
  * ancestors, dedupes by member id, excludes the persisted author member id,
- * filters remaining recipients through the shared forums access policy, and
- * publishes one SendGrid email event for the final recipient list.
+ * filters active member bans and remaining recipients through the shared forums
+ * access policy, and publishes one SendGrid email event for the final recipient
+ * list. IP-ban checks are intentionally excluded because notification delivery
+ * is not bound to a trusted request client IP.
  */
 @Injectable()
 export class ForumsWatchNotificationService {
@@ -84,6 +87,7 @@ export class ForumsWatchNotificationService {
    * @param memberDirectoryService Batch Members-domain lookup adapter.
    * @param identityAccessService Identity adapter used to build recipient principals.
    * @param accessPolicyService Shared forums access policy.
+   * @param moderationService Shared runtime member-ban gate.
    * @param eventBusService Local event-bus adapter.
    * @param configService Nest configuration service containing notification settings.
    * @throws Does not throw directly; dependencies are resolved by Nest.
@@ -93,6 +97,7 @@ export class ForumsWatchNotificationService {
     private readonly memberDirectoryService: ForumsMemberDirectoryService,
     private readonly identityAccessService: IdentityAccessService,
     private readonly accessPolicyService: ForumsAccessPolicyService,
+    private readonly moderationService: ForumsModerationService,
     private readonly eventBusService: EventBusService,
     private readonly configService: ConfigService,
   ) {}
@@ -246,7 +251,7 @@ export class ForumsWatchNotificationService {
   }
 
   /**
-   * Applies the shared forums access policy to candidate email recipients.
+   * Applies member-ban and shared forums access policy checks to recipients.
    *
    * @param members Candidate members with email addresses.
    * @param params Current notification publish parameters and restriction target.
@@ -271,7 +276,8 @@ export class ForumsWatchNotificationService {
   }
 
   /**
-   * Evaluates a single candidate recipient against identity roles and forums policy.
+   * Evaluates a single candidate recipient against member bans, identity roles,
+   * and forums policy.
    *
    * @param member Candidate member directory record.
    * @param params Current notification publish parameters and restriction target.
@@ -283,6 +289,16 @@ export class ForumsWatchNotificationService {
     params: PublishForumsPostNotificationParams,
   ): Promise<string | null> {
     try {
+      const moderationDecision =
+        await this.moderationService.decideForTargetMemberBan(member.memberId);
+
+      if (!moderationDecision.allowed) {
+        this.logger.debug(
+          `${params.operationName} notification recipient skipped for topic ${params.topic.id}, post ${params.post.id}: member ${member.memberId} is banned.`,
+        );
+        return null;
+      }
+
       const roles = await this.identityAccessService.getMemberRoleNames(
         member.memberId,
       );

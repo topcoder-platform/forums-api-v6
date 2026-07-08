@@ -31,12 +31,26 @@ interface TopicReadStateSeed {
   lastReadAt: Date;
 }
 
+interface MemberBanSeed {
+  id: string;
+  memberId: string;
+  removedAt: Date | null;
+}
+
+interface IpBanSeed {
+  id: string;
+  ipAddress: string;
+  removedAt: Date | null;
+}
+
 interface SeededForumsData {
   topics: Topic[];
   posts: Post[];
   topicClosures: TopicClosureSeed[];
   topicWatches: TopicWatchSeed[];
   topicReadStates: TopicReadStateSeed[];
+  memberBans: MemberBanSeed[];
+  ipBans: IpBanSeed[];
 }
 
 /**
@@ -54,6 +68,9 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
     roleName: null,
     title: 'Topic title',
     isAnnouncement: false,
+    locked: false,
+    lockedAt: null,
+    lockedByMemberId: null,
     authorMemberId: '1',
     authorHandle: 'author',
     createdAt,
@@ -112,6 +129,15 @@ function createSeededForumsDb(seed: SeededForumsData) {
         .map((value) => queryValueToString(value))
         .find((value) => topicById().has(value));
 
+      if (queryText.includes('FROM "IpBan"')) {
+        const trustedClientIp = queryValueToString(values[0]);
+        const ban = seed.ipBans.find(
+          (ipBan) => !ipBan.removedAt && ipBan.ipAddress === trustedClientIp,
+        );
+
+        return ban ? [{ id: ban.id }] : [];
+      }
+
       if (queryText.includes('FROM "Post" p')) {
         return seed.posts
           .filter((post) => post.topicId === topicId)
@@ -143,6 +169,21 @@ function createSeededForumsDb(seed: SeededForumsData) {
       }
 
       return [];
+    },
+    memberBan: {
+      findFirst: (args: {
+        where: { memberId: string; removedAt: null };
+        select: { id: boolean };
+      }) => {
+        const ban =
+          seed.memberBans.find(
+            (memberBan) =>
+              memberBan.memberId === args.where.memberId &&
+              memberBan.removedAt === args.where.removedAt,
+          ) ?? null;
+
+        return ban && args.select.id ? { id: ban.id } : ban;
+      },
     },
     topic: {
       findUnique: (args: { where: { id: string } }) =>
@@ -464,6 +505,9 @@ function buildTopicSummaryRow(
     roleName: topic.roleName,
     title: topic.title,
     isAnnouncement: topic.isAnnouncement,
+    locked: topic.locked,
+    lockedBy: topic.lockedByMemberId,
+    lockedAt: topic.lockedAt,
     authorMemberId: topic.authorMemberId,
     authorHandle: topic.authorHandle,
     createdAt: topic.createdAt,
@@ -524,6 +568,7 @@ function compareCreatedAtThenId(
 
 describe('forums notification/read integration', () => {
   let app: INestApplication;
+  let seedData: SeededForumsData;
   const rolesByMemberId = new Map<string, string[]>([
     ['1', ['reviewer']],
     ['2', ['reviewer']],
@@ -549,11 +594,18 @@ describe('forums notification/read integration', () => {
   beforeEach(async () => {
     publishedEvents.length = 0;
 
-    const seed: SeededForumsData = {
+    seedData = {
       topics: [
         makeTopic({
           id: 'parent-1',
           title: 'General root',
+        }),
+        makeTopic({
+          id: 'legacy-locked',
+          title: 'Imported locked topic',
+          locked: true,
+          lockedAt: null,
+          lockedByMemberId: null,
         }),
       ],
       posts: [],
@@ -561,6 +613,11 @@ describe('forums notification/read integration', () => {
         {
           ancestorTopicId: 'parent-1',
           descendantTopicId: 'parent-1',
+          depth: 0,
+        },
+        {
+          ancestorTopicId: 'legacy-locked',
+          descendantTopicId: 'legacy-locked',
           depth: 0,
         },
       ],
@@ -574,8 +631,10 @@ describe('forums notification/read integration', () => {
         { topicId: 'parent-1', memberId: '7' },
       ],
       topicReadStates: [],
+      memberBans: [],
+      ipBans: [],
     };
-    const db = createSeededForumsDb(seed);
+    const db = createSeededForumsDb(seedData);
     const moduleRef = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
@@ -658,6 +717,7 @@ describe('forums notification/read integration', () => {
     app.use((req: any, _res: any, next: () => void) => {
       const memberId = req.header('x-member-id') ?? '1';
 
+      req.resolvedClientIp = req.header('x-resolved-client-ip') ?? undefined;
       req.user = {
         userId: memberId,
         handle: memberId === '1' ? 'author' : `member-${memberId}`,
@@ -701,11 +761,18 @@ describe('forums notification/read integration', () => {
       }
     }
 
-    await request(app.getHttpServer())
+    const authorDetailResponse = await request(app.getHttpServer())
       .get(`/topics/${childTopicId}`)
       .set('x-member-id', '1')
       .expect(200);
 
+    expect(authorDetailResponse.body.topic).toEqual(
+      expect.objectContaining({
+        locked: false,
+        lockedBy: null,
+        lockedAt: null,
+      }),
+    );
     expect(publishedEvents).toHaveLength(1);
     expect(publishedEvents[0]).toEqual(
       expect.objectContaining({ topic: 'external.action.email' }),
@@ -722,6 +789,91 @@ describe('forums notification/read integration', () => {
     expect(notifiedMemberIds).toEqual(visibleWatchedMemberIds);
     expect(publishedEvents[0].payload.recipients).not.toContain(
       'author@example.com',
+    );
+  });
+
+  it('returns 403 for banned reads', async () => {
+    seedData.memberBans.push({
+      id: 'member-ban-2',
+      memberId: '2',
+      removedAt: null,
+    });
+
+    await request(app.getHttpServer())
+      .get('/topics/parent-1')
+      .set('x-member-id', '2')
+      .expect(403);
+  });
+
+  it('returns 403 for trusted-header IP bans', async () => {
+    seedData.ipBans.push({
+      id: 'ip-ban-1',
+      ipAddress: '203.0.113.10',
+      removedAt: null,
+    });
+
+    await request(app.getHttpServer())
+      .get('/topics/parent-1')
+      .set('x-member-id', '1')
+      .set('x-resolved-client-ip', '203.0.113.10')
+      .expect(403);
+  });
+
+  it('ignores IP bans when no trusted client IP is resolved', async () => {
+    seedData.ipBans.push({
+      id: 'ip-ban-1',
+      ipAddress: '203.0.113.10',
+      removedAt: null,
+    });
+
+    await request(app.getHttpServer())
+      .get('/topics/parent-1')
+      .set('x-member-id', '1')
+      .expect(200);
+  });
+
+  it('does not send watch notifications to banned users', async () => {
+    seedData.memberBans.push({
+      id: 'member-ban-4',
+      memberId: '4',
+      removedAt: null,
+    });
+
+    await request(app.getHttpServer())
+      .post('/topics')
+      .set('x-member-id', '1')
+      .send({
+        title: 'Restricted child',
+        content: 'Restricted starter content',
+        parentTopicId: 'parent-1',
+        roleName: 'reviewer',
+      })
+      .expect(201);
+
+    expect(publishedEvents).toHaveLength(1);
+    expect(publishedEvents[0].payload.recipients).toEqual([
+      'two@example.com',
+      'five@example.com',
+      'six@example.com',
+    ]);
+    expect(publishedEvents[0].payload.recipients).not.toContain(
+      'four@example.com',
+    );
+  });
+
+  it('returns imported locked topics with nullable legacy lock metadata', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/topics/legacy-locked')
+      .set('x-member-id', '1')
+      .expect(200);
+
+    expect(response.body.topic).toEqual(
+      expect.objectContaining({
+        id: 'legacy-locked',
+        locked: true,
+        lockedBy: null,
+        lockedAt: null,
+      }),
     );
   });
 });

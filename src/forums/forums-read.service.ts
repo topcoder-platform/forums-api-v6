@@ -27,6 +27,7 @@ import {
   ForumsReadQueryService,
   ForumsTopicSummaryRow,
 } from './forums-read-query.service';
+import { ForumsModerationService } from './forums-moderation.service';
 import { ForumsTopicContextService } from './forums-topic-context.service';
 
 const POST_PARENT_POST = 'POST';
@@ -54,9 +55,10 @@ interface ForumsPostTreeNodeInternal {
  * Orchestrates forum read endpoints under the topics surface.
  *
  * The service normalizes authenticated callers, delegates restriction decisions
- * to the shared access policy, uses raw-query rows only as read candidates, and
- * applies pagination after visibility filtering so counts match what the caller
- * can actually see.
+ * to the shared access policy, enforces shared runtime moderation before policy
+ * or query work, uses raw-query rows only as read candidates, and applies
+ * pagination after visibility filtering so counts match what the caller can
+ * actually see.
  */
 @Injectable()
 export class ForumsReadService {
@@ -66,12 +68,14 @@ export class ForumsReadService {
    * @param accessPolicyService Shared forums policy service.
    * @param topicContextService Loader for effective topic restrictions.
    * @param readQueryService Side-effect-free raw-query reader.
+   * @param moderationService Shared runtime ban and lock gate.
    * @throws Does not throw directly; dependencies are resolved by Nest.
    */
   constructor(
     private readonly accessPolicyService: ForumsAccessPolicyService,
     private readonly topicContextService: ForumsTopicContextService,
     private readonly readQueryService: ForumsReadQueryService,
+    private readonly moderationService: ForumsModerationService,
   ) {}
 
   /**
@@ -85,8 +89,10 @@ export class ForumsReadService {
    * @param challengeId Challenge id supplied in the route.
    * @param query Pagination query parameters.
    * @param user Authenticated token payload for the read caller.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Paginated visible challenge topic summaries.
    * @throws UnauthorizedException when no authenticated read caller is present.
+   * @throws ForbiddenException when the caller is globally banned.
    * @throws ForbiddenException when base challenge visibility is denied.
    * @throws NotFoundException when challenge visibility reports a missing target.
    */
@@ -94,8 +100,15 @@ export class ForumsReadService {
     challengeId: string,
     query: ForumsTopicListQueryDto,
     user: JwtUser | undefined,
+    trustedClientIp?: string,
   ): Promise<ForumsTopicSummaryPageDto> {
     const principal = this.requirePrincipal(user);
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
     const normalizedChallengeId =
       normalizeForumsOptionalText(challengeId) ?? challengeId;
 
@@ -127,14 +140,23 @@ export class ForumsReadService {
    *
    * @param query Pagination query parameters.
    * @param user Authenticated token payload for the read caller.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Paginated visible general topic summaries.
    * @throws UnauthorizedException when no authenticated read caller is present.
+   * @throws ForbiddenException when the caller is globally banned.
    */
   async listGeneralRootTopics(
     query: ForumsTopicListQueryDto,
     user: JwtUser | undefined,
+    trustedClientIp?: string,
   ): Promise<ForumsTopicSummaryPageDto> {
     const principal = this.requirePrincipal(user);
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
     const rows = await this.readQueryService.findGeneralRootTopicSummaries(
       principal.memberId,
     );
@@ -155,16 +177,25 @@ export class ForumsReadService {
    *
    * @param topicId Parent topic id supplied in the route.
    * @param user Authenticated token payload for the read caller.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Ordered child topic summaries visible to the caller.
    * @throws UnauthorizedException when no authenticated read caller is present.
+   * @throws ForbiddenException when the caller is globally banned.
    * @throws ForbiddenException when parent topic visibility is denied.
    * @throws NotFoundException when the parent topic is missing or hidden.
    */
   async listChildTopics(
     topicId: string,
     user: JwtUser | undefined,
+    trustedClientIp?: string,
   ): Promise<ForumsTopicSummaryDto[]> {
     const principal = this.requirePrincipal(user);
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
     const parentContext = await this.topicContextService.loadTopicContext(
       topicId,
       principal,
@@ -204,16 +235,25 @@ export class ForumsReadService {
    *
    * @param topicId Topic id supplied in the route.
    * @param user Authenticated token payload for the read caller.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Topic summary and nested post tree.
    * @throws UnauthorizedException when no authenticated read caller is present.
+   * @throws ForbiddenException when the caller is globally banned.
    * @throws ForbiddenException when topic visibility is denied.
    * @throws NotFoundException when the topic is missing or hidden.
    */
   async getTopicDetail(
     topicId: string,
     user: JwtUser | undefined,
+    trustedClientIp?: string,
   ): Promise<ForumsTopicDetailDto> {
     const principal = this.requirePrincipal(user);
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
     const context = await this.topicContextService.loadTopicContext(
       topicId,
       principal,
@@ -462,6 +502,9 @@ export class ForumsReadService {
       roleName: row.roleName,
       title: row.title,
       isAnnouncement: row.isAnnouncement,
+      locked: Boolean(row.locked),
+      lockedBy: row.lockedBy,
+      lockedAt: row.lockedAt,
       authorMemberId: row.authorMemberId,
       authorHandle: row.authorHandle,
       createdAt: row.createdAt,

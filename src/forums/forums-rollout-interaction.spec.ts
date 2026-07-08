@@ -19,6 +19,9 @@ function makeTopic(overrides: Partial<Topic> = {}): Topic {
     roleName: 'reviewer',
     title: 'Restricted topic',
     isAnnouncement: false,
+    locked: false,
+    lockedAt: null,
+    lockedByMemberId: null,
     authorMemberId: '1',
     authorHandle: 'author',
     createdAt,
@@ -114,6 +117,12 @@ describe('forums rollout interaction', () => {
     const notificationService = {
       publishPostNotification: jest.fn().mockResolvedValue(undefined),
     };
+    const moderationService = {
+      decideForRequestActorBan: jest.fn().mockResolvedValue({ allowed: true }),
+      decideForLockedTopicMutation: jest.fn().mockResolvedValue({
+        allowed: true,
+      }),
+    };
     const service = new ForumsCommandService(
       db as any,
       accessPolicyService as any,
@@ -122,6 +131,7 @@ describe('forums rollout interaction', () => {
       {} as any,
       {} as any,
       notificationService as any,
+      moderationService as any,
     );
     const user: JwtUser = {
       userId: '1',

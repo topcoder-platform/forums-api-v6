@@ -7,13 +7,16 @@ import { createHash } from 'crypto';
 import { NextFunction, Response } from 'express';
 import { JwtService } from '../jwt.service';
 import { AuthenticatedRequest } from './authenticated-request.interface';
+import { TrustedClientIpResolverService } from './trusted-client-ip-resolver.service';
 
 /**
  * Optional bearer-token validation middleware.
  *
  * The middleware follows the review API pattern: missing tokens are allowed so
  * public endpoints can exist, while malformed or invalid bearer tokens fail
- * early and valid tokens are attached to the request.
+ * early and valid tokens are attached to the request. It also resolves trusted
+ * forwarded client-IP context before auth checks so moderation can use the same
+ * request metadata for authenticated and unauthenticated route shapes.
  */
 @Injectable()
 export class TokenValidatorMiddleware implements NestMiddleware {
@@ -21,9 +24,13 @@ export class TokenValidatorMiddleware implements NestMiddleware {
    * Creates the token validator middleware.
    *
    * @param jwtService Service that validates JWT and M2M bearer tokens.
+   * @param trustedClientIpResolver Service that resolves trusted forwarded IPs.
    * @throws Does not throw directly; dependencies are resolved by Nest.
    */
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly trustedClientIpResolver: TrustedClientIpResolverService,
+  ) {}
 
   /**
    * Validates an optional bearer token and attaches the normalized user payload.
@@ -39,6 +46,8 @@ export class TokenValidatorMiddleware implements NestMiddleware {
     _response: Response,
     next: NextFunction,
   ): Promise<void> {
+    request.resolvedClientIp = this.trustedClientIpResolver.resolve(request);
+
     const authHeader = this.resolveAuthorizationHeader(request);
 
     if (!authHeader) {

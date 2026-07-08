@@ -25,6 +25,7 @@ import {
   AUTHENTICATED_USER_ROLE,
   Roles,
 } from '../auth/decorators/roles.decorator';
+import { ClientIp } from '../auth/decorators/client-ip.decorator';
 import { Scopes } from '../auth/decorators/scopes.decorator';
 import { CurrentUser } from '../auth/decorators/user.decorator';
 import { JwtUser } from '../auth/jwt.service';
@@ -67,6 +68,8 @@ import { ForumsReadService } from './forums-read.service';
  * Routes are mounted under the global `/v6/forums` prefix. Topic list and
  * detail reads are protected by `read:forums-topics`; embedded posts in topic
  * detail remain on the topics read surface rather than `read:forums-posts`.
+ * Trusted client-IP context is resolved at the request boundary and forwarded
+ * to services as a string for runtime ban checks.
  */
 @ApiTags('Forums topics')
 @ApiBearerAuth()
@@ -89,9 +92,10 @@ export class TopicsController {
    *
    * @param dto Topic metadata and starter-post content.
    * @param user Authenticated token payload for the acting member.
-   * @returns The created topic and starter post.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
+   * @returns The created topic command response and starter post.
    * @throws UnauthorizedException when no authenticated command caller is present.
-   * @throws ForbiddenException when command policy denies topic creation.
+   * @throws ForbiddenException when command policy, active bans, or parent lock state deny topic creation.
    * @throws BadRequestException when the request body is invalid.
    * @throws NotFoundException when the parent topic is missing or hidden.
    */
@@ -101,7 +105,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Create a forum topic with a starter post',
     description:
-      'Command route requiring an authenticated member token or `create:forums-topics`. Top-level non-challenge topics are allowed for human admins and scoped M2M callers. Top-level challenge topics are allowed for eligible challenge members, challenge copilots, and admins; M2M callers cannot create challenge roots. Child topics require visible parents, monotonic restrictions, and a resolved effective non-challenge context; challenge-scoped child creates are forbidden. M2M-created content uses the system author and does not seed member watch or read-state rows. Successful child-topic starter posts trigger best-effort watch notifications after commit.',
+      'Command route requiring an authenticated member token or `create:forums-topics`. Top-level non-challenge topics are allowed for human admins and scoped M2M callers. Top-level challenge topics are allowed for eligible challenge members, challenge copilots, and admins; M2M callers cannot create challenge roots. Child topics require visible parents, monotonic restrictions, and a resolved effective non-challenge context; challenge-scoped child creates are forbidden. Active member bans and trusted exact-IP bans return 403 before writes. Locked parents reject child-topic creation unless the caller is an administrator or eligible challenge copilot. M2M-created content uses the system author and does not seed member watch or read-state rows. Successful child-topic starter posts trigger best-effort watch notifications after commit.',
   })
   @ApiResponse({
     status: 201,
@@ -112,13 +116,16 @@ export class TopicsController {
     description: 'Invalid topic fields or parent linkage.',
   })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
-  @ApiForbiddenResponse({ description: 'Insufficient forums access.' })
+  @ApiForbiddenResponse({
+    description: 'Insufficient forums access, active ban, or locked parent.',
+  })
   @ApiNotFoundResponse({ description: 'Parent topic not found.' })
   createTopic(
     @Body() dto: CreateTopicDto,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<CreateTopicCommandResponseDto> {
-    return this.commandService.createTopic(dto, user);
+    return this.commandService.createTopic(dto, user, trustedClientIp);
   }
 
   /**
@@ -126,6 +133,7 @@ export class TopicsController {
    *
    * @param query Pagination query parameters.
    * @param user Authenticated token payload for the read caller.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Paginated visible general root topics.
    * @throws UnauthorizedException when no authenticated read caller is present.
    */
@@ -135,7 +143,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'List general forum root topics',
     description:
-      'Requires an authenticated member token or `read:forums-topics`. Returns non-challenge root topics the caller can see, including role-restricted general topics after centralized forums policy filtering.',
+      'Requires an authenticated member token or `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before visibility checks. Returns non-challenge root topics the caller can see, including role-restricted general topics after centralized forums policy filtering.',
   })
   @ApiQuery({
     name: 'page',
@@ -154,11 +162,13 @@ export class TopicsController {
   })
   @ApiBadRequestResponse({ description: 'Invalid pagination query.' })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
+  @ApiForbiddenResponse({ description: 'Active forums ban.' })
   listGeneralRootTopics(
     @Query() query: ForumsTopicListQueryDto,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<ForumsTopicSummaryPageDto> {
-    return this.readService.listGeneralRootTopics(query, user);
+    return this.readService.listGeneralRootTopics(query, user, trustedClientIp);
   }
 
   /**
@@ -167,6 +177,7 @@ export class TopicsController {
    * @param challengeId Challenge id from the route.
    * @param query Pagination query parameters.
    * @param user Authenticated token payload for the read caller.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Paginated visible challenge root topics.
    * @throws UnauthorizedException when no authenticated read caller is present.
    * @throws ForbiddenException when challenge visibility is denied.
@@ -178,7 +189,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'List challenge forum root topics',
     description:
-      'Requires an authenticated member token or `read:forums-topics`. The base challenge restriction is checked first; matching root topics are then filtered through centralized forums policy for narrower role restrictions before pagination.',
+      'Requires an authenticated member token or `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before challenge visibility checks. The base challenge restriction is checked first; matching root topics are then filtered through centralized forums policy for narrower role restrictions before pagination.',
   })
   @ApiParam({ name: 'challengeId', description: 'Challenge id.' })
   @ApiQuery({
@@ -198,14 +209,22 @@ export class TopicsController {
   })
   @ApiBadRequestResponse({ description: 'Invalid pagination query.' })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
-  @ApiForbiddenResponse({ description: 'Challenge visibility denied.' })
+  @ApiForbiddenResponse({
+    description: 'Active forums ban or challenge visibility denied.',
+  })
   @ApiNotFoundResponse({ description: 'Challenge not found.' })
   listChallengeRootTopics(
     @Param('challengeId') challengeId: string,
     @Query() query: ForumsTopicListQueryDto,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<ForumsTopicSummaryPageDto> {
-    return this.readService.listChallengeRootTopics(challengeId, query, user);
+    return this.readService.listChallengeRootTopics(
+      challengeId,
+      query,
+      user,
+      trustedClientIp,
+    );
   }
 
   /**
@@ -213,6 +232,7 @@ export class TopicsController {
    *
    * @param topicId Parent topic id from the route.
    * @param user Authenticated token payload for the read caller.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Ordered visible direct child topic summaries.
    * @throws UnauthorizedException when no authenticated read caller is present.
    * @throws ForbiddenException when parent topic visibility is denied.
@@ -224,7 +244,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'List direct child forum topics',
     description:
-      'Requires an authenticated member token or `read:forums-topics`. The parent topic must be visible first, then child rows are filtered through centralized forums policy using inherited parent restrictions plus each child direct restriction.',
+      'Requires an authenticated member token or `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before parent visibility checks. The parent topic must be visible first, then child rows are filtered through centralized forums policy using inherited parent restrictions plus each child direct restriction. Locked topics remain readable.',
   })
   @ApiParam({ name: 'topicId', description: 'Parent topic id.' })
   @ApiResponse({
@@ -233,13 +253,16 @@ export class TopicsController {
     type: [ForumsTopicSummaryDto],
   })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
-  @ApiForbiddenResponse({ description: 'Parent topic visibility denied.' })
+  @ApiForbiddenResponse({
+    description: 'Active forums ban or parent topic visibility denied.',
+  })
   @ApiNotFoundResponse({ description: 'Parent topic not found.' })
   listChildTopics(
     @Param('topicId') topicId: string,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<ForumsTopicSummaryDto[]> {
-    return this.readService.listChildTopics(topicId, user);
+    return this.readService.listChildTopics(topicId, user, trustedClientIp);
   }
 
   /**
@@ -247,6 +270,7 @@ export class TopicsController {
    *
    * @param topicId Topic id from the route.
    * @param user Authenticated token payload for the read caller.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Topic detail with nested posts and replies.
    * @throws UnauthorizedException when no authenticated read caller is present.
    * @throws ForbiddenException when topic visibility is denied.
@@ -258,7 +282,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Get forum topic detail',
     description:
-      'Requires an authenticated member token or `read:forums-topics`. Returns the topic summary and embedded post tree under the topics read scope; `read:forums-posts` remains reserved for future post-specific reads.',
+      'Requires an authenticated member token or `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before topic visibility checks. Returns the topic summary and embedded post tree under the topics read scope; locked topics remain readable. `read:forums-posts` remains reserved for future post-specific reads.',
   })
   @ApiParam({ name: 'topicId', description: 'Topic id.' })
   @ApiResponse({
@@ -267,13 +291,16 @@ export class TopicsController {
     type: ForumsTopicDetailDto,
   })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
-  @ApiForbiddenResponse({ description: 'Topic visibility denied.' })
+  @ApiForbiddenResponse({
+    description: 'Active forums ban or topic visibility denied.',
+  })
   @ApiNotFoundResponse({ description: 'Topic not found.' })
   getTopicDetail(
     @Param('topicId') topicId: string,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<ForumsTopicDetailDto> {
-    return this.readService.getTopicDetail(topicId, user);
+    return this.readService.getTopicDetail(topicId, user, trustedClientIp);
   }
 
   /**
@@ -282,9 +309,10 @@ export class TopicsController {
    * @param topicId Topic id from the route.
    * @param dto Mutable topic fields.
    * @param user Authenticated token payload for the acting member.
-   * @returns The updated topic row.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
+   * @returns The stable topic command response.
    * @throws UnauthorizedException when no authenticated command caller is present.
-   * @throws ForbiddenException when the token lacks update access.
+   * @throws ForbiddenException when the token lacks update access, an active ban applies, or the topic is locked.
    * @throws BadRequestException when no mutable fields are provided.
    * @throws NotFoundException when the topic is missing or hidden.
    */
@@ -294,7 +322,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Update forum topic metadata',
     description:
-      'Command route for mutable topic metadata. Topic updates require an authenticated member token or `update:forums-topics`, then pass centralized forums policy checks for visibility, ownership, challenge copilot elevation, and announcement control.',
+      'Command route for mutable topic metadata. Topic updates require an authenticated member token or `update:forums-topics`, then pass centralized forums policy checks for visibility, ownership, challenge copilot elevation, and announcement control. Active member bans and trusted exact-IP bans return 403 before writes. Locked topics reject updates unless the caller is an administrator or eligible challenge copilot.',
   })
   @ApiParam({ name: 'topicId', description: 'Topic id.' })
   @ApiResponse({
@@ -304,14 +332,17 @@ export class TopicsController {
   })
   @ApiBadRequestResponse({ description: 'Invalid or empty update body.' })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
-  @ApiForbiddenResponse({ description: 'Insufficient forums access.' })
+  @ApiForbiddenResponse({
+    description: 'Insufficient forums access, active ban, or locked topic.',
+  })
   @ApiNotFoundResponse({ description: 'Topic not found.' })
   updateTopic(
     @Param('topicId') topicId: string,
     @Body() dto: UpdateTopicDto,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<ForumTopicCommandResponseDto> {
-    return this.commandService.updateTopic(topicId, dto, user);
+    return this.commandService.updateTopic(topicId, dto, user, trustedClientIp);
   }
 
   /**
@@ -319,9 +350,10 @@ export class TopicsController {
    *
    * @param topicId Topic id from the route.
    * @param user Authenticated token payload for the acting member.
-   * @returns The soft-deleted topic row.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
+   * @returns The stable soft-deleted topic command response.
    * @throws UnauthorizedException when no authenticated command caller is present.
-   * @throws ForbiddenException when the token lacks delete access.
+   * @throws ForbiddenException when the token lacks delete access, an active ban applies, or the topic is locked.
    * @throws NotFoundException when the topic is missing or hidden.
    */
   @Delete(':topicId')
@@ -330,7 +362,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Soft-delete a forum topic',
     description:
-      'Command route for topic soft deletion. Topic deletion requires an authenticated member token or `delete:forums-topics`, then passes centralized forums policy checks for visibility, ownership, and elevated challenge access.',
+      'Command route for topic soft deletion. Topic deletion requires an authenticated member token or `delete:forums-topics`, then passes centralized forums policy checks for visibility, ownership, and elevated challenge access. Active member bans and trusted exact-IP bans return 403 before writes. Locked topics reject deletion unless the caller is an administrator or eligible challenge copilot.',
   })
   @ApiParam({ name: 'topicId', description: 'Topic id.' })
   @ApiResponse({
@@ -339,13 +371,16 @@ export class TopicsController {
     type: ForumTopicCommandResponseDto,
   })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
-  @ApiForbiddenResponse({ description: 'Insufficient forums access.' })
+  @ApiForbiddenResponse({
+    description: 'Insufficient forums access, active ban, or locked topic.',
+  })
   @ApiNotFoundResponse({ description: 'Topic not found.' })
   softDeleteTopic(
     @Param('topicId') topicId: string,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<ForumTopicCommandResponseDto> {
-    return this.commandService.softDeleteTopic(topicId, user);
+    return this.commandService.softDeleteTopic(topicId, user, trustedClientIp);
   }
 
   /**
@@ -354,9 +389,10 @@ export class TopicsController {
    * @param topicId Topic id from the route.
    * @param dto Post content and optional parent target.
    * @param user Authenticated token payload for the acting member.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns The created post row.
    * @throws UnauthorizedException when no authenticated command caller is present.
-   * @throws ForbiddenException when command policy denies post creation.
+   * @throws ForbiddenException when command policy, active bans, or topic lock state deny post creation.
    * @throws BadRequestException when parent linkage is invalid.
    * @throws NotFoundException when the topic or parent post is missing.
    */
@@ -366,7 +402,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Create a post in a forum topic',
     description:
-      'Command route requiring an authenticated member token or `create:forums-posts`. The command policy verifies inherited topic visibility, challenge access, and role matching. M2M-created posts use the system author and do not seed member read-state rows. Successful writes trigger best-effort watch notifications after commit.',
+      'Command route requiring an authenticated member token or `create:forums-posts`. The command policy verifies inherited topic visibility, challenge access, and role matching. Active member bans and trusted exact-IP bans return 403 before writes. Locked topics reject replies unless the caller is an administrator or eligible challenge copilot. M2M-created posts use the system author and do not seed member read-state rows. Successful writes trigger best-effort watch notifications after commit.',
   })
   @ApiParam({ name: 'topicId', description: 'Topic id.' })
   @ApiResponse({
@@ -378,14 +414,17 @@ export class TopicsController {
     description: 'Invalid post body or parent linkage.',
   })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
-  @ApiForbiddenResponse({ description: 'Insufficient forums access.' })
+  @ApiForbiddenResponse({
+    description: 'Insufficient forums access, active ban, or locked topic.',
+  })
   @ApiNotFoundResponse({ description: 'Topic or parent post not found.' })
   createPost(
     @Param('topicId') topicId: string,
     @Body() dto: CreatePostDto,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<ForumPostCommandResponseDto> {
-    return this.commandService.createPost(topicId, dto, user);
+    return this.commandService.createPost(topicId, dto, user, trustedClientIp);
   }
 
   /**
@@ -394,9 +433,10 @@ export class TopicsController {
    * @param topicId Topic id from the route.
    * @param dto Optional target member body; required for scoped M2M callers.
    * @param user Authenticated token payload for the acting member.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns The persisted watch row.
    * @throws UnauthorizedException when no authenticated command caller is present.
-   * @throws ForbiddenException when command policy denies watch access.
+   * @throws ForbiddenException when command policy or active bans deny watch access.
    * @throws NotFoundException when the topic is missing or hidden.
    */
   @Put(':topicId/watch')
@@ -405,7 +445,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Watch a forum topic',
     description:
-      'Command route requiring an authenticated member token or `add:forums-topic-watch`. Human tokens watch for themselves. Scoped M2M callers must supply a `memberId` that resolves in external Members and Identity data, and policy evaluates inherited challenge and role visibility for that target member before writing the watch row.',
+      'Command route requiring an authenticated member token or `add:forums-topic-watch`. Human tokens watch for themselves and active member or trusted exact-IP bans return 403. Scoped M2M callers must supply a `memberId` that resolves in external Members and Identity data; active target-member bans return 403 before context loading, and policy evaluates inherited challenge and role visibility for that target member before writing the watch row.',
   })
   @ApiParam({ name: 'topicId', description: 'Topic id.' })
   @ApiResponse({
@@ -415,14 +455,22 @@ export class TopicsController {
   })
   @ApiBadRequestResponse({ description: 'Invalid member target.' })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
-  @ApiForbiddenResponse({ description: 'Insufficient forums access.' })
+  @ApiForbiddenResponse({
+    description: 'Insufficient forums access or active ban.',
+  })
   @ApiNotFoundResponse({ description: 'Topic not found.' })
   addTopicWatch(
     @Param('topicId') topicId: string,
     @Body() dto: MemberTargetDto,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<TopicWatchCommandResponseDto> {
-    return this.commandService.addTopicWatch(topicId, dto, user);
+    return this.commandService.addTopicWatch(
+      topicId,
+      dto,
+      user,
+      trustedClientIp,
+    );
   }
 
   /**
@@ -431,9 +479,10 @@ export class TopicsController {
    * @param topicId Topic id from the route.
    * @param dto Optional target member body; required for scoped M2M callers.
    * @param user Authenticated token payload for the acting member.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns The resulting watch state.
    * @throws UnauthorizedException when no authenticated command caller is present.
-   * @throws ForbiddenException when command policy denies watch access.
+   * @throws ForbiddenException when command policy or active bans deny watch access.
    * @throws NotFoundException when the topic is missing or hidden.
    */
   @Delete(':topicId/watch')
@@ -442,7 +491,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Unwatch a forum topic',
     description:
-      'Command route requiring an authenticated member token or `remove:forums-topic-watch`. Human tokens unwatch for themselves. Scoped M2M callers must supply a `memberId` that resolves in external Members and Identity data, and policy evaluates inherited challenge and role visibility for that target member before removing the watch row.',
+      'Command route requiring an authenticated member token or `remove:forums-topic-watch`. Human tokens unwatch for themselves and active member or trusted exact-IP bans return 403. Scoped M2M callers must supply a `memberId` that resolves in external Members and Identity data; active target-member bans return 403 before context loading, and policy evaluates inherited challenge and role visibility for that target member before removing the watch row.',
   })
   @ApiParam({ name: 'topicId', description: 'Topic id.' })
   @ApiResponse({
@@ -452,14 +501,22 @@ export class TopicsController {
   })
   @ApiBadRequestResponse({ description: 'Invalid member target.' })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
-  @ApiForbiddenResponse({ description: 'Insufficient forums access.' })
+  @ApiForbiddenResponse({
+    description: 'Insufficient forums access or active ban.',
+  })
   @ApiNotFoundResponse({ description: 'Topic not found.' })
   removeTopicWatch(
     @Param('topicId') topicId: string,
     @Body() dto: MemberTargetDto,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<TopicWatchStateCommandResponseDto> {
-    return this.commandService.removeTopicWatch(topicId, dto, user);
+    return this.commandService.removeTopicWatch(
+      topicId,
+      dto,
+      user,
+      trustedClientIp,
+    );
   }
 
   /**
@@ -468,9 +525,10 @@ export class TopicsController {
    * @param topicId Topic id from the route.
    * @param dto Optional target member body; required for scoped M2M callers.
    * @param user Authenticated token payload for the acting member.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns The upserted read-state row.
    * @throws UnauthorizedException when no authenticated command caller is present.
-   * @throws ForbiddenException when command policy denies read-state access.
+   * @throws ForbiddenException when command policy or active bans deny read-state access.
    * @throws NotFoundException when the topic is missing or hidden.
    */
   @Put(':topicId/read-state')
@@ -479,7 +537,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Mark a forum topic as read',
     description:
-      'Command route requiring an authenticated member token or `update:forums-topics`. Human tokens mark read for themselves. Scoped M2M callers must supply a `memberId` that resolves in external Members and Identity data, and policy evaluates inherited challenge and role visibility for that target member before writing read state.',
+      'Command route requiring an authenticated member token or `update:forums-topics`. Human tokens mark read for themselves and active member or trusted exact-IP bans return 403. Scoped M2M callers must supply a `memberId` that resolves in external Members and Identity data; active target-member bans return 403 before context loading, and policy evaluates inherited challenge and role visibility for that target member before writing read state.',
   })
   @ApiParam({ name: 'topicId', description: 'Topic id.' })
   @ApiResponse({
@@ -489,13 +547,21 @@ export class TopicsController {
   })
   @ApiBadRequestResponse({ description: 'Invalid member target.' })
   @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
-  @ApiForbiddenResponse({ description: 'Insufficient forums access.' })
+  @ApiForbiddenResponse({
+    description: 'Insufficient forums access or active ban.',
+  })
   @ApiNotFoundResponse({ description: 'Topic not found.' })
   markTopicRead(
     @Param('topicId') topicId: string,
     @Body() dto: MemberTargetDto,
     @CurrentUser() user?: JwtUser,
+    @ClientIp() trustedClientIp?: string,
   ): Promise<TopicReadStateCommandResponseDto> {
-    return this.commandService.markTopicRead(topicId, dto, user);
+    return this.commandService.markTopicRead(
+      topicId,
+      dto,
+      user,
+      trustedClientIp,
+    );
   }
 }

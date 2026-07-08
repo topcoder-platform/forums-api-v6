@@ -4,6 +4,9 @@ import { DbService } from '../db/db.service';
 
 /**
  * Database row returned by forum topic summary read queries.
+ *
+ * Lock fields are direct Topic projections. `lockedBy` and `lockedAt` may be
+ * null even when `locked` is true for imported legacy topics.
  */
 export interface ForumsTopicSummaryRow {
   id: string;
@@ -12,6 +15,9 @@ export interface ForumsTopicSummaryRow {
   roleName: string | null;
   title: string;
   isAnnouncement: boolean;
+  locked: boolean;
+  lockedBy: string | null;
+  lockedAt: Date | null;
   authorMemberId: string;
   authorHandle: string;
   createdAt: Date;
@@ -291,7 +297,7 @@ export class ForumsReadQueryService {
    * @param whereClause Parameterized SQL fragment limiting candidate topics.
    * @param memberId Authenticated member id used for unread derivation, or null.
    * @param client Optional transaction client used to bind this read to a snapshot.
-   * @returns Ordered candidate topic summary rows with computed read metadata.
+   * @returns Ordered candidate topic summary rows with lock and read metadata.
    * @throws Prisma errors when the raw query fails.
    */
   private findTopicSummaryRows(
@@ -307,6 +313,9 @@ export class ForumsReadQueryService {
         t."roleName",
         t.title,
         t."isAnnouncement",
+        t.locked,
+        t."lockedByMemberId" AS "lockedBy",
+        t."lockedAt",
         t."authorMemberId",
         t."authorHandle",
         t."createdAt",

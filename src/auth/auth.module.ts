@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TokenRolesGuard } from './guards/token-roles.guard';
 import { JwtService } from './jwt.service';
+import { TrustedClientIpResolverService } from './request/trusted-client-ip-resolver.service';
 
 /**
  * Global authentication module for the forums service.
@@ -13,11 +14,12 @@ import { JwtService } from './jwt.service';
 @Module({
   providers: [
     JwtService,
+    TrustedClientIpResolverService,
     {
       provide: APP_GUARD,
       useClass: TokenRolesGuard,
     },
   ],
-  exports: [JwtService],
+  exports: [JwtService, TrustedClientIpResolverService],
 })
 export class AuthModule {}

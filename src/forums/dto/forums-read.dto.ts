@@ -90,8 +90,9 @@ export class ForumsLatestActivityDto {
  * Topic summary returned by list routes and reused as the topic detail header.
  *
  * `postsCount` counts only non-deleted posts. `latestActivity` is nullable when
- * no non-deleted posts remain, and `unread` is derived from
- * `TopicReadState.lastReadAt` compared with the latest visible activity.
+ * no non-deleted posts remain, `unread` is derived from
+ * `TopicReadState.lastReadAt` compared with the latest visible activity, and
+ * lock metadata may be null for imported legacy locked topics.
  */
 export class ForumsTopicSummaryDto {
   @ApiProperty({ description: 'Topic id.' })
@@ -122,6 +123,25 @@ export class ForumsTopicSummaryDto {
     description: 'Whether the topic is pinned as an announcement.',
   })
   isAnnouncement: boolean;
+
+  @ApiProperty({
+    description: 'Whether the topic is locked against new discussion writes.',
+  })
+  locked: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'Stored member id of the lock actor, or null for imported legacy locks.',
+    nullable: true,
+  })
+  lockedBy: string | null;
+
+  @ApiPropertyOptional({
+    description:
+      'Timestamp when the topic was locked, or null for imported legacy locks.',
+    nullable: true,
+  })
+  lockedAt: Date | null;
 
   @ApiProperty({
     description: 'Member id captured on the topic author snapshot.',

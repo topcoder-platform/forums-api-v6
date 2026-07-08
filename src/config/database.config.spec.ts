@@ -9,6 +9,7 @@ const databaseEnvKeys = [
   'RESOURCES_DB_URL',
   'IDENTITY_DB_URL',
   'MEMBER_DB_URL',
+  'VANILLA_DB_URL',
 ] as const;
 
 describe('databaseConfig', () => {
@@ -35,6 +36,7 @@ describe('databaseConfig', () => {
     process.env.RESOURCES_DB_URL = 'postgresql://resource-alias';
     process.env.IDENTITY_DB_URL = 'postgresql://identity';
     process.env.MEMBER_DB_URL = 'postgresql://member';
+    process.env.VANILLA_DB_URL = 'mysql://vanilla';
 
     expect(databaseConfig()).toEqual({
       database: {
@@ -43,6 +45,7 @@ describe('databaseConfig', () => {
         resourceUrl: 'postgresql://resource-primary',
         identityUrl: 'postgresql://identity',
         memberUrl: 'postgresql://member',
+        vanillaUrl: 'mysql://vanilla',
       },
     });
   });
@@ -59,6 +62,7 @@ describe('databaseConfig', () => {
         resourceUrl: 'postgresql://resource-alias',
         identityUrl: undefined,
         memberUrl: undefined,
+        vanillaUrl: undefined,
       },
     });
   });

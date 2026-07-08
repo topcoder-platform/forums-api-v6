@@ -16,10 +16,12 @@ import { AuthenticatedRequest } from '../request/authenticated-request.interface
 /**
  * Global role and scope guard for authenticated forums routes.
  *
- * The guard follows the existing v6 role/scope pattern: routes without metadata
- * are public, user tokens satisfy role checks, and M2M tokens satisfy scope
- * checks. The authenticated-user role marker allows controllers to express
- * user-only routes without deferring that decision to service-layer failures.
+ * The guard follows the v6 role/scope split: routes without metadata are
+ * public, human tokens satisfy `@Roles(...)`, and M2M tokens satisfy
+ * `@Scopes(...)`. Human callers do not gain route access from scopes alone,
+ * and machine callers do not gain route access from roles alone. The
+ * authenticated-user role marker allows controllers to express user-only
+ * routes without deferring that decision to service-layer failures.
  */
 @Injectable()
 export class TokenRolesGuard implements CanActivate {
@@ -35,9 +37,9 @@ export class TokenRolesGuard implements CanActivate {
    * Determines whether the current request can access the route.
    *
    * @param context Nest execution context for the active request.
-   * @returns `true` when no roles/scopes are required or the token satisfies one requirement.
+   * @returns `true` when no roles/scopes are required, a human token satisfies roles, or an M2M token satisfies scopes.
    * @throws UnauthorizedException when a protected route has no validated user.
-   * @throws ForbiddenException when the token lacks required roles or scopes.
+   * @throws ForbiddenException when the token type cannot satisfy the required route metadata.
    */
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles =
@@ -63,20 +65,22 @@ export class TokenRolesGuard implements CanActivate {
       throw new UnauthorizedException('Missing or invalid token.');
     }
 
-    if (this.hasRequiredScope(user.scopes, requiredScopes)) {
-      return true;
+    if (user.isMachine) {
+      if (this.hasRequiredScope(user.scopes, requiredScopes)) {
+        return true;
+      }
+
+      if (requiredRoles.length > 0 && requiredScopes.length === 0) {
+        throw new ForbiddenException(
+          'M2M token not allowed for this endpoint.',
+        );
+      }
+
+      throw new ForbiddenException('Insufficient permissions.');
     }
 
     if (this.hasRequiredRole(user, requiredRoles)) {
       return true;
-    }
-
-    if (
-      user.isMachine &&
-      requiredRoles.length > 0 &&
-      requiredScopes.length === 0
-    ) {
-      throw new ForbiddenException('M2M token not allowed for this endpoint.');
     }
 
     throw new ForbiddenException('Insufficient permissions.');
