@@ -1,6 +1,7 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import mysql, { Pool, RowDataPacket } from 'mysql2/promise';
+import * as mysql from 'mysql2/promise';
+import type { Pool, RowDataPacket } from 'mysql2/promise';
 
 /**
  * Lazy MySQL connection owner for importer-only Vanilla source access.

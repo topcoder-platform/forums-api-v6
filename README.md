@@ -199,19 +199,24 @@ tables are empty: `Topic`, `Post`, `TopicClosure`, `TopicWatch`,
 Members DB, Challenge DB, Vanilla MySQL, and report-path writability.
 
 In scope: Vanilla discussions, replies, watches/subscriptions, read-state,
-active member bans, and active exact IPv4/IPv6 host bans. Discussions become
-root topics plus starter posts and a depth-0 self closure. Replies preserve the
+active member bans, and exact IPv4/IPv6 host ban rows. Discussions become root
+topics plus starter posts and a depth-0 self closure. Replies preserve the
 legacy parent graph; unmatched authors or unavailable parents skip the whole
 descendant branch. Watches and read-state import only for imported topics and
 mapped members. Read-state duplicates collapse to the latest legacy timestamp.
-Member bans import only when the banned member maps. IP bans import only exact
-bare host rules; CIDR, wildcard, range, host:port, bracketed, and otherwise
-non-exact rules are skipped and reported.
+Member bans import only when the banned member maps. IP bans import matching
+Vanilla ban rows only when they are exact bare host rules; CIDR, wildcard,
+range, host:port, bracketed, and otherwise non-exact rules are skipped and
+reported.
 
-There is no dry-run, resume, stage-select, or rerun flag. The JSON report records
-preflight results, member mapping counts, and per-stage imported/skipped/failed
-records. If results are unacceptable, wipe the target forums dataset and rerun
-the full import.
+The CLI logs stage starts, completions, and progress every 500 source records or
+reply discussion scans. The selected JSON report is written only when the run
+completes or fails; while the import is active the report path can remain empty
+because per-record details are staged in a temporary `.vanilla-import-report-*`
+directory. There is no dry-run, resume, stage-select, or rerun flag. The JSON
+report records preflight results, member mapping counts, and per-stage
+imported/skipped/failed records. If results are unacceptable or the process is
+interrupted, wipe the target forums dataset and rerun the full import.
 
 ## Prisma
 

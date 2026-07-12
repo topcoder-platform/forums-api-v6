@@ -107,6 +107,12 @@ function createReportService() {
     recordSkipped: jest.fn(),
     recordFailed: jest.fn(),
     recordMemberMapping: jest.fn(),
+    getStageSummary: jest.fn().mockReturnValue({
+      read: 0,
+      imported: 0,
+      skipped: 0,
+      failed: 0,
+    }),
     flush: jest.fn().mockResolvedValue({
       reportPath: '/tmp/report.json',
       status: 'completed',

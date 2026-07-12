@@ -167,4 +167,104 @@ describe('VanillaSourceReaderService', () => {
       },
     ]);
   });
+
+  it('uses source state user ids for watch and read-state pagination', async () => {
+    const mysqlService = {
+      query: jest
+        .fn()
+        .mockResolvedValueOnce([
+          {
+            discussionId: 1,
+            createdAt: '2020-01-05T00:00:00.000Z',
+            legacyUserId: 20,
+            handle: null,
+            email: null,
+          },
+        ])
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([
+          {
+            discussionId: 2,
+            readAt: '2020-01-06T00:00:00.000Z',
+            legacyUserId: 21,
+            handle: null,
+            email: null,
+          },
+        ])
+        .mockResolvedValueOnce([]),
+    };
+    const service = new VanillaSourceReaderService(mysqlService as any);
+
+    await expect(collect(service.readWatches(1))).resolves.toEqual([
+      {
+        discussionId: '1',
+        createdAt: new Date('2020-01-05T00:00:00.000Z'),
+        actor: {
+          legacyUserId: '20',
+          handle: null,
+          email: null,
+        },
+      },
+    ]);
+    await expect(collect(service.readReadStates(1))).resolves.toEqual([
+      {
+        discussionId: '2',
+        readAt: new Date('2020-01-06T00:00:00.000Z'),
+        actor: {
+          legacyUserId: '21',
+          handle: null,
+          email: null,
+        },
+      },
+    ]);
+
+    expect(mysqlService.query.mock.calls[0][0]).toEqual(
+      expect.stringContaining('ud.UserID AS legacyUserId'),
+    );
+    expect(mysqlService.query.mock.calls[0][0]).toEqual(
+      expect.stringContaining(
+        'COALESCE(ud.DateLastViewed, NOW()) AS createdAt',
+      ),
+    );
+    expect(mysqlService.query.mock.calls[0][0]).not.toEqual(
+      expect.stringContaining('ud.DateInserted'),
+    );
+    expect(mysqlService.query.mock.calls[1][1]).toEqual(['1', '1', '20', 1]);
+    expect(mysqlService.query.mock.calls[2][0]).toEqual(
+      expect.stringContaining('ud.UserID AS legacyUserId'),
+    );
+    expect(mysqlService.query.mock.calls[3][1]).toEqual(['2', '2', '21', 1]);
+  });
+
+  it('reads IP ban rows without requiring a Vanilla active flag column', async () => {
+    const mysqlService = {
+      query: jest
+        .fn()
+        .mockResolvedValueOnce([
+          {
+            banId: 30,
+            ipAddress: '192.0.2.10',
+            createdAt: '2020-01-07T00:00:00.000Z',
+          },
+        ])
+        .mockResolvedValueOnce([]),
+    };
+    const service = new VanillaSourceReaderService(mysqlService as any);
+
+    await expect(collect(service.readIpBans(1))).resolves.toEqual([
+      {
+        banId: '30',
+        ipAddress: '192.0.2.10',
+        createdAt: new Date('2020-01-07T00:00:00.000Z'),
+      },
+    ]);
+
+    expect(mysqlService.query.mock.calls[0][0]).toEqual(
+      expect.stringContaining('FROM GDN_Ban b'),
+    );
+    expect(mysqlService.query.mock.calls[0][0]).not.toEqual(
+      expect.stringContaining('b.Active'),
+    );
+    expect(mysqlService.query.mock.calls[1][1]).toEqual(['30', 1]);
+  });
 });

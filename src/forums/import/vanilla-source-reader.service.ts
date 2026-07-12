@@ -124,7 +124,7 @@ export class VanillaSourceReaderService {
             COALESCE(d.Closed, 0) AS locked,
             d.DateInserted AS createdAt,
             COALESCE(d.DateUpdated, d.DateInserted) AS updatedAt,
-            u.UserID AS legacyUserId,
+            d.InsertUserID AS legacyUserId,
             u.Name AS handle,
             u.Email AS email
           FROM GDN_Discussion d
@@ -185,7 +185,7 @@ export class VanillaSourceReaderService {
           c.Body AS body,
           c.DateInserted AS createdAt,
           COALESCE(c.DateUpdated, c.DateInserted) AS updatedAt,
-          u.UserID AS legacyUserId,
+          c.InsertUserID AS legacyUserId,
           u.Name AS handle,
           u.Email AS email
         FROM GDN_Comment c
@@ -225,8 +225,8 @@ export class VanillaSourceReaderService {
         `
           SELECT
             ud.DiscussionID AS discussionId,
-            COALESCE(ud.DateInserted, ud.DateLastViewed, NOW()) AS createdAt,
-            u.UserID AS legacyUserId,
+            COALESCE(ud.DateLastViewed, NOW()) AS createdAt,
+            ud.UserID AS legacyUserId,
             u.Name AS handle,
             u.Email AS email
           FROM GDN_UserDiscussion ud
@@ -277,7 +277,7 @@ export class VanillaSourceReaderService {
           SELECT
             ud.DiscussionID AS discussionId,
             ud.DateLastViewed AS readAt,
-            u.UserID AS legacyUserId,
+            ud.UserID AS legacyUserId,
             u.Name AS handle,
             u.Email AS email
           FROM GDN_UserDiscussion ud
@@ -355,7 +355,11 @@ export class VanillaSourceReaderService {
   }
 
   /**
-   * Iterates active IP ban rules in deterministic batches.
+   * Iterates IP ban rules in deterministic batches.
+   *
+   * Vanilla's ban table does not expose a portable active flag, so matching ban
+   * rows are treated as active by presence and later filtered to exact host
+   * rules by the writer.
    *
    * @param batchSize Maximum rows read per MySQL round trip.
    * @returns Async generator of normalized IP-ban rows.
@@ -375,7 +379,6 @@ export class VanillaSourceReaderService {
             COALESCE(b.DateInserted, NOW()) AS createdAt
           FROM GDN_Ban b
           WHERE b.BanID > ?
-            AND COALESCE(b.Active, 1) <> 0
             AND LOWER(b.BanType) IN ('ip', 'ipaddress', 'ip_address')
           ORDER BY b.BanID ASC
           LIMIT ?
