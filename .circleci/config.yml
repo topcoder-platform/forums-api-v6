@@ -20,6 +20,29 @@ install_deploy_suite: &install_deploy_suite
     cp ../buildscript/awsconfiguration.sh .
     cp ../buildscript/psvar-processor.sh .
 
+build_and_deploy_steps: &build_and_deploy_steps
+  - checkout
+  - setup_remote_docker
+  - run: *install_dependencies
+  - run: *install_deploy_suite
+  - run:
+      name: Build the service image
+      command: docker buildx build --load --no-cache=true -t "${APPNAME}:latest" .
+  - run:
+      name: Deploy using the Topcoder deployment suite
+      command: |
+        ./awsconfiguration.sh "$DEPLOY_ENV"
+        source awsenvconf
+        ./psvar-processor.sh -t appenv -p "/config/${APPNAME}/deployvar"
+        source deployvar_env
+        ./master_deploy.sh \
+          -d ECS \
+          -e "$DEPLOY_ENV" \
+          -t latest \
+          -j "/config/${APPNAME}/appvar,/config/common/global-appvar" \
+          -i "$APPNAME" \
+          -p FARGATE
+
 jobs:
   build-dev:
     <<: *defaults
@@ -27,61 +50,7 @@ jobs:
       APPNAME: forums-api-v6
       DEPLOY_ENV: DEV
       DEPLOYMENT_ENVIRONMENT: dev
-      ECS_CLUSTER: tc-forums-serverless
-      FARGATE_STACK_NAME: forums-api-v6-fargate-dev
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run: *install_dependencies
-      - run: *install_deploy_suite
-      - run:
-          name: Configure development AWS credentials
-          command: |
-            ./awsconfiguration.sh "$DEPLOY_ENV"
-            source awsenvconf
-            aws sts get-caller-identity
-      - run:
-          name: Provision Fargate and load-balancer resources
-          command: |
-            source awsenvconf
-            if aws cloudformation describe-stacks --stack-name "$FARGATE_STACK_NAME" >/dev/null 2>&1; then
-              initial_desired_count=1
-            else
-              initial_desired_count=0
-            fi
-            aws cloudformation deploy \
-              --stack-name "$FARGATE_STACK_NAME" \
-              --template-file cloudformation/fargate-service.yml \
-              --parameter-overrides DesiredCount="$initial_desired_count" \
-              --no-fail-on-empty-changeset
-      - run:
-          name: Build the service image
-          command: docker buildx build --load --no-cache=true -t "${APPNAME}:latest" .
-      - run:
-          name: Deploy the service task definition
-          command: |
-            source awsenvconf
-            ./psvar-processor.sh -t appenv -p "/config/${APPNAME}/deployvar"
-            source deployvar_env
-            ./master_deploy.sh \
-              -d ECS \
-              -e "$DEPLOY_ENV" \
-              -t latest \
-              -j "/config/${APPNAME}/appvar,/config/common/global-appvar" \
-              -i "$APPNAME" \
-              -p FARGATE
-      - run:
-          name: Set and verify the running service count
-          command: |
-            source awsenvconf
-            aws cloudformation deploy \
-              --stack-name "$FARGATE_STACK_NAME" \
-              --template-file cloudformation/fargate-service.yml \
-              --parameter-overrides DesiredCount=1 \
-              --no-fail-on-empty-changeset
-            aws ecs wait services-stable \
-              --cluster "$ECS_CLUSTER" \
-              --services "$APPNAME"
+    steps: *build_and_deploy_steps
 
 workflows:
   build-and-deploy:
@@ -92,4 +61,3 @@ workflows:
             branches:
               only:
                 - develop
-
