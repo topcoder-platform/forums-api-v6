@@ -1,0 +1,12 @@
+.git
+.circleci
+.env*
+.vanilla-import-report*
+coverage
+dist
+node_modules
+packages
+prisma/generated
+vanilla-import-report.json
+*.log
+
