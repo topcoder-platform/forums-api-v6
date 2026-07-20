@@ -170,6 +170,9 @@ but the `/moderation` endpoints require administrator role access for humans or
 
 ## Development
 
+The supported local and container runtime is Node.js 26.5.0 with pnpm 11.15.1.
+The checked-in `.nvmrc` selects the required Node.js release.
+
 ```bash
 nvm use
 pnpm install
