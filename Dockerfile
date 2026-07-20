@@ -1,23 +1,29 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.7
 
-FROM node:24.15.0-bookworm-slim AS base
+ARG NODE_VERSION=26.5.0
+ARG PNPM_VERSION=11.15.1
 
-RUN apt-get update \
-  && apt-get install --yes --no-install-recommends ca-certificates git openssh-client openssl \
-  && rm -rf /var/lib/apt/lists/*
-WORKDIR /usr/src/app
-RUN npm install --global pnpm@10.33.2
+FROM node:${NODE_VERSION}-alpine AS external-clients
 
-FROM base AS external-clients
+RUN apk upgrade --no-cache \
+  && apk add --no-cache ca-certificates git openssh-client
 
 RUN git clone --depth 1 https://github.com/topcoder-platform/challenge-api-v6.git /clients/challenge-api-v6 \
   && git clone --depth 1 https://github.com/topcoder-platform/identity-api-v6.git /clients/identity-api-v6 \
   && git clone --depth 1 https://github.com/topcoder-platform/member-api-v6.git /clients/member-api-v6 \
-  && git clone --depth 1 https://github.com/topcoder-platform/resource-api-v6.git /clients/resource-api-v6
+  && git clone --depth 1 https://github.com/topcoder-platform/resource-api-v6.git /clients/resource-api-v6 \
+  && identity_client_version="$(node -p "require('/clients/identity-api-v6/packages/identity-prisma-client/package.json').version")" \
+  && npm install --prefix /tmp/identity-engines --no-save "@prisma/engines@${identity_client_version}" \
+  && cp /tmp/identity-engines/node_modules/@prisma/engines/libquery_engine-linux-musl-openssl-3.0.x.so.node \
+    /clients/identity-api-v6/packages/identity-prisma-client/
 
-FROM base AS build
+FROM node:${NODE_VERSION}-alpine AS build
 
-COPY package.json pnpm-lock.yaml ./
+RUN apk upgrade --no-cache
+WORKDIR /usr/src/app
+RUN npm install --global pnpm@${PNPM_VERSION}
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
@@ -26,10 +32,16 @@ COPY --from=external-clients /clients/identity-api-v6/packages/identity-prisma-c
 COPY --from=external-clients /clients/member-api-v6/packages/member-prisma-client /usr/src/member-api-v6/packages/member-prisma-client
 COPY --from=external-clients /clients/resource-api-v6/packages/resources-prisma-client /usr/src/resource-api-v6/packages/resources-prisma-client
 RUN DATABASE_URL="postgresql://user:password@localhost:5432/forums" pnpm prisma:generate \
+  && pnpm lint \
   && pnpm build \
-  && pnpm prune --prod
+  && rm -rf node_modules \
+  && pnpm install --prod --frozen-lockfile --ignore-scripts
 
-FROM node:24.15.0-bookworm-slim AS production
+FROM node:${NODE_VERSION}-alpine AS production
+
+RUN apk upgrade --no-cache \
+  && rm -rf /usr/local/lib/node_modules/npm \
+  && rm -f /usr/local/bin/npm /usr/local/bin/npx
 
 ENV NODE_ENV=production
 WORKDIR /usr/src/app
