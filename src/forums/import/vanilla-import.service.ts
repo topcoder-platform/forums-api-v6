@@ -3,6 +3,7 @@ import {
   ImportedTopicTarget,
   VanillaImportRunOptions,
   VanillaImportRunSummary,
+  VanillaImportStageName,
   VanillaMatchedMember,
   VanillaReadStateRow,
   VanillaReplyRow,
@@ -29,6 +30,8 @@ interface CollapsedReadState {
   member: VanillaMatchedMember;
 }
 
+const PROGRESS_LOG_INTERVAL = 500;
+
 /**
  * Standalone Vanilla importer orchestration service.
  *
@@ -44,6 +47,10 @@ export class VanillaImportService {
     ImportedTopicTarget
   >();
   private readonly readDiscussionIds: string[] = [];
+  private readonly lastProgressUnitByStage = new Map<
+    VanillaImportStageName,
+    number
+  >();
 
   /**
    * Creates the import orchestrator.
@@ -77,6 +84,7 @@ export class VanillaImportService {
   ): Promise<VanillaImportRunSummary> {
     this.importedTopicsByDiscussionId.clear();
     this.readDiscussionIds.length = 0;
+    this.lastProgressUnitByStage.clear();
     this.reportService.start(options.command, options.reportPath);
 
     try {
@@ -116,6 +124,8 @@ export class VanillaImportService {
    * @throws Source reader errors when discussion reads fail.
    */
   private async importTopics(): Promise<void> {
+    this.logStageStart('topics');
+
     for await (const discussion of this.sourceReader.readDiscussions()) {
       this.reportService.recordRead('topics');
       this.readDiscussionIds.push(discussion.discussionId);
@@ -129,6 +139,7 @@ export class VanillaImportService {
           reason: 'missing_challenge',
           detail: { challengeId: discussion.challengeId },
         });
+        this.logStageProgress('topics');
         continue;
       }
 
@@ -141,6 +152,7 @@ export class VanillaImportService {
           reason: 'unmatched_discussion_author',
           detail: { legacyUserId: author.legacyUserId },
         });
+        this.logStageProgress('topics');
         continue;
       }
 
@@ -158,7 +170,11 @@ export class VanillaImportService {
           error: this.summarizeError(error),
         });
       }
+
+      this.logStageProgress('topics');
     }
+
+    this.logStageComplete('topics');
   }
 
   /**
@@ -168,13 +184,23 @@ export class VanillaImportService {
    * @throws Source reader errors when reply reads fail.
    */
   private async importReplies(): Promise<void> {
+    const totalDiscussions = this.readDiscussionIds.length;
+    this.logStageStart(
+      'replies',
+      `${totalDiscussions} source discussions to scan`,
+    );
+
+    let scannedDiscussions = 0;
+
     for (const discussionId of this.readDiscussionIds) {
+      scannedDiscussions += 1;
       const replies =
         await this.sourceReader.readRepliesForDiscussion(discussionId);
 
       for (let index = 0; index < replies.length; index += 1) {
         this.reportService.recordRead('replies');
       }
+      this.logStageProgress('replies');
 
       const topicTarget = this.importedTopicsByDiscussionId.get(discussionId);
 
@@ -186,11 +212,20 @@ export class VanillaImportService {
             detail: { discussionId },
           });
         }
+        this.logStageProgress('replies');
+        this.logReplyDiscussionProgress(scannedDiscussions, totalDiscussions);
         continue;
       }
 
       await this.importReplyGraph(replies, topicTarget);
+      this.logStageProgress('replies');
+      this.logReplyDiscussionProgress(scannedDiscussions, totalDiscussions);
     }
+
+    this.logStageComplete(
+      'replies',
+      `${totalDiscussions} source discussions scanned`,
+    );
   }
 
   /**
@@ -235,6 +270,7 @@ export class VanillaImportService {
           visitedReplyIds,
           'unmatched_reply_author',
         );
+        this.logStageProgress('replies');
         return;
       }
 
@@ -250,6 +286,7 @@ export class VanillaImportService {
           sourceId: reply.replyId,
           targetId: postId,
         });
+        this.logStageProgress('replies');
 
         const children = childrenByParentId.get(reply.replyId) ?? [];
 
@@ -270,6 +307,7 @@ export class VanillaImportService {
           visitedReplyIds,
           'ancestor_reply_failed',
         );
+        this.logStageProgress('replies');
       }
     };
 
@@ -300,6 +338,7 @@ export class VanillaImportService {
             visitedReplyIds,
             'parent_reply_unavailable',
           );
+          this.logStageProgress('replies');
         }
       }
     }
@@ -312,6 +351,8 @@ export class VanillaImportService {
    * @throws Source reader errors when watch reads fail.
    */
   private async importWatches(): Promise<void> {
+    this.logStageStart('watches');
+
     const importedKeys = new Set<string>();
 
     for await (const watch of this.sourceReader.readWatches()) {
@@ -328,6 +369,7 @@ export class VanillaImportService {
           ),
           reason: 'discussion_not_imported',
         });
+        this.logStageProgress('watches');
         continue;
       }
 
@@ -342,6 +384,7 @@ export class VanillaImportService {
           ),
           reason: 'unmatched_watch_member',
         });
+        this.logStageProgress('watches');
         continue;
       }
 
@@ -355,6 +398,7 @@ export class VanillaImportService {
           ),
           reason: 'duplicate_watch',
         });
+        this.logStageProgress('watches');
         continue;
       }
 
@@ -378,7 +422,11 @@ export class VanillaImportService {
           error: this.summarizeError(error),
         });
       }
+
+      this.logStageProgress('watches');
     }
+
+    this.logStageComplete('watches');
   }
 
   /**
@@ -388,6 +436,8 @@ export class VanillaImportService {
    * @throws Source reader errors when read-state reads fail.
    */
   private async importReadStates(): Promise<void> {
+    this.logStageStart('readState');
+
     const collapsed = new Map<string, CollapsedReadState>();
 
     for await (const readState of this.sourceReader.readReadStates()) {
@@ -405,6 +455,7 @@ export class VanillaImportService {
           sourceId,
           reason: 'discussion_not_imported',
         });
+        this.logStageProgress('readState');
         continue;
       }
 
@@ -416,6 +467,7 @@ export class VanillaImportService {
           sourceId,
           reason: 'unmatched_read_state_member',
         });
+        this.logStageProgress('readState');
         continue;
       }
 
@@ -428,6 +480,7 @@ export class VanillaImportService {
           reason: 'superseded_read_state',
           detail: { targetKey: key },
         });
+        this.logStageProgress('readState');
         continue;
       }
 
@@ -445,6 +498,7 @@ export class VanillaImportService {
         topicId: topicTarget.topicId,
         member,
       });
+      this.logStageProgress('readState');
     }
 
     for (const [targetId, collapsedReadState] of collapsed) {
@@ -464,7 +518,11 @@ export class VanillaImportService {
           error: this.summarizeError(error),
         });
       }
+
+      this.logStageProgress('readState');
     }
+
+    this.logStageComplete('readState');
   }
 
   /**
@@ -474,6 +532,8 @@ export class VanillaImportService {
    * @throws Source reader errors when member-ban reads fail.
    */
   private async importMemberBans(): Promise<void> {
+    this.logStageStart('memberBans');
+
     for await (const ban of this.sourceReader.readMemberBans()) {
       this.reportService.recordRead('memberBans');
       const member = await this.memberMapper.mapActor(ban.actor);
@@ -484,6 +544,7 @@ export class VanillaImportService {
           sourceId: ban.banId,
           reason: 'unmatched_member_ban_member',
         });
+        this.logStageProgress('memberBans');
         continue;
       }
 
@@ -499,16 +560,22 @@ export class VanillaImportService {
           error: this.summarizeError(error),
         });
       }
+
+      this.logStageProgress('memberBans');
     }
+
+    this.logStageComplete('memberBans');
   }
 
   /**
-   * Imports active exact IPv4/IPv6 host ban rows and skips unsupported rules.
+   * Imports exact IPv4/IPv6 host ban rows and skips unsupported rules.
    *
    * @returns A promise that resolves when the IP-ban stage is complete.
    * @throws Source reader errors when IP-ban reads fail.
    */
   private async importIpBans(): Promise<void> {
+    this.logStageStart('ipBans');
+
     for await (const ban of this.sourceReader.readIpBans()) {
       this.reportService.recordRead('ipBans');
 
@@ -528,6 +595,7 @@ export class VanillaImportService {
             reason: 'unsupported_non_exact_ip_rule',
             detail: { ipAddress: ban.ipAddress },
           });
+          this.logStageProgress('ipBans');
           continue;
         }
 
@@ -536,7 +604,11 @@ export class VanillaImportService {
           error: this.summarizeError(error),
         });
       }
+
+      this.logStageProgress('ipBans');
     }
+
+    this.logStageComplete('ipBans');
   }
 
   /**
@@ -642,6 +714,108 @@ export class VanillaImportService {
     legacyUserId: string,
   ): string {
     return `${discussionId}:${legacyUserId}`;
+  }
+
+  /**
+   * Logs the beginning of an import stage with optional operator context.
+   *
+   * @param stage Stage that is starting.
+   * @param detail Optional extra context such as source rows to scan.
+   * @returns Nothing.
+   * @throws Does not throw.
+   */
+  private logStageStart(stage: VanillaImportStageName, detail?: string): void {
+    this.lastProgressUnitByStage.set(stage, 0);
+    this.logger.log(
+      `Starting Vanilla import stage "${stage}"${detail ? `: ${detail}` : ''}.`,
+    );
+  }
+
+  /**
+   * Logs stage progress when counters cross the configured interval.
+   *
+   * @param stage Stage whose report counters should be logged.
+   * @returns Nothing.
+   * @throws Error when the report has not been started.
+   */
+  private logStageProgress(stage: VanillaImportStageName): void {
+    const summary = this.reportService.getStageSummary(stage);
+    const completedRecords =
+      summary.imported + summary.skipped + summary.failed;
+    const progressUnit = Math.max(summary.read, completedRecords);
+    const lastProgressUnit = this.lastProgressUnitByStage.get(stage) ?? 0;
+
+    if (progressUnit - lastProgressUnit < PROGRESS_LOG_INTERVAL) {
+      return;
+    }
+
+    const loggedProgressUnit =
+      Math.floor(progressUnit / PROGRESS_LOG_INTERVAL) * PROGRESS_LOG_INTERVAL;
+    this.lastProgressUnitByStage.set(stage, loggedProgressUnit);
+    this.logger.log(
+      `Vanilla import stage "${stage}" progress: ${this.formatStageSummary(
+        stage,
+      )}.`,
+    );
+  }
+
+  /**
+   * Logs the end of an import stage with the current report counters.
+   *
+   * @param stage Stage that completed.
+   * @param detail Optional extra context such as source discussions scanned.
+   * @returns Nothing.
+   * @throws Error when the report has not been started.
+   */
+  private logStageComplete(
+    stage: VanillaImportStageName,
+    detail?: string,
+  ): void {
+    this.logger.log(
+      `Completed Vanilla import stage "${stage}": ${this.formatStageSummary(
+        stage,
+      )}${detail ? ` (${detail})` : ''}.`,
+    );
+  }
+
+  /**
+   * Logs reply discussion scan progress because many scanned discussions have
+   * no reply rows and therefore do not move the reply record counters.
+   *
+   * @param scannedDiscussions Number of source discussions already scanned.
+   * @param totalDiscussions Total source discussions discovered from topics.
+   * @returns Nothing.
+   * @throws Error when the report has not been started.
+   */
+  private logReplyDiscussionProgress(
+    scannedDiscussions: number,
+    totalDiscussions: number,
+  ): void {
+    if (
+      scannedDiscussions === 0 ||
+      scannedDiscussions % PROGRESS_LOG_INTERVAL !== 0
+    ) {
+      return;
+    }
+
+    this.logger.log(
+      `Vanilla import stage "replies" scanned ${scannedDiscussions}/${totalDiscussions} source discussions. ${this.formatStageSummary(
+        'replies',
+      )}.`,
+    );
+  }
+
+  /**
+   * Formats current report counters for compact progress logs.
+   *
+   * @param stage Stage whose counters should be formatted.
+   * @returns Human-readable counter summary.
+   * @throws Error when the report has not been started.
+   */
+  private formatStageSummary(stage: VanillaImportStageName): string {
+    const summary = this.reportService.getStageSummary(stage);
+
+    return `read=${summary.read}, imported=${summary.imported}, skipped=${summary.skipped}, failed=${summary.failed}`;
   }
 
   /**

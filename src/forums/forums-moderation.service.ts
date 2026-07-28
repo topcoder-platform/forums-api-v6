@@ -651,7 +651,7 @@ export class ForumsModerationService {
       return false;
     }
 
-    const prismaError = error as Prisma.PrismaClientKnownRequestError;
+    const prismaError = error;
 
     if (prismaError.code !== PRISMA_UNIQUE_CONSTRAINT_CODE) {
       return false;

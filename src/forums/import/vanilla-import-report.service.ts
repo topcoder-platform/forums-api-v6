@@ -248,6 +248,26 @@ export class VanillaImportReportService {
   }
 
   /**
+   * Reads the current counter-only summary for one import stage.
+   *
+   * @param stage Stage whose counters should be returned.
+   * @returns Current read/imported/skipped/failed counters for progress logs.
+   * @throws Error when the report has not been started.
+   */
+  getStageSummary(
+    stage: VanillaImportStageName,
+  ): Pick<VanillaStageReport, 'read' | 'imported' | 'skipped' | 'failed'> {
+    const stageReport = this.requireReport().stages[stage];
+
+    return {
+      read: stageReport.read,
+      imported: stageReport.imported,
+      skipped: stageReport.skipped,
+      failed: stageReport.failed,
+    };
+  }
+
+  /**
    * Finalizes and writes the JSON report.
    *
    * @param status Final import status.

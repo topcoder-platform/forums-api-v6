@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# Import data
+/.vanilla-import-report*
+
 # Logs
 logs
 *.log

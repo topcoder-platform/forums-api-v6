@@ -39,12 +39,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 7.8.0
- * Query Engine version: 3c6e192761c0362d496ed980de936e2f3cebcd3a
+ * Prisma Client JS version: 7.9.0
+ * Query Engine version: e922089b7d7502aff4249d5da3420f6fa55fc6ad
  */
 Prisma.prismaVersion = {
-  client: "7.8.0",
-  engine: "3c6e192761c0362d496ed980de936e2f3cebcd3a"
+  client: "7.9.0",
+  engine: "e922089b7d7502aff4249d5da3420f6fa55fc6ad"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -191,8 +191,8 @@ exports.Prisma.ModelName = {
  */
 const config = {
   "previewFeatures": [],
-  "clientVersion": "7.8.0",
-  "engineVersion": "3c6e192761c0362d496ed980de936e2f3cebcd3a",
+  "clientVersion": "7.9.0",
+  "engineVersion": "e922089b7d7502aff4249d5da3420f6fa55fc6ad",
   "activeProvider": "postgresql",
   "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"./generated/client\"\n}\n\ngenerator externalClient {\n  provider      = \"prisma-client-js\"\n  output        = \"../packages/forums-prisma-client\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  schemas  = [\"forums\"]\n}\n\nmodel Topic {\n  id                String    @id @default(dbgenerated(\"nanoid()\")) @db.VarChar(14)\n  parentTopicId     String?   @db.VarChar(14)\n  challengeId       String?   @db.VarChar(64)\n  roleName          String?   @db.VarChar(128)\n  title             String    @db.VarChar(255)\n  isAnnouncement    Boolean   @default(false)\n  locked            Boolean   @default(false)\n  lockedAt          DateTime?\n  lockedByMemberId  String?   @db.VarChar(64)\n  authorMemberId    String    @db.VarChar(64)\n  authorHandle      String    @db.VarChar(128)\n  createdAt         DateTime  @default(now())\n  updatedAt         DateTime  @default(now()) @updatedAt\n  deletedAt         DateTime?\n  deletedByMemberId String?   @db.VarChar(64)\n\n  parentTopic        Topic?           @relation(\"TopicChildren\", fields: [parentTopicId], references: [id])\n  childTopics        Topic[]          @relation(\"TopicChildren\")\n  posts              Post[]\n  ancestorClosures   TopicClosure[]   @relation(\"TopicClosureAncestor\")\n  descendantClosures TopicClosure[]   @relation(\"TopicClosureDescendant\")\n  watches            TopicWatch[]\n  readStates         TopicReadState[]\n\n  @@index([parentTopicId])\n  @@index([challengeId])\n  @@index([roleName])\n  @@index([deletedAt])\n  @@index([isAnnouncement, createdAt])\n  @@schema(\"forums\")\n}\n\nmodel MemberBan {\n  id                String    @id @default(dbgenerated(\"nanoid()\")) @db.VarChar(14)\n  memberId          String    @db.VarChar(64)\n  createdAt         DateTime  @default(now())\n  createdByMemberId String?   @db.VarChar(64)\n  removedAt         DateTime?\n  removedByMemberId String?   @db.VarChar(64)\n\n  @@index([memberId])\n  @@index([removedAt])\n  @@schema(\"forums\")\n}\n\nmodel IpBan {\n  id                String    @id @default(dbgenerated(\"nanoid()\")) @db.VarChar(14)\n  ipAddress         String    @db.VarChar(45)\n  createdAt         DateTime  @default(now())\n  createdByMemberId String?   @db.VarChar(64)\n  removedAt         DateTime?\n  removedByMemberId String?   @db.VarChar(64)\n\n  @@index([ipAddress])\n  @@index([removedAt])\n  @@schema(\"forums\")\n}\n\nmodel Post {\n  id                String    @id @default(dbgenerated(\"nanoid()\")) @db.VarChar(14)\n  topicId           String    @db.VarChar(14)\n  parentType        String    @db.VarChar(16)\n  parentId          String    @db.VarChar(14)\n  authorMemberId    String    @db.VarChar(64)\n  authorHandle      String    @db.VarChar(128)\n  content           String?   @db.Text\n  createdAt         DateTime  @default(now())\n  updatedAt         DateTime  @default(now()) @updatedAt\n  deletedAt         DateTime?\n  deletedByMemberId String?   @db.VarChar(64)\n\n  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)\n\n  @@index([topicId, createdAt])\n  @@index([topicId, parentType, parentId])\n  @@index([deletedAt])\n  @@schema(\"forums\")\n}\n\nmodel TopicClosure {\n  ancestorTopicId   String @db.VarChar(14)\n  descendantTopicId String @db.VarChar(14)\n  depth             Int\n\n  ancestorTopic   Topic @relation(\"TopicClosureAncestor\", fields: [ancestorTopicId], references: [id], onDelete: Cascade)\n  descendantTopic Topic @relation(\"TopicClosureDescendant\", fields: [descendantTopicId], references: [id], onDelete: Cascade)\n\n  @@id([ancestorTopicId, descendantTopicId])\n  @@index([ancestorTopicId, depth])\n  @@index([descendantTopicId, depth])\n  @@schema(\"forums\")\n}\n\nmodel TopicWatch {\n  topicId   String   @db.VarChar(14)\n  memberId  String   @db.VarChar(64)\n  createdAt DateTime @default(now())\n\n  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)\n\n  @@id([topicId, memberId])\n  @@index([memberId])\n  @@schema(\"forums\")\n}\n\nmodel TopicReadState {\n  topicId    String   @db.VarChar(14)\n  memberId   String   @db.VarChar(64)\n  lastReadAt DateTime @default(now())\n  updatedAt  DateTime @default(now()) @updatedAt\n\n  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)\n\n  @@id([topicId, memberId])\n  @@index([memberId])\n  @@index([lastReadAt])\n  @@schema(\"forums\")\n}\n"
 }
