@@ -43,6 +43,7 @@ interface ForumsPostTreeNodeInternal {
   parentId: string;
   authorMemberId: string;
   authorHandle: string;
+  authorPostsCount: number;
   content: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -510,6 +511,11 @@ export class ForumsReadService {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       postsCount: Number(row.postsCount),
+      viewsCount: Number(row.viewsCount),
+      watching: Boolean(row.watching),
+      starterPostExcerpt: row.starterPostExcerpt,
+      participantsCount: Number(row.participantsCount),
+      participants: Array.isArray(row.participants) ? row.participants : [],
       latestActivity:
         row.latestPostId &&
         row.latestPostAuthorMemberId &&
@@ -599,6 +605,7 @@ export class ForumsReadService {
       parentId: row.parentId,
       authorMemberId: row.authorMemberId,
       authorHandle: row.authorHandle,
+      authorPostsCount: Number(row.authorPostsCount),
       content: deleted ? null : row.content,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -681,6 +688,7 @@ export class ForumsReadService {
       parentId: node.parentId,
       authorMemberId: node.authorMemberId,
       authorHandle: node.authorHandle,
+      authorPostsCount: node.authorPostsCount,
       content: node.content,
       createdAt: node.createdAt,
       updatedAt: node.updatedAt,
