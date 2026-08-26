@@ -43,7 +43,10 @@ RUN apk upgrade --no-cache \
   && rm -rf /usr/local/lib/node_modules/npm \
   && rm -f /usr/local/bin/npm /usr/local/bin/npx
 
-ENV NODE_ENV=production
+# External Prisma clients are copied beside the application under /usr/src.
+# Expose the application's production dependencies to their CommonJS imports.
+ENV NODE_ENV=production \
+  NODE_PATH=/usr/src/app/node_modules
 WORKDIR /usr/src/app
 
 COPY --from=build --chown=node:node /usr/src/app/dist ./dist
