@@ -1,6 +1,9 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient as ChallengePrismaClient } from '../../../challenge-api-v6/packages/challenge-prisma-client';
+import {
+  createChallengePrismaClient,
+  PrismaClient as ChallengePrismaClient,
+} from '../../../challenge-api-v6/packages/challenge-prisma-client';
 
 /**
  * Challenge-domain access facts normalized for forum authorization.
@@ -130,13 +133,7 @@ export class ChallengeAccessService implements OnModuleDestroy {
       return undefined;
     }
 
-    this.client = new ChallengePrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
-    });
+    this.client = createChallengePrismaClient(databaseUrl);
 
     return this.client;
   }

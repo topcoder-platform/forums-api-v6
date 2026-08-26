@@ -138,7 +138,7 @@ function createSeededForumsDb(seed: SeededForumsData) {
         return ban ? [{ id: ban.id }] : [];
       }
 
-      if (queryText.includes('FROM "Post" p')) {
+      if (queryText.includes('SELECT\n        p.id')) {
         return seed.posts
           .filter((post) => post.topicId === topicId)
           .sort(compareCreatedAtThenId)
@@ -149,6 +149,12 @@ function createSeededForumsDb(seed: SeededForumsData) {
             parentId: post.parentId,
             authorMemberId: post.authorMemberId,
             authorHandle: post.authorHandle,
+            authorPostsCount: seed.posts.filter(
+              (candidate) =>
+                candidate.topicId === post.topicId &&
+                candidate.authorMemberId === post.authorMemberId &&
+                !candidate.deletedAt,
+            ).length,
             content: post.content,
             createdAt: post.createdAt,
             updatedAt: post.updatedAt,
@@ -497,6 +503,19 @@ function buildTopicSummaryRow(
   const readState = seed.topicReadStates.find(
     (state) => state.topicId === topic.id && state.memberId === memberId,
   );
+  const participantsByMemberId = new Map<
+    string,
+    { memberId: string; handle: string }
+  >();
+
+  for (const post of posts) {
+    participantsByMemberId.set(post.authorMemberId, {
+      memberId: post.authorMemberId,
+      handle: post.authorHandle,
+    });
+  }
+
+  const participants = Array.from(participantsByMemberId.values());
 
   return {
     id: topic.id,
@@ -513,6 +532,15 @@ function buildTopicSummaryRow(
     createdAt: topic.createdAt,
     updatedAt: topic.updatedAt,
     postsCount: posts.length,
+    viewsCount: seed.topicReadStates.filter(
+      (state) => state.topicId === topic.id,
+    ).length,
+    watching: seed.topicWatches.some(
+      (watch) => watch.topicId === topic.id && watch.memberId === memberId,
+    ),
+    starterPostExcerpt: posts[0]?.content?.slice(0, 280) ?? null,
+    participantsCount: participants.length,
+    participants: participants.slice(0, 5),
     latestPostId: latestPost?.id ?? null,
     latestPostAuthorMemberId: latestPost?.authorMemberId ?? null,
     latestPostAuthorHandle: latestPost?.authorHandle ?? null,
@@ -771,7 +799,17 @@ describe('forums notification/read integration', () => {
         locked: false,
         lockedBy: null,
         lockedAt: null,
+        participants: [
+          { handle: 'author', memberId: '1' },
+        ],
+        participantsCount: 1,
+        starterPostExcerpt: 'Restricted starter content',
+        viewsCount: 1,
+        watching: true,
       }),
+    );
+    expect(authorDetailResponse.body.posts[0]).toEqual(
+      expect.objectContaining({ authorPostsCount: 1 }),
     );
     expect(publishedEvents).toHaveLength(1);
     expect(publishedEvents[0]).toEqual(
