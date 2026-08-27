@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
-import { Post, Topic } from '../../prisma/generated/client';
+import { Post, PostReactionType, Topic } from '../../prisma/generated/client';
 import { DbService } from '../db/db.service';
 import { ChallengeAccessService } from './challenge-access.service';
 import { EventBusService } from './event-bus.service';
@@ -43,9 +43,16 @@ interface IpBanSeed {
   removedAt: Date | null;
 }
 
+interface PostReactionSeed {
+  postId: string;
+  memberId: string;
+  reaction: PostReactionType;
+}
+
 interface SeededForumsData {
   topics: Topic[];
   posts: Post[];
+  postReactions: PostReactionSeed[];
   topicClosures: TopicClosureSeed[];
   topicWatches: TopicWatchSeed[];
   topicReadStates: TopicReadStateSeed[];
@@ -139,27 +146,47 @@ function createSeededForumsDb(seed: SeededForumsData) {
       }
 
       if (queryText.includes('SELECT\n        p.id')) {
+        const viewerMemberId = queryValueToString(values[0]);
+
         return seed.posts
           .filter((post) => post.topicId === topicId)
           .sort(compareCreatedAtThenId)
-          .map((post) => ({
-            id: post.id,
-            topicId: post.topicId,
-            parentType: post.parentType,
-            parentId: post.parentId,
-            authorMemberId: post.authorMemberId,
-            authorHandle: post.authorHandle,
-            authorPostsCount: seed.posts.filter(
-              (candidate) =>
-                candidate.topicId === post.topicId &&
-                candidate.authorMemberId === post.authorMemberId &&
-                !candidate.deletedAt,
-            ).length,
-            content: post.content,
-            createdAt: post.createdAt,
-            updatedAt: post.updatedAt,
-            deletedAt: post.deletedAt,
-          }));
+          .map((post) => {
+            const reactions = seed.postReactions.filter(
+              (reaction) => reaction.postId === post.id,
+            );
+
+            return {
+              id: post.id,
+              topicId: post.topicId,
+              parentType: post.parentType,
+              parentId: post.parentId,
+              authorMemberId: post.authorMemberId,
+              authorHandle: post.authorHandle,
+              authorPostsCount: seed.posts.filter(
+                (candidate) =>
+                  candidate.topicId === post.topicId &&
+                  candidate.authorMemberId === post.authorMemberId &&
+                  !candidate.deletedAt,
+              ).length,
+              content: post.content,
+              createdAt: post.createdAt,
+              updatedAt: post.updatedAt,
+              deletedAt: post.deletedAt,
+              thumbsUpCount: reactions.filter(
+                (reaction) =>
+                  reaction.reaction === PostReactionType.THUMBS_UP,
+              ).length,
+              thumbsDownCount: reactions.filter(
+                (reaction) =>
+                  reaction.reaction === PostReactionType.THUMBS_DOWN,
+              ).length,
+              viewerReaction:
+                reactions.find(
+                  (reaction) => reaction.memberId === viewerMemberId,
+                )?.reaction ?? null,
+            };
+          });
       }
 
       if (queryText.includes('SELECT EXISTS')) {
@@ -257,6 +284,53 @@ function createSeededForumsDb(seed: SeededForumsData) {
         ) ?? null,
       findUnique: (args: { where: { id: string } }) =>
         seed.posts.find((post) => post.id === args.where.id) ?? null,
+    },
+    postReaction: {
+      upsert: (args: {
+        where: {
+          postId_memberId: { postId: string; memberId: string };
+        };
+        create: PostReactionSeed;
+        update: { reaction: PostReactionType };
+      }) => {
+        const existing = seed.postReactions.find(
+          (reaction) =>
+            reaction.postId === args.where.postId_memberId.postId &&
+            reaction.memberId === args.where.postId_memberId.memberId,
+        );
+
+        if (existing) {
+          existing.reaction = args.update.reaction;
+          return existing;
+        }
+
+        seed.postReactions.push(args.create);
+        return args.create;
+      },
+      deleteMany: (args: {
+        where: { postId: string; memberId: string };
+      }) => {
+        const index = seed.postReactions.findIndex(
+          (reaction) =>
+            reaction.postId === args.where.postId &&
+            reaction.memberId === args.where.memberId,
+        );
+
+        if (index < 0) {
+          return { count: 0 };
+        }
+
+        seed.postReactions.splice(index, 1);
+        return { count: 1 };
+      },
+      count: (args: {
+        where: { postId: string; reaction: PostReactionType };
+      }) =>
+        seed.postReactions.filter(
+          (reaction) =>
+            reaction.postId === args.where.postId &&
+            reaction.reaction === args.where.reaction,
+        ).length,
     },
     topicClosure: {
       findMany: (args: {
@@ -637,6 +711,7 @@ describe('forums notification/read integration', () => {
         }),
       ],
       posts: [],
+      postReactions: [],
       topicClosures: [
         {
           ancestorTopicId: 'parent-1',
@@ -913,5 +988,70 @@ describe('forums notification/read integration', () => {
         lockedAt: null,
       }),
     );
+  });
+
+  it('shares post reaction counts while preserving each member viewer state', async () => {
+    seedData.posts.push(makePost({ topicId: 'parent-1', parentId: 'parent-1' }));
+    seedData.postReactions.push(
+      {
+        postId: 'post-1',
+        memberId: '1',
+        reaction: PostReactionType.THUMBS_UP,
+      },
+      {
+        postId: 'post-1',
+        memberId: '2',
+        reaction: PostReactionType.THUMBS_DOWN,
+      },
+    );
+
+    const memberOneDetail = await request(app.getHttpServer())
+      .get('/topics/parent-1')
+      .set('x-member-id', '1')
+      .expect(200);
+
+    expect(memberOneDetail.body.posts[0]).toEqual(
+      expect.objectContaining({
+        thumbsUpCount: 1,
+        thumbsDownCount: 1,
+        viewerReaction: PostReactionType.THUMBS_UP,
+      }),
+    );
+
+    await request(app.getHttpServer())
+      .put('/posts/post-1/reaction')
+      .set('x-member-id', '1')
+      .send({ reaction: PostReactionType.THUMBS_DOWN })
+      .expect(200)
+      .expect({
+        postId: 'post-1',
+        viewerReaction: PostReactionType.THUMBS_DOWN,
+        thumbsUpCount: 0,
+        thumbsDownCount: 2,
+      });
+
+    const memberTwoDetail = await request(app.getHttpServer())
+      .get('/topics/parent-1')
+      .set('x-member-id', '2')
+      .expect(200);
+
+    expect(memberTwoDetail.body.posts[0]).toEqual(
+      expect.objectContaining({
+        thumbsUpCount: 0,
+        thumbsDownCount: 2,
+        viewerReaction: PostReactionType.THUMBS_DOWN,
+      }),
+    );
+
+    await request(app.getHttpServer())
+      .delete('/posts/post-1/reaction')
+      .set('x-member-id', '1')
+      .expect(200)
+      .expect({
+        postId: 'post-1',
+        viewerReaction: null,
+        thumbsUpCount: 0,
+        thumbsDownCount: 1,
+      });
   });
 });

@@ -170,6 +170,14 @@ exports.Prisma.PostScalarFieldEnum = {
   deletedByMemberId: 'deletedByMemberId'
 };
 
+exports.Prisma.PostReactionScalarFieldEnum = {
+  postId: 'postId',
+  memberId: 'memberId',
+  reaction: 'reaction',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.TopicClosureScalarFieldEnum = {
   ancestorTopicId: 'ancestorTopicId',
   descendantTopicId: 'descendantTopicId',
@@ -203,13 +211,17 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
-
+exports.PostReactionType = exports.$Enums.PostReactionType = {
+  THUMBS_UP: 'THUMBS_UP',
+  THUMBS_DOWN: 'THUMBS_DOWN'
+};
 
 exports.Prisma.ModelName = {
   Topic: 'Topic',
   MemberBan: 'MemberBan',
   IpBan: 'IpBan',
   Post: 'Post',
+  PostReaction: 'PostReaction',
   TopicClosure: 'TopicClosure',
   TopicWatch: 'TopicWatch',
   TopicReadState: 'TopicReadState'

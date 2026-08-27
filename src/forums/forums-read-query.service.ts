@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '../../prisma/generated/client';
+import { PostReactionType, Prisma } from '../../prisma/generated/client';
 import { DbService } from '../db/db.service';
 
 /**
@@ -58,6 +58,9 @@ export interface ForumsPostTreeRow {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
+  thumbsUpCount: number;
+  thumbsDownCount: number;
+  viewerReaction: PostReactionType | null;
 }
 
 /**
@@ -220,12 +223,14 @@ export class ForumsReadQueryService {
    * Fetches all posts for a topic, including soft-deleted placeholders.
    *
    * @param topicId Topic id whose posts should be returned.
+   * @param memberId Authenticated member id used to resolve viewer reaction state.
    * @param client Optional transaction client used to bind this read to a snapshot.
-   * @returns Post rows ordered by creation time for deterministic tree assembly.
+   * @returns Post rows with aggregate and viewer reactions, ordered for deterministic tree assembly.
    * @throws Prisma errors when the raw query fails.
    */
   findTopicPostRows(
     topicId: string,
+    memberId: string | null,
     client: ForumsReadQueryClient = this.db,
   ): Promise<ForumsPostTreeRow[]> {
     return client.$queryRaw<ForumsPostTreeRow[]>(Prisma.sql`
@@ -244,8 +249,25 @@ export class ForumsReadQueryService {
         p.content,
         p."createdAt",
         p."updatedAt",
-        p."deletedAt"
+        p."deletedAt",
+        reaction_stats."thumbsUpCount",
+        reaction_stats."thumbsDownCount",
+        reaction_stats."viewerReaction"
       FROM "Post" p
+      LEFT JOIN LATERAL (
+        SELECT
+          COUNT(*) FILTER (
+            WHERE post_reaction.reaction::text = 'THUMBS_UP'
+          )::integer AS "thumbsUpCount",
+          COUNT(*) FILTER (
+            WHERE post_reaction.reaction::text = 'THUMBS_DOWN'
+          )::integer AS "thumbsDownCount",
+          MAX(post_reaction.reaction::text) FILTER (
+            WHERE post_reaction."memberId" = CAST(${memberId} AS text)
+          ) AS "viewerReaction"
+        FROM "PostReaction" post_reaction
+        WHERE post_reaction."postId" = p.id
+      ) reaction_stats ON true
       WHERE p."topicId" = ${topicId}
       ORDER BY p."createdAt" ASC, p.id ASC
     `);
@@ -302,7 +324,7 @@ export class ForumsReadQueryService {
           return null;
         }
 
-        const postRows = await this.findTopicPostRows(topicId, tx);
+        const postRows = await this.findTopicPostRows(topicId, memberId, tx);
 
         return { summaryRow, postRows };
       },

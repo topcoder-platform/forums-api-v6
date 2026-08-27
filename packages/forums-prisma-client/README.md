@@ -3,10 +3,10 @@
 Reusable Prisma client generated from `prisma/schema.prisma` for services that
 need direct, typed access to forum data.
 
-The package exports the Forums `Topic`, `Post`, `TopicClosure`, `TopicWatch`,
-`TopicReadState`, `MemberBan`, and `IpBan` models. Consumers import this client
-from the Forums API package and must supply the Prisma 7 PostgreSQL driver
-adapter required by their runtime:
+The package exports the Forums `Topic`, `Post`, `PostReaction`,
+`PostReactionType`, `TopicClosure`, `TopicWatch`, `TopicReadState`, `MemberBan`,
+and `IpBan` models. Consumers import this client from the Forums API package and
+must supply the Prisma 7 PostgreSQL driver adapter required by their runtime:
 
 ```ts
 import { PrismaClient } from '@topcoder/forums-api-v6/packages/forums-prisma-client';

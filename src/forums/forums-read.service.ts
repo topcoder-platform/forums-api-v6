@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtUser } from '../auth/jwt.service';
+import { PostReactionType } from '../../prisma/generated/client';
 import {
   ForumsPostTreeNodeDto,
   ForumsTopicDetailDto,
@@ -48,6 +49,9 @@ interface ForumsPostTreeNodeInternal {
   createdAt: Date;
   updatedAt: Date;
   deleted: boolean;
+  thumbsUpCount: number;
+  thumbsDownCount: number;
+  viewerReaction: PostReactionType | null;
   replies: ForumsPostTreeNodeInternal[];
   subtreeLatestActivityAt: Date | null;
 }
@@ -610,6 +614,9 @@ export class ForumsReadService {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       deleted,
+      thumbsUpCount: Number(row.thumbsUpCount),
+      thumbsDownCount: Number(row.thumbsDownCount),
+      viewerReaction: row.viewerReaction,
       replies: [],
       subtreeLatestActivityAt: deleted ? null : row.createdAt,
     };
@@ -693,6 +700,9 @@ export class ForumsReadService {
       createdAt: node.createdAt,
       updatedAt: node.updatedAt,
       deleted: node.deleted,
+      thumbsUpCount: node.thumbsUpCount,
+      thumbsDownCount: node.thumbsDownCount,
+      viewerReaction: node.viewerReaction,
       replies: node.replies.map((reply) => this.toPostTreeDto(reply)),
     };
   }
