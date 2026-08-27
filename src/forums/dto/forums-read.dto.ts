@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PostReactionType } from '../../../prisma/generated/client';
 
 /**
  * Query parameters for paginated forum topic list reads.
@@ -292,6 +293,23 @@ export class ForumsPostTreeNodeDto {
 
   @ApiProperty({ description: 'Whether the post is a deleted placeholder.' })
   deleted: boolean;
+
+  @ApiProperty({
+    description: 'Number of current thumbs-up reactions from all members.',
+  })
+  thumbsUpCount: number;
+
+  @ApiProperty({
+    description: 'Number of current thumbs-down reactions from all members.',
+  })
+  thumbsDownCount: number;
+
+  @ApiPropertyOptional({
+    description: "Authenticated member's current reaction on this post.",
+    enum: PostReactionType,
+    nullable: true,
+  })
+  viewerReaction: PostReactionType | null;
 
   @ApiProperty({
     description: 'Nested replies ordered by newest visible subtree activity.',

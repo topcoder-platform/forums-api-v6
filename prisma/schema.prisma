@@ -14,6 +14,13 @@ datasource db {
   schemas  = ["forums"]
 }
 
+enum PostReactionType {
+  THUMBS_UP
+  THUMBS_DOWN
+
+  @@schema("forums")
+}
+
 model Topic {
   id                String    @id @default(dbgenerated("nanoid()")) @db.VarChar(14)
   parentTopicId     String?   @db.VarChar(14)
@@ -86,11 +93,27 @@ model Post {
   deletedAt         DateTime?
   deletedByMemberId String?   @db.VarChar(64)
 
-  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topic     Topic          @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  reactions PostReaction[]
 
   @@index([topicId, createdAt])
   @@index([topicId, parentType, parentId])
   @@index([deletedAt])
+  @@schema("forums")
+}
+
+model PostReaction {
+  postId    String           @db.VarChar(14)
+  memberId  String           @db.VarChar(64)
+  reaction  PostReactionType
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @default(now()) @updatedAt
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([postId, memberId])
+  @@index([memberId])
+  @@index([postId, reaction])
   @@schema("forums")
 }
 

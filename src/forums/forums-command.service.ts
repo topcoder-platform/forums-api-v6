@@ -10,6 +10,7 @@ import { JwtUser } from '../auth/jwt.service';
 import { DbService } from '../db/db.service';
 import {
   Post,
+  PostReactionType,
   Prisma,
   Topic,
   TopicReadState,
@@ -19,11 +20,13 @@ import {
   CreatePostDto,
   CreateTopicDto,
   MemberTargetDto,
+  SetPostReactionDto,
   UpdatePostDto,
   UpdateTopicDto,
 } from './dto/forums-command.dto';
 import {
   CreateTopicCommandResponseDto,
+  ForumPostReactionStateDto,
   ForumTopicCommandResponseDto,
 } from './dto/forums-command-response.dto';
 import {
@@ -113,7 +116,8 @@ export interface TopicWatchResult {
 }
 
 /**
- * Command-side service for forum content, watch, and read-state mutations.
+ * Command-side service for forum content, reactions, watch, and read-state
+ * mutations.
  *
  * The service keeps transactional write shapes local while delegating
  * action-level authorization to the shared forums access policy and runtime
@@ -681,6 +685,88 @@ export class ForumsCommandService {
   }
 
   /**
+   * Adds or replaces the authenticated member's reaction on an active post.
+   *
+   * Reactions require post visibility and an unbanned human member, but remain
+   * available on locked topics because they do not change discussion content.
+   *
+   * @param postId Post id receiving the reaction.
+   * @param dto Requested thumbs-up or thumbs-down value.
+   * @param user Authenticated human member token payload.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
+   * @returns Resulting viewer reaction and aggregate post reaction counts.
+   * @throws UnauthorizedException when no authenticated human member is present.
+   * @throws ForbiddenException when runtime bans or inherited visibility deny access.
+   * @throws NotFoundException when the post or its active topic is missing or deleted.
+   */
+  async setPostReaction(
+    postId: string,
+    dto: SetPostReactionDto,
+    user: JwtUser | undefined,
+    trustedClientIp?: string,
+  ): Promise<ForumPostReactionStateDto> {
+    const memberId = await this.authorizePostReaction(
+      postId,
+      user,
+      trustedClientIp,
+    );
+
+    return this.db.$transaction(async (tx) => {
+      await this.ensureMutablePost(tx, postId);
+      await tx.postReaction.upsert({
+        where: {
+          postId_memberId: { postId, memberId },
+        },
+        create: {
+          postId,
+          memberId,
+          reaction: dto.reaction,
+        },
+        update: {
+          reaction: dto.reaction,
+        },
+      });
+
+      return this.buildPostReactionState(tx, postId, dto.reaction);
+    });
+  }
+
+  /**
+   * Removes the authenticated member's reaction from an active post.
+   *
+   * Removal is idempotent and remains available on locked topics. The response
+   * always reports a null viewer reaction plus current aggregate counts.
+   *
+   * @param postId Post id whose current-member reaction should be removed.
+   * @param user Authenticated human member token payload.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
+   * @returns Resulting null viewer reaction and aggregate post reaction counts.
+   * @throws UnauthorizedException when no authenticated human member is present.
+   * @throws ForbiddenException when runtime bans or inherited visibility deny access.
+   * @throws NotFoundException when the post or its active topic is missing or deleted.
+   */
+  async removePostReaction(
+    postId: string,
+    user: JwtUser | undefined,
+    trustedClientIp?: string,
+  ): Promise<ForumPostReactionStateDto> {
+    const memberId = await this.authorizePostReaction(
+      postId,
+      user,
+      trustedClientIp,
+    );
+
+    return this.db.$transaction(async (tx) => {
+      await this.ensureMutablePost(tx, postId);
+      await tx.postReaction.deleteMany({
+        where: { postId, memberId },
+      });
+
+      return this.buildPostReactionState(tx, postId, null);
+    });
+  }
+
+  /**
    * Adds an explicit watch for a member on a topic.
    *
    * @param topicId Topic id to watch.
@@ -929,6 +1015,83 @@ export class ForumsCommandService {
       updatedAt: topic.updatedAt,
       deletedAt: topic.deletedAt,
       deletedByMemberId: topic.deletedByMemberId,
+    };
+  }
+
+  /**
+   * Authorizes a human member reaction against post visibility and runtime bans.
+   *
+   * @param postId Post id receiving a reaction command.
+   * @param user Authenticated token payload from request middleware.
+   * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
+   * @returns Authenticated member id used as the reaction owner.
+   * @throws UnauthorizedException when the caller is absent, M2M, or lacks a member id.
+   * @throws ForbiddenException when runtime bans or inherited visibility deny access.
+   * @throws NotFoundException when the post or owning topic is missing or deleted.
+   */
+  private async authorizePostReaction(
+    postId: string,
+    user: JwtUser | undefined,
+    trustedClientIp?: string,
+  ): Promise<string> {
+    const principal = this.requirePrincipal(user);
+
+    if (principal.isMachine || !principal.memberId) {
+      throw new UnauthorizedException('Authenticated member token required.');
+    }
+
+    this.assertAllowed(
+      await this.moderationService.decideForRequestActorBan(
+        principal,
+        trustedClientIp,
+      ),
+    );
+    const context = await this.topicContextService.loadPostContext(
+      postId,
+      principal,
+    );
+    const postDecisions = await this.accessPolicyService.decideForPost(
+      principal,
+      context,
+    );
+
+    this.assertAllowed(postDecisions.canView);
+
+    if (context.post.deletedAt) {
+      throw new NotFoundException('Post not found.');
+    }
+
+    return principal.memberId;
+  }
+
+  /**
+   * Counts both post reaction types after a reaction command completes.
+   *
+   * @param tx Prisma transaction client containing the just-written state.
+   * @param postId Post id whose aggregate reactions should be counted.
+   * @param viewerReaction Current member reaction after the command.
+   * @returns Viewer state paired with current thumbs-up and thumbs-down counts.
+   * @throws Prisma errors when either aggregate count query fails.
+   */
+  private async buildPostReactionState(
+    tx: Prisma.TransactionClient,
+    postId: string,
+    viewerReaction: PostReactionType | null,
+  ): Promise<ForumPostReactionStateDto> {
+    const [thumbsUpCount, thumbsDownCount] = await Promise.all([
+      tx.postReaction.count({
+        where: { postId, reaction: PostReactionType.THUMBS_UP },
+      }),
+      tx.postReaction.count({
+        where: { postId, reaction: PostReactionType.THUMBS_DOWN },
+      }),
+    ]);
+
+    return {
+      postId,
+      viewerReaction,
+      thumbsUpCount,
+      thumbsDownCount,
     };
   }
 

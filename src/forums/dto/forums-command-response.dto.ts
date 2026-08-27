@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PostReactionType } from '../../../prisma/generated/client';
 
 /**
  * Topic response returned by command-side forum endpoints.
@@ -183,4 +184,28 @@ export class TopicReadStateCommandResponseDto {
 
   @ApiProperty({ description: 'Read-state update timestamp.' })
   updatedAt: Date;
+}
+
+/**
+ * Aggregate reaction state returned after a member sets or removes a reaction.
+ *
+ * Counts include all members' current reactions. `viewerReaction` is the
+ * authenticated member's resulting value and is null after removal.
+ */
+export class ForumPostReactionStateDto {
+  @ApiProperty({ description: 'Post whose reaction state changed.' })
+  postId: string;
+
+  @ApiPropertyOptional({
+    description: 'Current member reaction after the command.',
+    enum: PostReactionType,
+    nullable: true,
+  })
+  viewerReaction: PostReactionType | null;
+
+  @ApiProperty({ description: 'Current number of thumbs-up reactions.' })
+  thumbsUpCount: number;
+
+  @ApiProperty({ description: 'Current number of thumbs-down reactions.' })
+  thumbsDownCount: number;
 }

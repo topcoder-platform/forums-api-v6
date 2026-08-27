@@ -34,6 +34,11 @@ export type IpBan = $Result.DefaultSelection<Prisma.$IpBanPayload>
  */
 export type Post = $Result.DefaultSelection<Prisma.$PostPayload>
 /**
+ * Model PostReaction
+ *
+ */
+export type PostReaction = $Result.DefaultSelection<Prisma.$PostReactionPayload>
+/**
  * Model TopicClosure
  * 
  */
@@ -48,6 +53,23 @@ export type TopicWatch = $Result.DefaultSelection<Prisma.$TopicWatchPayload>
  * 
  */
 export type TopicReadState = $Result.DefaultSelection<Prisma.$TopicReadStatePayload>
+
+/**
+ * Enums
+ */
+export namespace $Enums {
+  export const PostReactionType: {
+  THUMBS_UP: 'THUMBS_UP',
+  THUMBS_DOWN: 'THUMBS_DOWN'
+};
+
+export type PostReactionType = (typeof PostReactionType)[keyof typeof PostReactionType]
+
+}
+
+export type PostReactionType = $Enums.PostReactionType
+
+export const PostReactionType: typeof $Enums.PostReactionType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -209,6 +231,16 @@ export class PrismaClient<
     * ```
     */
   get post(): Prisma.PostDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.postReaction`: Exposes CRUD operations for the **PostReaction** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PostReactions
+    * const postReactions = await prisma.postReaction.findMany()
+    * ```
+    */
+  get postReaction(): Prisma.PostReactionDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.topicClosure`: Exposes CRUD operations for the **TopicClosure** model.
@@ -690,6 +722,7 @@ export namespace Prisma {
     MemberBan: 'MemberBan',
     IpBan: 'IpBan',
     Post: 'Post',
+    PostReaction: 'PostReaction',
     TopicClosure: 'TopicClosure',
     TopicWatch: 'TopicWatch',
     TopicReadState: 'TopicReadState'
@@ -708,7 +741,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "topic" | "memberBan" | "ipBan" | "post" | "topicClosure" | "topicWatch" | "topicReadState"
+      modelProps: "topic" | "memberBan" | "ipBan" | "post" | "postReaction" | "topicClosure" | "topicWatch" | "topicReadState"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1005,6 +1038,80 @@ export namespace Prisma {
           count: {
             args: Prisma.PostCountArgs<ExtArgs>
             result: $Utils.Optional<PostCountAggregateOutputType> | number
+          }
+        }
+      }
+      PostReaction: {
+        payload: Prisma.$PostReactionPayload<ExtArgs>
+        fields: Prisma.PostReactionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PostReactionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PostReactionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload>
+          }
+          findFirst: {
+            args: Prisma.PostReactionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PostReactionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload>
+          }
+          findMany: {
+            args: Prisma.PostReactionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload>[]
+          }
+          create: {
+            args: Prisma.PostReactionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload>
+          }
+          createMany: {
+            args: Prisma.PostReactionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PostReactionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload>[]
+          }
+          delete: {
+            args: Prisma.PostReactionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload>
+          }
+          update: {
+            args: Prisma.PostReactionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload>
+          }
+          deleteMany: {
+            args: Prisma.PostReactionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PostReactionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PostReactionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload>[]
+          }
+          upsert: {
+            args: Prisma.PostReactionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PostReactionPayload>
+          }
+          aggregate: {
+            args: Prisma.PostReactionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePostReaction>
+          }
+          groupBy: {
+            args: Prisma.PostReactionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PostReactionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PostReactionCountArgs<ExtArgs>
+            result: $Utils.Optional<PostReactionCountAggregateOutputType> | number
           }
         }
       }
@@ -1357,6 +1464,7 @@ export namespace Prisma {
     memberBan?: MemberBanOmit
     ipBan?: IpBanOmit
     post?: PostOmit
+    postReaction?: PostReactionOmit
     topicClosure?: TopicClosureOmit
     topicWatch?: TopicWatchOmit
     topicReadState?: TopicReadStateOmit
@@ -1508,6 +1616,37 @@ export namespace Prisma {
    */
   export type TopicCountOutputTypeCountReadStatesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TopicReadStateWhereInput
+  }
+
+
+  /**
+   * Count Type PostCountOutputType
+   */
+
+  export type PostCountOutputType = {
+    reactions: number
+  }
+
+  export type PostCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    reactions?: boolean | PostCountOutputTypeCountReactionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PostCountOutputType without action
+   */
+  export type PostCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostCountOutputType
+     */
+    select?: PostCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PostCountOutputType without action
+   */
+  export type PostCountOutputTypeCountReactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PostReactionWhereInput
   }
 
 
@@ -5136,6 +5275,8 @@ export namespace Prisma {
     deletedAt?: boolean
     deletedByMemberId?: boolean
     topic?: boolean | TopicDefaultArgs<ExtArgs>
+    reactions?: boolean | Post$reactionsArgs<ExtArgs>
+    _count?: boolean | PostCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["post"]>
 
   export type PostSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -5185,6 +5326,8 @@ export namespace Prisma {
   export type PostOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "topicId" | "parentType" | "parentId" | "authorMemberId" | "authorHandle" | "content" | "createdAt" | "updatedAt" | "deletedAt" | "deletedByMemberId", ExtArgs["result"]["post"]>
   export type PostInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     topic?: boolean | TopicDefaultArgs<ExtArgs>
+    reactions?: boolean | Post$reactionsArgs<ExtArgs>
+    _count?: boolean | PostCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PostIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     topic?: boolean | TopicDefaultArgs<ExtArgs>
@@ -5197,6 +5340,7 @@ export namespace Prisma {
     name: "Post"
     objects: {
       topic: Prisma.$TopicPayload<ExtArgs>
+      reactions: Prisma.$PostReactionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5605,6 +5749,7 @@ export namespace Prisma {
   export interface Prisma__PostClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     topic<T extends TopicDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TopicDefaultArgs<ExtArgs>>): Prisma__TopicClient<$Result.GetResult<Prisma.$TopicPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    reactions<T extends Post$reactionsArgs<ExtArgs> = {}>(args?: Subset<T, Post$reactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6046,6 +6191,30 @@ export namespace Prisma {
   }
 
   /**
+   * Post.reactions
+   */
+  export type Post$reactionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
+    where?: PostReactionWhereInput
+    orderBy?: PostReactionOrderByWithRelationInput | PostReactionOrderByWithRelationInput[]
+    cursor?: PostReactionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PostReactionScalarFieldEnum | PostReactionScalarFieldEnum[]
+  }
+
+  /**
    * Post without action
    */
   export type PostDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6061,6 +6230,1069 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: PostInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PostReaction
+   */
+
+  export type AggregatePostReaction = {
+    _count: PostReactionCountAggregateOutputType | null
+    _min: PostReactionMinAggregateOutputType | null
+    _max: PostReactionMaxAggregateOutputType | null
+  }
+
+  export type PostReactionMinAggregateOutputType = {
+    postId: string | null
+    memberId: string | null
+    reaction: $Enums.PostReactionType | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PostReactionMaxAggregateOutputType = {
+    postId: string | null
+    memberId: string | null
+    reaction: $Enums.PostReactionType | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PostReactionCountAggregateOutputType = {
+    postId: number
+    memberId: number
+    reaction: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PostReactionMinAggregateInputType = {
+    postId?: true
+    memberId?: true
+    reaction?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PostReactionMaxAggregateInputType = {
+    postId?: true
+    memberId?: true
+    reaction?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PostReactionCountAggregateInputType = {
+    postId?: true
+    memberId?: true
+    reaction?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PostReactionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PostReaction to aggregate.
+     */
+    where?: PostReactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PostReactions to fetch.
+     */
+    orderBy?: PostReactionOrderByWithRelationInput | PostReactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: PostReactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PostReactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PostReactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned PostReactions
+    **/
+    _count?: true | PostReactionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+    **/
+    _min?: PostReactionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+    **/
+    _max?: PostReactionMaxAggregateInputType
+  }
+
+  export type GetPostReactionAggregateType<T extends PostReactionAggregateArgs> = {
+        [P in keyof T & keyof AggregatePostReaction]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePostReaction[P]>
+      : GetScalarType<T[P], AggregatePostReaction[P]>
+  }
+
+
+
+
+  export type PostReactionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PostReactionWhereInput
+    orderBy?: PostReactionOrderByWithAggregationInput | PostReactionOrderByWithAggregationInput[]
+    by: PostReactionScalarFieldEnum[] | PostReactionScalarFieldEnum
+    having?: PostReactionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PostReactionCountAggregateInputType | true
+    _min?: PostReactionMinAggregateInputType
+    _max?: PostReactionMaxAggregateInputType
+  }
+
+  export type PostReactionGroupByOutputType = {
+    postId: string
+    memberId: string
+    reaction: $Enums.PostReactionType
+    createdAt: Date
+    updatedAt: Date
+    _count: PostReactionCountAggregateOutputType | null
+    _min: PostReactionMinAggregateOutputType | null
+    _max: PostReactionMaxAggregateOutputType | null
+  }
+
+  type GetPostReactionGroupByPayload<T extends PostReactionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PostReactionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PostReactionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PostReactionGroupByOutputType[P]>
+            : GetScalarType<T[P], PostReactionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PostReactionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    postId?: boolean
+    memberId?: boolean
+    reaction?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    post?: boolean | PostDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["postReaction"]>
+
+  export type PostReactionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    postId?: boolean
+    memberId?: boolean
+    reaction?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    post?: boolean | PostDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["postReaction"]>
+
+  export type PostReactionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    postId?: boolean
+    memberId?: boolean
+    reaction?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    post?: boolean | PostDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["postReaction"]>
+
+  export type PostReactionSelectScalar = {
+    postId?: boolean
+    memberId?: boolean
+    reaction?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PostReactionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"postId" | "memberId" | "reaction" | "createdAt" | "updatedAt", ExtArgs["result"]["postReaction"]>
+  export type PostReactionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    post?: boolean | PostDefaultArgs<ExtArgs>
+  }
+  export type PostReactionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    post?: boolean | PostDefaultArgs<ExtArgs>
+  }
+  export type PostReactionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    post?: boolean | PostDefaultArgs<ExtArgs>
+  }
+
+  export type $PostReactionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PostReaction"
+    objects: {
+      post: Prisma.$PostPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      postId: string
+      memberId: string
+      reaction: $Enums.PostReactionType
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["postReaction"]>
+    composites: {}
+  }
+
+  type PostReactionGetPayload<S extends boolean | null | undefined | PostReactionDefaultArgs> = $Result.GetResult<Prisma.$PostReactionPayload, S>
+
+  type PostReactionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PostReactionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PostReactionCountAggregateInputType | true
+    }
+
+  export interface PostReactionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PostReaction'], meta: { name: 'PostReaction' } }
+    /**
+     * Find zero or one PostReaction that matches the filter.
+     * @param {PostReactionFindUniqueArgs} args - Arguments to find a PostReaction
+     * @example
+     * // Get one PostReaction
+     * const postReaction = await prisma.postReaction.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PostReactionFindUniqueArgs>(args: SelectSubset<T, PostReactionFindUniqueArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PostReaction that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PostReactionFindUniqueOrThrowArgs} args - Arguments to find a PostReaction
+     * @example
+     * // Get one PostReaction
+     * const postReaction = await prisma.postReaction.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PostReactionFindUniqueOrThrowArgs>(args: SelectSubset<T, PostReactionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PostReaction that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PostReactionFindFirstArgs} args - Arguments to find a PostReaction
+     * @example
+     * // Get one PostReaction
+     * const postReaction = await prisma.postReaction.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PostReactionFindFirstArgs>(args?: SelectSubset<T, PostReactionFindFirstArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PostReaction that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PostReactionFindFirstOrThrowArgs} args - Arguments to find a PostReaction
+     * @example
+     * // Get one PostReaction
+     * const postReaction = await prisma.postReaction.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PostReactionFindFirstOrThrowArgs>(args?: SelectSubset<T, PostReactionFindFirstOrThrowArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PostReactions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PostReactionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PostReactions
+     * const postReactions = await prisma.postReaction.findMany()
+     *
+     * // Get first 10 PostReactions
+     * const postReactions = await prisma.postReaction.findMany({ take: 10 })
+     *
+     * // Only select the `postId`
+     * const postReactionWithPostIdOnly = await prisma.postReaction.findMany({ select: { postId: true } })
+     *
+     */
+    findMany<T extends PostReactionFindManyArgs>(args?: SelectSubset<T, PostReactionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PostReaction.
+     * @param {PostReactionCreateArgs} args - Arguments to create a PostReaction.
+     * @example
+     * // Create one PostReaction
+     * const PostReaction = await prisma.postReaction.create({
+     *   data: {
+     *     // ... data to create a PostReaction
+     *   }
+     * })
+     *
+     */
+    create<T extends PostReactionCreateArgs>(args: SelectSubset<T, PostReactionCreateArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PostReactions.
+     * @param {PostReactionCreateManyArgs} args - Arguments to create many PostReactions.
+     * @example
+     * // Create many PostReactions
+     * const postReaction = await prisma.postReaction.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends PostReactionCreateManyArgs>(args?: SelectSubset<T, PostReactionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PostReactions and returns the data saved in the database.
+     * @param {PostReactionCreateManyAndReturnArgs} args - Arguments to create many PostReactions.
+     * @example
+     * // Create many PostReactions
+     * const postReaction = await prisma.postReaction.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many PostReactions and only return the `postId`
+     * const postReactionWithPostIdOnly = await prisma.postReaction.createManyAndReturn({
+     *   select: { postId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends PostReactionCreateManyAndReturnArgs>(args?: SelectSubset<T, PostReactionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PostReaction.
+     * @param {PostReactionDeleteArgs} args - Arguments to delete one PostReaction.
+     * @example
+     * // Delete one PostReaction
+     * const PostReaction = await prisma.postReaction.delete({
+     *   where: {
+     *     // ... filter to delete one PostReaction
+     *   }
+     * })
+     *
+     */
+    delete<T extends PostReactionDeleteArgs>(args: SelectSubset<T, PostReactionDeleteArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PostReaction.
+     * @param {PostReactionUpdateArgs} args - Arguments to update one PostReaction.
+     * @example
+     * // Update one PostReaction
+     * const postReaction = await prisma.postReaction.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends PostReactionUpdateArgs>(args: SelectSubset<T, PostReactionUpdateArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PostReactions.
+     * @param {PostReactionDeleteManyArgs} args - Arguments to filter PostReactions to delete.
+     * @example
+     * // Delete a few PostReactions
+     * const { count } = await prisma.postReaction.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends PostReactionDeleteManyArgs>(args?: SelectSubset<T, PostReactionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PostReactions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PostReactionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PostReactions
+     * const postReaction = await prisma.postReaction.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends PostReactionUpdateManyArgs>(args: SelectSubset<T, PostReactionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PostReactions and returns the data updated in the database.
+     * @param {PostReactionUpdateManyAndReturnArgs} args - Arguments to update many PostReactions.
+     * @example
+     * // Update many PostReactions
+     * const postReaction = await prisma.postReaction.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more PostReactions and only return the `postId`
+     * const postReactionWithPostIdOnly = await prisma.postReaction.updateManyAndReturn({
+     *   select: { postId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends PostReactionUpdateManyAndReturnArgs>(args: SelectSubset<T, PostReactionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PostReaction.
+     * @param {PostReactionUpsertArgs} args - Arguments to update or create a PostReaction.
+     * @example
+     * // Update or create a PostReaction
+     * const postReaction = await prisma.postReaction.upsert({
+     *   create: {
+     *     // ... data to create a PostReaction
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PostReaction we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PostReactionUpsertArgs>(args: SelectSubset<T, PostReactionUpsertArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PostReactions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PostReactionCountArgs} args - Arguments to filter PostReactions to count.
+     * @example
+     * // Count the number of PostReactions
+     * const count = await prisma.postReaction.count({
+     *   where: {
+     *     // ... the filter for the PostReactions we want to count
+     *   }
+     * })
+    **/
+    count<T extends PostReactionCountArgs>(
+      args?: Subset<T, PostReactionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PostReactionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PostReaction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PostReactionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PostReactionAggregateArgs>(args: Subset<T, PostReactionAggregateArgs>): Prisma.PrismaPromise<GetPostReactionAggregateType<T>>
+
+    /**
+     * Group by PostReaction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PostReactionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+    **/
+    groupBy<
+      T extends PostReactionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PostReactionGroupByArgs['orderBy'] }
+        : { orderBy?: PostReactionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PostReactionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPostReactionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PostReaction model
+   */
+  readonly fields: PostReactionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PostReaction.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PostReactionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    post<T extends PostDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PostDefaultArgs<ExtArgs>>): Prisma__PostClient<$Result.GetResult<Prisma.$PostPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PostReaction model
+   */
+  interface PostReactionFieldRefs {
+    readonly postId: FieldRef<"PostReaction", 'String'>
+    readonly memberId: FieldRef<"PostReaction", 'String'>
+    readonly reaction: FieldRef<"PostReaction", 'PostReactionType'>
+    readonly createdAt: FieldRef<"PostReaction", 'DateTime'>
+    readonly updatedAt: FieldRef<"PostReaction", 'DateTime'>
+  }
+
+
+  // Custom InputTypes
+  /**
+   * PostReaction findUnique
+   */
+  export type PostReactionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
+    /**
+     * Filter, which PostReaction to fetch.
+     */
+    where: PostReactionWhereUniqueInput
+  }
+
+  /**
+   * PostReaction findUniqueOrThrow
+   */
+  export type PostReactionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
+    /**
+     * Filter, which PostReaction to fetch.
+     */
+    where: PostReactionWhereUniqueInput
+  }
+
+  /**
+   * PostReaction findFirst
+   */
+  export type PostReactionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
+    /**
+     * Filter, which PostReaction to fetch.
+     */
+    where?: PostReactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PostReactions to fetch.
+     */
+    orderBy?: PostReactionOrderByWithRelationInput | PostReactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PostReactions.
+     */
+    cursor?: PostReactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PostReactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PostReactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PostReactions.
+     */
+    distinct?: PostReactionScalarFieldEnum | PostReactionScalarFieldEnum[]
+  }
+
+  /**
+   * PostReaction findFirstOrThrow
+   */
+  export type PostReactionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
+    /**
+     * Filter, which PostReaction to fetch.
+     */
+    where?: PostReactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PostReactions to fetch.
+     */
+    orderBy?: PostReactionOrderByWithRelationInput | PostReactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PostReactions.
+     */
+    cursor?: PostReactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PostReactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PostReactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PostReactions.
+     */
+    distinct?: PostReactionScalarFieldEnum | PostReactionScalarFieldEnum[]
+  }
+
+  /**
+   * PostReaction findMany
+   */
+  export type PostReactionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
+    /**
+     * Filter, which PostReactions to fetch.
+     */
+    where?: PostReactionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PostReactions to fetch.
+     */
+    orderBy?: PostReactionOrderByWithRelationInput | PostReactionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing PostReactions.
+     */
+    cursor?: PostReactionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PostReactions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PostReactions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PostReactions.
+     */
+    distinct?: PostReactionScalarFieldEnum | PostReactionScalarFieldEnum[]
+  }
+
+  /**
+   * PostReaction create
+   */
+  export type PostReactionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PostReaction.
+     */
+    data: XOR<PostReactionCreateInput, PostReactionUncheckedCreateInput>
+  }
+
+  /**
+   * PostReaction createMany
+   */
+  export type PostReactionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PostReactions.
+     */
+    data: PostReactionCreateManyInput | PostReactionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PostReaction createManyAndReturn
+   */
+  export type PostReactionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * The data used to create many PostReactions.
+     */
+    data: PostReactionCreateManyInput | PostReactionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PostReaction update
+   */
+  export type PostReactionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PostReaction.
+     */
+    data: XOR<PostReactionUpdateInput, PostReactionUncheckedUpdateInput>
+    /**
+     * Choose, which PostReaction to update.
+     */
+    where: PostReactionWhereUniqueInput
+  }
+
+  /**
+   * PostReaction updateMany
+   */
+  export type PostReactionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PostReactions.
+     */
+    data: XOR<PostReactionUpdateManyMutationInput, PostReactionUncheckedUpdateManyInput>
+    /**
+     * Filter which PostReactions to update
+     */
+    where?: PostReactionWhereInput
+    /**
+     * Limit how many PostReactions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PostReaction updateManyAndReturn
+   */
+  export type PostReactionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * The data used to update PostReactions.
+     */
+    data: XOR<PostReactionUpdateManyMutationInput, PostReactionUncheckedUpdateManyInput>
+    /**
+     * Filter which PostReactions to update
+     */
+    where?: PostReactionWhereInput
+    /**
+     * Limit how many PostReactions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PostReaction upsert
+   */
+  export type PostReactionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PostReaction to update in case it exists.
+     */
+    where: PostReactionWhereUniqueInput
+    /**
+     * In case the PostReaction found by the `where` argument doesn't exist, create a new PostReaction with this data.
+     */
+    create: XOR<PostReactionCreateInput, PostReactionUncheckedCreateInput>
+    /**
+     * In case the PostReaction was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PostReactionUpdateInput, PostReactionUncheckedUpdateInput>
+  }
+
+  /**
+   * PostReaction delete
+   */
+  export type PostReactionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
+    /**
+     * Filter which PostReaction to delete.
+     */
+    where: PostReactionWhereUniqueInput
+  }
+
+  /**
+   * PostReaction deleteMany
+   */
+  export type PostReactionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PostReactions to delete
+     */
+    where?: PostReactionWhereInput
+    /**
+     * Limit how many PostReactions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PostReaction without action
+   */
+  export type PostReactionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PostReaction
+     */
+    select?: PostReactionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PostReaction
+     */
+    omit?: PostReactionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostReactionInclude<ExtArgs> | null
   }
 
 
@@ -9306,6 +10538,17 @@ export namespace Prisma {
   export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
 
 
+  export const PostReactionScalarFieldEnum: {
+    postId: 'postId',
+    memberId: 'memberId',
+    reaction: 'reaction',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PostReactionScalarFieldEnum = (typeof PostReactionScalarFieldEnum)[keyof typeof PostReactionScalarFieldEnum]
+
+
   export const TopicClosureScalarFieldEnum: {
     ancestorTopicId: 'ancestorTopicId',
     descendantTopicId: 'descendantTopicId',
@@ -9396,6 +10639,20 @@ export namespace Prisma {
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
+
+
+  /**
+   * Reference to a field of type 'PostReactionType'
+   */
+  export type EnumPostReactionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PostReactionType'>
+
+
+
+  /**
+   * Reference to a field of type 'PostReactionType[]'
+   */
+  export type ListEnumPostReactionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PostReactionType[]'>
+
 
 
   /**
@@ -9682,6 +10939,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Post"> | Date | string | null
     deletedByMemberId?: StringNullableFilter<"Post"> | string | null
     topic?: XOR<TopicScalarRelationFilter, TopicWhereInput>
+    reactions?: PostReactionListRelationFilter
   }
 
   export type PostOrderByWithRelationInput = {
@@ -9697,6 +10955,7 @@ export namespace Prisma {
     deletedAt?: SortOrderInput | SortOrder
     deletedByMemberId?: SortOrderInput | SortOrder
     topic?: TopicOrderByWithRelationInput
+    reactions?: PostReactionOrderByRelationAggregateInput
   }
 
   export type PostWhereUniqueInput = Prisma.AtLeast<{
@@ -9715,6 +10974,7 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"Post"> | Date | string | null
     deletedByMemberId?: StringNullableFilter<"Post"> | string | null
     topic?: XOR<TopicScalarRelationFilter, TopicWhereInput>
+    reactions?: PostReactionListRelationFilter
   }, "id">
 
   export type PostOrderByWithAggregationInput = {
@@ -9749,6 +11009,62 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Post"> | Date | string
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Post"> | Date | string | null
     deletedByMemberId?: StringNullableWithAggregatesFilter<"Post"> | string | null
+  }
+
+  export type PostReactionWhereInput = {
+    AND?: PostReactionWhereInput | PostReactionWhereInput[]
+    OR?: PostReactionWhereInput[]
+    NOT?: PostReactionWhereInput | PostReactionWhereInput[]
+    postId?: StringFilter<"PostReaction"> | string
+    memberId?: StringFilter<"PostReaction"> | string
+    reaction?: EnumPostReactionTypeFilter<"PostReaction"> | $Enums.PostReactionType
+    createdAt?: DateTimeFilter<"PostReaction"> | Date | string
+    updatedAt?: DateTimeFilter<"PostReaction"> | Date | string
+    post?: XOR<PostScalarRelationFilter, PostWhereInput>
+  }
+
+  export type PostReactionOrderByWithRelationInput = {
+    postId?: SortOrder
+    memberId?: SortOrder
+    reaction?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    post?: PostOrderByWithRelationInput
+  }
+
+  export type PostReactionWhereUniqueInput = Prisma.AtLeast<{
+    postId_memberId?: PostReactionPostIdMemberIdCompoundUniqueInput
+    AND?: PostReactionWhereInput | PostReactionWhereInput[]
+    OR?: PostReactionWhereInput[]
+    NOT?: PostReactionWhereInput | PostReactionWhereInput[]
+    postId?: StringFilter<"PostReaction"> | string
+    memberId?: StringFilter<"PostReaction"> | string
+    reaction?: EnumPostReactionTypeFilter<"PostReaction"> | $Enums.PostReactionType
+    createdAt?: DateTimeFilter<"PostReaction"> | Date | string
+    updatedAt?: DateTimeFilter<"PostReaction"> | Date | string
+    post?: XOR<PostScalarRelationFilter, PostWhereInput>
+  }, "postId_memberId">
+
+  export type PostReactionOrderByWithAggregationInput = {
+    postId?: SortOrder
+    memberId?: SortOrder
+    reaction?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PostReactionCountOrderByAggregateInput
+    _max?: PostReactionMaxOrderByAggregateInput
+    _min?: PostReactionMinOrderByAggregateInput
+  }
+
+  export type PostReactionScalarWhereWithAggregatesInput = {
+    AND?: PostReactionScalarWhereWithAggregatesInput | PostReactionScalarWhereWithAggregatesInput[]
+    OR?: PostReactionScalarWhereWithAggregatesInput[]
+    NOT?: PostReactionScalarWhereWithAggregatesInput | PostReactionScalarWhereWithAggregatesInput[]
+    postId?: StringWithAggregatesFilter<"PostReaction"> | string
+    memberId?: StringWithAggregatesFilter<"PostReaction"> | string
+    reaction?: EnumPostReactionTypeWithAggregatesFilter<"PostReaction"> | $Enums.PostReactionType
+    createdAt?: DateTimeWithAggregatesFilter<"PostReaction"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PostReaction"> | Date | string
   }
 
   export type TopicClosureWhereInput = {
@@ -10186,6 +11502,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     deletedByMemberId?: string | null
     topic: TopicCreateNestedOneWithoutPostsInput
+    reactions?: PostReactionCreateNestedManyWithoutPostInput
   }
 
   export type PostUncheckedCreateInput = {
@@ -10200,6 +11517,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedByMemberId?: string | null
+    reactions?: PostReactionUncheckedCreateNestedManyWithoutPostInput
   }
 
   export type PostUpdateInput = {
@@ -10214,6 +11532,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
     topic?: TopicUpdateOneRequiredWithoutPostsNestedInput
+    reactions?: PostReactionUpdateManyWithoutPostNestedInput
   }
 
   export type PostUncheckedUpdateInput = {
@@ -10228,6 +11547,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    reactions?: PostReactionUncheckedUpdateManyWithoutPostNestedInput
   }
 
   export type PostCreateManyInput = {
@@ -10269,6 +11589,61 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PostReactionCreateInput = {
+    memberId: string
+    reaction: $Enums.PostReactionType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    post: PostCreateNestedOneWithoutReactionsInput
+  }
+
+  export type PostReactionUncheckedCreateInput = {
+    postId: string
+    memberId: string
+    reaction: $Enums.PostReactionType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PostReactionUpdateInput = {
+    memberId?: StringFieldUpdateOperationsInput | string
+    reaction?: EnumPostReactionTypeFieldUpdateOperationsInput | $Enums.PostReactionType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    post?: PostUpdateOneRequiredWithoutReactionsNestedInput
+  }
+
+  export type PostReactionUncheckedUpdateInput = {
+    postId?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    reaction?: EnumPostReactionTypeFieldUpdateOperationsInput | $Enums.PostReactionType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PostReactionCreateManyInput = {
+    postId: string
+    memberId: string
+    reaction: $Enums.PostReactionType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PostReactionUpdateManyMutationInput = {
+    memberId?: StringFieldUpdateOperationsInput | string
+    reaction?: EnumPostReactionTypeFieldUpdateOperationsInput | $Enums.PostReactionType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PostReactionUncheckedUpdateManyInput = {
+    postId?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    reaction?: EnumPostReactionTypeFieldUpdateOperationsInput | $Enums.PostReactionType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TopicClosureCreateInput = {
@@ -10702,6 +12077,16 @@ export namespace Prisma {
     isNot?: TopicWhereInput
   }
 
+  export type PostReactionListRelationFilter = {
+    every?: PostReactionWhereInput
+    some?: PostReactionWhereInput
+    none?: PostReactionWhereInput
+  }
+
+  export type PostReactionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type PostCountOrderByAggregateInput = {
     id?: SortOrder
     topicId?: SortOrder
@@ -10742,6 +12127,57 @@ export namespace Prisma {
     updatedAt?: SortOrder
     deletedAt?: SortOrder
     deletedByMemberId?: SortOrder
+  }
+
+  export type EnumPostReactionTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.PostReactionType | EnumPostReactionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PostReactionType[] | ListEnumPostReactionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PostReactionType[] | ListEnumPostReactionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPostReactionTypeFilter<$PrismaModel> | $Enums.PostReactionType
+  }
+
+  export type PostScalarRelationFilter = {
+    is?: PostWhereInput
+    isNot?: PostWhereInput
+  }
+
+  export type PostReactionPostIdMemberIdCompoundUniqueInput = {
+    postId: string
+    memberId: string
+  }
+
+  export type PostReactionCountOrderByAggregateInput = {
+    postId?: SortOrder
+    memberId?: SortOrder
+    reaction?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PostReactionMaxOrderByAggregateInput = {
+    postId?: SortOrder
+    memberId?: SortOrder
+    reaction?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PostReactionMinOrderByAggregateInput = {
+    postId?: SortOrder
+    memberId?: SortOrder
+    reaction?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumPostReactionTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PostReactionType | EnumPostReactionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PostReactionType[] | ListEnumPostReactionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PostReactionType[] | ListEnumPostReactionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPostReactionTypeWithAggregatesFilter<$PrismaModel> | $Enums.PostReactionType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPostReactionTypeFilter<$PrismaModel>
+    _max?: NestedEnumPostReactionTypeFilter<$PrismaModel>
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -11145,12 +12581,72 @@ export namespace Prisma {
     connect?: TopicWhereUniqueInput
   }
 
+  export type PostReactionCreateNestedManyWithoutPostInput = {
+    create?: XOR<PostReactionCreateWithoutPostInput, PostReactionUncheckedCreateWithoutPostInput> | PostReactionCreateWithoutPostInput[] | PostReactionUncheckedCreateWithoutPostInput[]
+    connectOrCreate?: PostReactionCreateOrConnectWithoutPostInput | PostReactionCreateOrConnectWithoutPostInput[]
+    createMany?: PostReactionCreateManyPostInputEnvelope
+    connect?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput[]
+  }
+
+  export type PostReactionUncheckedCreateNestedManyWithoutPostInput = {
+    create?: XOR<PostReactionCreateWithoutPostInput, PostReactionUncheckedCreateWithoutPostInput> | PostReactionCreateWithoutPostInput[] | PostReactionUncheckedCreateWithoutPostInput[]
+    connectOrCreate?: PostReactionCreateOrConnectWithoutPostInput | PostReactionCreateOrConnectWithoutPostInput[]
+    createMany?: PostReactionCreateManyPostInputEnvelope
+    connect?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput[]
+  }
+
   export type TopicUpdateOneRequiredWithoutPostsNestedInput = {
     create?: XOR<TopicCreateWithoutPostsInput, TopicUncheckedCreateWithoutPostsInput>
     connectOrCreate?: TopicCreateOrConnectWithoutPostsInput
     upsert?: TopicUpsertWithoutPostsInput
     connect?: TopicWhereUniqueInput
     update?: XOR<XOR<TopicUpdateToOneWithWhereWithoutPostsInput, TopicUpdateWithoutPostsInput>, TopicUncheckedUpdateWithoutPostsInput>
+  }
+
+  export type PostReactionUpdateManyWithoutPostNestedInput = {
+    create?: XOR<PostReactionCreateWithoutPostInput, PostReactionUncheckedCreateWithoutPostInput> | PostReactionCreateWithoutPostInput[] | PostReactionUncheckedCreateWithoutPostInput[]
+    connectOrCreate?: PostReactionCreateOrConnectWithoutPostInput | PostReactionCreateOrConnectWithoutPostInput[]
+    upsert?: PostReactionUpsertWithWhereUniqueWithoutPostInput | PostReactionUpsertWithWhereUniqueWithoutPostInput[]
+    createMany?: PostReactionCreateManyPostInputEnvelope
+    set?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput[]
+    disconnect?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput[]
+    delete?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput[]
+    connect?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput[]
+    update?: PostReactionUpdateWithWhereUniqueWithoutPostInput | PostReactionUpdateWithWhereUniqueWithoutPostInput[]
+    updateMany?: PostReactionUpdateManyWithWhereWithoutPostInput | PostReactionUpdateManyWithWhereWithoutPostInput[]
+    deleteMany?: PostReactionScalarWhereInput | PostReactionScalarWhereInput[]
+  }
+
+  export type PostReactionUncheckedUpdateManyWithoutPostNestedInput = {
+    create?: XOR<PostReactionCreateWithoutPostInput, PostReactionUncheckedCreateWithoutPostInput> | PostReactionCreateWithoutPostInput[] | PostReactionUncheckedCreateWithoutPostInput[]
+    connectOrCreate?: PostReactionCreateOrConnectWithoutPostInput | PostReactionCreateOrConnectWithoutPostInput[]
+    upsert?: PostReactionUpsertWithWhereUniqueWithoutPostInput | PostReactionUpsertWithWhereUniqueWithoutPostInput[]
+    createMany?: PostReactionCreateManyPostInputEnvelope
+    set?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput[]
+    disconnect?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput[]
+    delete?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput[]
+    connect?: PostReactionWhereUniqueInput | PostReactionWhereUniqueInput[]
+    update?: PostReactionUpdateWithWhereUniqueWithoutPostInput | PostReactionUpdateWithWhereUniqueWithoutPostInput[]
+    updateMany?: PostReactionUpdateManyWithWhereWithoutPostInput | PostReactionUpdateManyWithWhereWithoutPostInput[]
+    deleteMany?: PostReactionScalarWhereInput | PostReactionScalarWhereInput[]
+  }
+
+  export type PostCreateNestedOneWithoutReactionsInput = {
+    create?: XOR<PostCreateWithoutReactionsInput, PostUncheckedCreateWithoutReactionsInput>
+    connectOrCreate?: PostCreateOrConnectWithoutReactionsInput
+    connect?: PostWhereUniqueInput
+  }
+
+  export type EnumPostReactionTypeFieldUpdateOperationsInput = {
+    set?: $Enums.PostReactionType
+  }
+
+  export type PostUpdateOneRequiredWithoutReactionsNestedInput = {
+    create?: XOR<PostCreateWithoutReactionsInput, PostUncheckedCreateWithoutReactionsInput>
+    connectOrCreate?: PostCreateOrConnectWithoutReactionsInput
+    upsert?: PostUpsertWithoutReactionsInput
+    connect?: PostWhereUniqueInput
+    update?: XOR<XOR<PostUpdateToOneWithWhereWithoutReactionsInput, PostUpdateWithoutReactionsInput>, PostUncheckedUpdateWithoutReactionsInput>
   }
 
   export type TopicCreateNestedOneWithoutAncestorClosuresInput = {
@@ -11364,6 +12860,23 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedEnumPostReactionTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.PostReactionType | EnumPostReactionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PostReactionType[] | ListEnumPostReactionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PostReactionType[] | ListEnumPostReactionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPostReactionTypeFilter<$PrismaModel> | $Enums.PostReactionType
+  }
+
+  export type NestedEnumPostReactionTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PostReactionType | EnumPostReactionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PostReactionType[] | ListEnumPostReactionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PostReactionType[] | ListEnumPostReactionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPostReactionTypeWithAggregatesFilter<$PrismaModel> | $Enums.PostReactionType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPostReactionTypeFilter<$PrismaModel>
+    _max?: NestedEnumPostReactionTypeFilter<$PrismaModel>
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -11509,6 +13022,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedByMemberId?: string | null
+    reactions?: PostReactionCreateNestedManyWithoutPostInput
   }
 
   export type PostUncheckedCreateWithoutTopicInput = {
@@ -11522,6 +13036,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     deletedByMemberId?: string | null
+    reactions?: PostReactionUncheckedCreateNestedManyWithoutPostInput
   }
 
   export type PostCreateOrConnectWithoutTopicInput = {
@@ -11886,6 +13401,30 @@ export namespace Prisma {
     create: XOR<TopicCreateWithoutPostsInput, TopicUncheckedCreateWithoutPostsInput>
   }
 
+  export type PostReactionCreateWithoutPostInput = {
+    memberId: string
+    reaction: $Enums.PostReactionType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PostReactionUncheckedCreateWithoutPostInput = {
+    memberId: string
+    reaction: $Enums.PostReactionType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PostReactionCreateOrConnectWithoutPostInput = {
+    where: PostReactionWhereUniqueInput
+    create: XOR<PostReactionCreateWithoutPostInput, PostReactionUncheckedCreateWithoutPostInput>
+  }
+
+  export type PostReactionCreateManyPostInputEnvelope = {
+    data: PostReactionCreateManyPostInput | PostReactionCreateManyPostInput[]
+    skipDuplicates?: boolean
+  }
+
   export type TopicUpsertWithoutPostsInput = {
     update: XOR<TopicUpdateWithoutPostsInput, TopicUncheckedUpdateWithoutPostsInput>
     create: XOR<TopicCreateWithoutPostsInput, TopicUncheckedCreateWithoutPostsInput>
@@ -11941,6 +13480,105 @@ export namespace Prisma {
     descendantClosures?: TopicClosureUncheckedUpdateManyWithoutDescendantTopicNestedInput
     watches?: TopicWatchUncheckedUpdateManyWithoutTopicNestedInput
     readStates?: TopicReadStateUncheckedUpdateManyWithoutTopicNestedInput
+  }
+
+  export type PostReactionUpsertWithWhereUniqueWithoutPostInput = {
+    where: PostReactionWhereUniqueInput
+    update: XOR<PostReactionUpdateWithoutPostInput, PostReactionUncheckedUpdateWithoutPostInput>
+    create: XOR<PostReactionCreateWithoutPostInput, PostReactionUncheckedCreateWithoutPostInput>
+  }
+
+  export type PostReactionUpdateWithWhereUniqueWithoutPostInput = {
+    where: PostReactionWhereUniqueInput
+    data: XOR<PostReactionUpdateWithoutPostInput, PostReactionUncheckedUpdateWithoutPostInput>
+  }
+
+  export type PostReactionUpdateManyWithWhereWithoutPostInput = {
+    where: PostReactionScalarWhereInput
+    data: XOR<PostReactionUpdateManyMutationInput, PostReactionUncheckedUpdateManyWithoutPostInput>
+  }
+
+  export type PostReactionScalarWhereInput = {
+    AND?: PostReactionScalarWhereInput | PostReactionScalarWhereInput[]
+    OR?: PostReactionScalarWhereInput[]
+    NOT?: PostReactionScalarWhereInput | PostReactionScalarWhereInput[]
+    postId?: StringFilter<"PostReaction"> | string
+    memberId?: StringFilter<"PostReaction"> | string
+    reaction?: EnumPostReactionTypeFilter<"PostReaction"> | $Enums.PostReactionType
+    createdAt?: DateTimeFilter<"PostReaction"> | Date | string
+    updatedAt?: DateTimeFilter<"PostReaction"> | Date | string
+  }
+
+  export type PostCreateWithoutReactionsInput = {
+    id?: string
+    parentType: string
+    parentId: string
+    authorMemberId: string
+    authorHandle: string
+    content?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedByMemberId?: string | null
+    topic: TopicCreateNestedOneWithoutPostsInput
+  }
+
+  export type PostUncheckedCreateWithoutReactionsInput = {
+    id?: string
+    topicId: string
+    parentType: string
+    parentId: string
+    authorMemberId: string
+    authorHandle: string
+    content?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    deletedByMemberId?: string | null
+  }
+
+  export type PostCreateOrConnectWithoutReactionsInput = {
+    where: PostWhereUniqueInput
+    create: XOR<PostCreateWithoutReactionsInput, PostUncheckedCreateWithoutReactionsInput>
+  }
+
+  export type PostUpsertWithoutReactionsInput = {
+    update: XOR<PostUpdateWithoutReactionsInput, PostUncheckedUpdateWithoutReactionsInput>
+    create: XOR<PostCreateWithoutReactionsInput, PostUncheckedCreateWithoutReactionsInput>
+    where?: PostWhereInput
+  }
+
+  export type PostUpdateToOneWithWhereWithoutReactionsInput = {
+    where?: PostWhereInput
+    data: XOR<PostUpdateWithoutReactionsInput, PostUncheckedUpdateWithoutReactionsInput>
+  }
+
+  export type PostUpdateWithoutReactionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    parentType?: StringFieldUpdateOperationsInput | string
+    parentId?: StringFieldUpdateOperationsInput | string
+    authorMemberId?: StringFieldUpdateOperationsInput | string
+    authorHandle?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    topic?: TopicUpdateOneRequiredWithoutPostsNestedInput
+  }
+
+  export type PostUncheckedUpdateWithoutReactionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    topicId?: StringFieldUpdateOperationsInput | string
+    parentType?: StringFieldUpdateOperationsInput | string
+    parentId?: StringFieldUpdateOperationsInput | string
+    authorMemberId?: StringFieldUpdateOperationsInput | string
+    authorHandle?: StringFieldUpdateOperationsInput | string
+    content?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TopicCreateWithoutAncestorClosuresInput = {
@@ -12500,6 +14138,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    reactions?: PostReactionUpdateManyWithoutPostNestedInput
   }
 
   export type PostUncheckedUpdateWithoutTopicInput = {
@@ -12513,6 +14152,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedByMemberId?: NullableStringFieldUpdateOperationsInput | string | null
+    reactions?: PostReactionUncheckedUpdateManyWithoutPostNestedInput
   }
 
   export type PostUncheckedUpdateManyWithoutTopicInput = {
@@ -12588,6 +14228,34 @@ export namespace Prisma {
   export type TopicReadStateUncheckedUpdateManyWithoutTopicInput = {
     memberId?: StringFieldUpdateOperationsInput | string
     lastReadAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PostReactionCreateManyPostInput = {
+    memberId: string
+    reaction: $Enums.PostReactionType
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PostReactionUpdateWithoutPostInput = {
+    memberId?: StringFieldUpdateOperationsInput | string
+    reaction?: EnumPostReactionTypeFieldUpdateOperationsInput | $Enums.PostReactionType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PostReactionUncheckedUpdateWithoutPostInput = {
+    memberId?: StringFieldUpdateOperationsInput | string
+    reaction?: EnumPostReactionTypeFieldUpdateOperationsInput | $Enums.PostReactionType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PostReactionUncheckedUpdateManyWithoutPostInput = {
+    memberId?: StringFieldUpdateOperationsInput | string
+    reaction?: EnumPostReactionTypeFieldUpdateOperationsInput | $Enums.PostReactionType
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
