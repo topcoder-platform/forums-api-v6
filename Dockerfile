@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-ARG NODE_VERSION=26.5.0
+ARG NODE_VERSION=26.5.1
 ARG PNPM_VERSION=11.15.1
 
 FROM node:${NODE_VERSION}-alpine AS external-clients
@@ -37,11 +37,13 @@ RUN DATABASE_URL="postgresql://user:password@localhost:5432/forums" pnpm prisma:
   && rm -rf node_modules \
   && pnpm install --prod --frozen-lockfile --ignore-scripts
 
-FROM node:${NODE_VERSION}-alpine AS production
+FROM alpine:3.24 AS production
 
+ARG NODE_VERSION
 RUN apk upgrade --no-cache \
-  && rm -rf /usr/local/lib/node_modules/npm \
-  && rm -f /usr/local/bin/npm /usr/local/bin/npx
+  && apk add --no-cache nodejs-current=${NODE_VERSION}-r0 \
+  && addgroup -S app \
+  && adduser -S -D -H -u 10001 -G app app
 
 # External Prisma clients are copied beside the application under /usr/src.
 # Expose the application's production dependencies to their CommonJS imports.
@@ -49,16 +51,16 @@ ENV NODE_ENV=production \
   NODE_PATH=/usr/src/app/node_modules
 WORKDIR /usr/src/app
 
-COPY --from=build --chown=node:node /usr/src/app/dist ./dist
-COPY --from=build --chown=node:node /usr/src/app/node_modules ./node_modules
-COPY --from=build --chown=node:node /usr/src/app/prisma/generated ./prisma/generated
-COPY --from=build --chown=node:node /usr/src/app/package.json ./package.json
-COPY --from=external-clients --chown=node:node /clients/challenge-api-v6/packages/challenge-prisma-client /usr/src/challenge-api-v6/packages/challenge-prisma-client
-COPY --from=external-clients --chown=node:node /clients/identity-api-v6/packages/identity-prisma-client /usr/src/identity-api-v6/packages/identity-prisma-client
-COPY --from=external-clients --chown=node:node /clients/member-api-v6/packages/member-prisma-client /usr/src/member-api-v6/packages/member-prisma-client
-COPY --from=external-clients --chown=node:node /clients/resource-api-v6/packages/resources-prisma-client /usr/src/resource-api-v6/packages/resources-prisma-client
+COPY --from=build --chown=app:app /usr/src/app/dist ./dist
+COPY --from=build --chown=app:app /usr/src/app/node_modules ./node_modules
+COPY --from=build --chown=app:app /usr/src/app/prisma/generated ./prisma/generated
+COPY --from=build --chown=app:app /usr/src/app/package.json ./package.json
+COPY --from=external-clients --chown=app:app /clients/challenge-api-v6/packages/challenge-prisma-client /usr/src/challenge-api-v6/packages/challenge-prisma-client
+COPY --from=external-clients --chown=app:app /clients/identity-api-v6/packages/identity-prisma-client /usr/src/identity-api-v6/packages/identity-prisma-client
+COPY --from=external-clients --chown=app:app /clients/member-api-v6/packages/member-prisma-client /usr/src/member-api-v6/packages/member-prisma-client
+COPY --from=external-clients --chown=app:app /clients/resource-api-v6/packages/resources-prisma-client /usr/src/resource-api-v6/packages/resources-prisma-client
 
-USER node
+USER app
 EXPOSE 3000
 
 CMD ["node", "dist/main.js"]
