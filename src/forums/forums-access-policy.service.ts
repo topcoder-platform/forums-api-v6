@@ -85,6 +85,7 @@ export class ForumsAccessPolicyService {
         : this.deny(
             'Only the author or an elevated forums actor may modify it.',
           );
+    const canDeleteTopic = this.evaluateTopicDeletion(evaluation);
     const canControlAnnouncement = this.evaluateAnnouncementControl(evaluation);
 
     return {
@@ -93,7 +94,7 @@ export class ForumsAccessPolicyService {
       canCreateChildTopic: evaluation.visibility,
       canCreatePost: evaluation.visibility,
       canUpdateTopic: canMutateContent,
-      canDeleteTopic: canMutateContent,
+      canDeleteTopic,
       canAddWatch: evaluation.visibility,
       canRemoveWatch: evaluation.visibility,
       canMarkRead: evaluation.visibility,
@@ -494,6 +495,21 @@ export class ForumsAccessPolicyService {
       (evaluation.visibility.allowed || evaluation.isChallengeCopilot)
       ? this.allow()
       : this.deny('Announcement control requires elevated forums access.');
+  }
+
+  /**
+   * Applies legacy-compatible topic deletion rules independently of editing.
+   *
+   * @param evaluation Restriction evaluation for the persisted topic.
+   * @returns Decision allowing administrators and scoped M2M callers, but not authors or challenge copilots.
+   * @throws Does not throw.
+   */
+  private evaluateTopicDeletion(
+    evaluation: RestrictionEvaluation,
+  ): ForumsAccessDecision {
+    return evaluation.isElevated && !evaluation.isChallengeCopilot
+      ? this.allow()
+      : this.deny('Only an administrator may delete a topic.');
   }
 
   /**

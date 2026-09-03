@@ -233,7 +233,10 @@ describe('ForumsAccessPolicyService', () => {
 
     expect(topicDecisions.canView).toEqual({ allowed: true });
     expect(topicDecisions.canUpdateTopic).toEqual({ allowed: true });
-    expect(topicDecisions.canDeleteTopic).toEqual({ allowed: true });
+    expect(topicDecisions.canDeleteTopic).toEqual({
+      allowed: false,
+      reason: 'Only an administrator may delete a topic.',
+    });
     expect(topicDecisions.canControlAnnouncement).toEqual({ allowed: true });
     expect(postDecisions.canUpdatePost).toEqual({ allowed: true });
     expect(postDecisions.canDeletePost).toEqual({ allowed: true });
@@ -319,7 +322,26 @@ describe('ForumsAccessPolicyService', () => {
     expect(createDecisions.canControlAnnouncement).toEqual({ allowed: true });
     expect(topicDecisions.canView).toEqual({ allowed: true });
     expect(topicDecisions.canUpdateTopic).toEqual({ allowed: true });
+    expect(topicDecisions.canDeleteTopic.allowed).toBe(false);
     expect(topicDecisions.canControlAnnouncement).toEqual({ allowed: true });
+  });
+
+  it('lets an author edit but not delete their own topic', async () => {
+    const { service } = createPolicyHarness();
+    const decisions = await service.decideForTopic(
+      makePrincipal({ memberId: 'author-1' }),
+      makeTopicContext({
+        effectiveChallengeId: null,
+        effectiveRoleName: null,
+        isTopicAuthor: true,
+      }),
+    );
+
+    expect(decisions.canUpdateTopic).toEqual({ allowed: true });
+    expect(decisions.canDeleteTopic).toEqual({
+      allowed: false,
+      reason: 'Only an administrator may delete a topic.',
+    });
   });
 
   it('allows general public child-topic creation', async () => {
@@ -490,6 +512,8 @@ describe('ForumsAccessPolicyService', () => {
 
     expect(adminTopicDecisions.canUpdateTopic).toEqual({ allowed: true });
     expect(machineTopicDecisions.canUpdateTopic).toEqual({ allowed: true });
+    expect(adminTopicDecisions.canDeleteTopic).toEqual({ allowed: true });
+    expect(machineTopicDecisions.canDeleteTopic).toEqual({ allowed: true });
     expect(
       challengeAccessService.getChallengeAccessFacts,
     ).not.toHaveBeenCalled();
