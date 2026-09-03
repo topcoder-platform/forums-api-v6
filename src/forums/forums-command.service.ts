@@ -1595,17 +1595,22 @@ export class ForumsCommandService {
   }
 
   /**
-   * Checks whether an object owns a property supplied by the request body.
+   * Checks whether an object owns a defined property supplied by the request body.
+   * Class-transformer DTO instances can own optional fields whose runtime value
+   * is `undefined`; those fields remain omitted for command semantics.
    *
    * @param value Object to inspect.
    * @param key Property key to check.
-   * @returns `true` when the property exists on the object.
+   * @returns `true` when the property exists and is not `undefined`.
    * @throws Does not throw.
    */
   private hasOwn<T extends object, K extends PropertyKey>(
     value: T,
     key: K,
   ): value is T & Record<K, unknown> {
-    return Object.prototype.hasOwnProperty.call(value, key);
+    return (
+      Object.prototype.hasOwnProperty.call(value, key) &&
+      (value as T & Record<K, unknown>)[key] !== undefined
+    );
   }
 }
