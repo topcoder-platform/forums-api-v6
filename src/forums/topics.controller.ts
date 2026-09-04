@@ -362,7 +362,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Soft-delete a forum topic',
     description:
-      'Command route for topic soft deletion. Topic deletion requires an authenticated member token or `delete:forums-topics`, then passes centralized forums policy checks for visibility, ownership, and elevated challenge access. Active member bans and trusted exact-IP bans return 403 before writes. Locked topics reject deletion unless the caller is an administrator or eligible challenge copilot.',
+      'Command route for topic soft deletion. Human deletion is administrator-only; M2M callers require `delete:forums-topics`. Authors and challenge copilots may edit eligible topics but cannot delete them. Active member bans and trusted exact-IP bans return 403 before writes, and locked topics reject non-administrator deletion.',
   })
   @ApiParam({ name: 'topicId', description: 'Topic id.' })
   @ApiResponse({

@@ -85,6 +85,41 @@ export class ResourceAccessService implements OnModuleDestroy {
   }
 
   /**
+   * Resolves which candidate members hold a copilot resource role on a challenge.
+   *
+   * @param challengeId Challenge id inherited by the forum topic.
+   * @param memberIds Candidate post-author member ids.
+   * @returns Set containing candidate member ids assigned a copilot role.
+   * @throws Prisma errors when a configured resource database lookup fails.
+   */
+  async getChallengeCopilotMemberIds(
+    challengeId: string,
+    memberIds: readonly string[],
+  ): Promise<ReadonlySet<string>> {
+    const client = this.resolveClient();
+    const candidates = Array.from(
+      new Set(memberIds.map((memberId) => memberId.trim()).filter(Boolean)),
+    );
+
+    if (!client || candidates.length === 0) {
+      return new Set<string>();
+    }
+
+    const resources = await client.resource.findMany({
+      where: {
+        challengeId,
+        memberId: { in: candidates },
+        resourceRole: {
+          nameLower: { contains: 'copilot' },
+        },
+      },
+      select: { memberId: true },
+    });
+
+    return new Set(resources.map((resource) => resource.memberId));
+  }
+
+  /**
    * Disconnects the resource Prisma client during Nest module shutdown.
    *
    * @returns A promise that resolves after the client disconnects or no-ops.
