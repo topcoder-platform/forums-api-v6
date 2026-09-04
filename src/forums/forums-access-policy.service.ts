@@ -147,13 +147,16 @@ export class ForumsAccessPolicyService {
         : this.deny(
             'Only the author or an elevated forums actor may modify it.',
           );
+    const canDeletePost = this.evaluatePostDeletion(evaluation);
 
     return {
       ...topicDecisions,
       canUpdatePost: context.post.deletedAt
         ? this.deny('Post not found.')
         : canMutateContent,
-      canDeletePost: canMutateContent,
+      canDeletePost: context.post.deletedAt
+        ? this.deny('Post not found.')
+        : canDeletePost,
     };
   }
 
@@ -510,6 +513,21 @@ export class ForumsAccessPolicyService {
     return evaluation.isElevated && !evaluation.isChallengeCopilot
       ? this.allow()
       : this.deny('Only an administrator may delete a topic.');
+  }
+
+  /**
+   * Applies legacy-compatible post deletion rules independently of editing.
+   *
+   * @param evaluation Restriction evaluation for the persisted post's topic.
+   * @returns Decision allowing administrators and scoped M2M callers, but not authors or challenge copilots.
+   * @throws Does not throw.
+   */
+  private evaluatePostDeletion(
+    evaluation: RestrictionEvaluation,
+  ): ForumsAccessDecision {
+    return evaluation.isElevated && !evaluation.isChallengeCopilot
+      ? this.allow()
+      : this.deny('Only an administrator may delete a post.');
   }
 
   /**
