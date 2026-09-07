@@ -318,7 +318,8 @@ export class ForumsPostTreeNodeDto {
   viewerReaction: PostReactionType | null;
 
   @ApiProperty({
-    description: 'Nested replies ordered chronologically from oldest to newest.',
+    description:
+      'Nested replies ordered chronologically from oldest to newest.',
     type: () => [ForumsPostTreeNodeDto],
   })
   replies: ForumsPostTreeNodeDto[];

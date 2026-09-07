@@ -31,8 +31,7 @@ describe('resolveV6BusApiBase', () => {
     expect(
       resolveV6BusApiBase(
         configWith({
-          'notifications.topcoderApiUrlBase':
-            'https://api.topcoder-dev.com/',
+          'notifications.topcoderApiUrlBase': 'https://api.topcoder-dev.com/',
         }),
       ),
     ).toBe('https://api.topcoder-dev.com/v6');

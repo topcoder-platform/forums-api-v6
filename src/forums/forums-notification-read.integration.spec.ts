@@ -174,8 +174,7 @@ function createSeededForumsDb(seed: SeededForumsData) {
               updatedAt: post.updatedAt,
               deletedAt: post.deletedAt,
               thumbsUpCount: reactions.filter(
-                (reaction) =>
-                  reaction.reaction === PostReactionType.THUMBS_UP,
+                (reaction) => reaction.reaction === PostReactionType.THUMBS_UP,
               ).length,
               thumbsDownCount: reactions.filter(
                 (reaction) =>
@@ -307,9 +306,7 @@ function createSeededForumsDb(seed: SeededForumsData) {
         seed.postReactions.push(args.create);
         return args.create;
       },
-      deleteMany: (args: {
-        where: { postId: string; memberId: string };
-      }) => {
+      deleteMany: (args: { where: { postId: string; memberId: string } }) => {
         const index = seed.postReactions.findIndex(
           (reaction) =>
             reaction.postId === args.where.postId &&
@@ -914,9 +911,7 @@ describe('forums notification/read integration', () => {
         locked: false,
         lockedBy: null,
         lockedAt: null,
-        participants: [
-          { handle: 'author', memberId: '1' },
-        ],
+        participants: [{ handle: 'author', memberId: '1' }],
         participantsCount: 1,
         starterPostExcerpt: 'Restricted starter content',
         viewsCount: 1,
@@ -1089,9 +1084,9 @@ describe('forums notification/read integration', () => {
       'root-oldest',
       'root-newest',
     ]);
-    expect(
-      response.body.posts[0].replies.map((post: Post) => post.id),
-    ).toEqual(['reply-oldest', 'reply-newest']);
+    expect(response.body.posts[0].replies.map((post: Post) => post.id)).toEqual(
+      ['reply-oldest', 'reply-newest'],
+    );
     expect(response.body.posts[0]).toEqual(
       expect.objectContaining({ authorIsCopilot: true }),
     );
@@ -1104,7 +1099,9 @@ describe('forums notification/read integration', () => {
   });
 
   it('shares post reaction counts while preserving each member viewer state', async () => {
-    seedData.posts.push(makePost({ topicId: 'parent-1', parentId: 'parent-1' }));
+    seedData.posts.push(
+      makePost({ topicId: 'parent-1', parentId: 'parent-1' }),
+    );
     seedData.postReactions.push(
       {
         postId: 'post-1',
