@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Post, Topic } from '../../prisma/generated/client';
 import { DbService } from '../db/db.service';
+import { ChallengeApiService } from './challenge-api.service';
 import { EventBusService } from './event-bus.service';
 import { ForumsAccessPolicyService } from './forums-access-policy.service';
 import {
@@ -72,9 +73,9 @@ export class ForumsNotificationPublishError extends Error {
  * The service resolves explicit watches on the created post's topic and all
  * ancestors, dedupes by member id, excludes the persisted author member id,
  * filters active member bans and remaining recipients through the shared forums
- * access policy, and publishes one SendGrid email event for the final recipient
- * list. IP-ban checks are intentionally excluded because notification delivery
- * is not bound to a trusted request client IP.
+ * access policy, resolves the challenge title when applicable, and publishes one
+ * SendGrid email event for the final recipient list. IP-ban checks are intentionally
+ * excluded because notification delivery is not bound to a trusted request client IP.
  */
 @Injectable()
 export class ForumsWatchNotificationService {
@@ -90,6 +91,7 @@ export class ForumsWatchNotificationService {
    * @param moderationService Shared runtime member-ban gate.
    * @param eventBusService Local event-bus adapter.
    * @param configService Nest configuration service containing notification settings.
+   * @param challengeApiService M2M-authenticated lookup for challenge titles.
    * @throws Does not throw directly; dependencies are resolved by Nest.
    */
   constructor(
@@ -100,6 +102,7 @@ export class ForumsWatchNotificationService {
     private readonly moderationService: ForumsModerationService,
     private readonly eventBusService: EventBusService,
     private readonly configService: ConfigService,
+    private readonly challengeApiService: ChallengeApiService,
   ) {}
 
   /**
@@ -157,7 +160,13 @@ export class ForumsWatchNotificationService {
       return { attemptedRecipientCount: 0, published: false };
     }
 
-    const payload = this.buildEmailPayload(params, templateId, recipientEmails);
+    const challengeTitle = await this.resolveChallengeTitle(params);
+    const payload = this.buildEmailPayload(
+      params,
+      templateId,
+      recipientEmails,
+      challengeTitle,
+    );
 
     try {
       await this.eventBusService.postEvent(EMAIL_EVENT_TOPIC, payload);
@@ -365,11 +374,39 @@ export class ForumsWatchNotificationService {
   }
 
   /**
+   * Looks up the effective challenge title once per outgoing notification.
+   *
+   * @param params Current notification parameters with inherited challenge context.
+   * @returns Challenge title, or `undefined` for non-challenge topics or lookup failures.
+   * @throws Does not throw; lookup failures are logged so email delivery continues.
+   */
+  private async resolveChallengeTitle(
+    params: PublishForumsPostNotificationParams,
+  ): Promise<string | undefined> {
+    const challengeId = params.restrictions.challengeId;
+
+    if (!challengeId) {
+      return undefined;
+    }
+
+    try {
+      return await this.challengeApiService.getChallengeTitle(challengeId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown error';
+      this.logger.warn(
+        `${params.operationName} notification for topic ${params.topic.id}, post ${params.post.id}: challenge ${challengeId} title lookup failed: ${message}`,
+      );
+      return undefined;
+    }
+  }
+
+  /**
    * Builds the SendGrid event payload from persisted topic and post rows.
    *
    * @param params Current notification publish parameters.
    * @param templateId Configured SendGrid template id.
    * @param recipients Final recipient email list.
+   * @param challengeTitle Challenge API name when the effective challenge resolves.
    * @returns Event-bus email payload.
    * @throws Does not throw.
    */
@@ -377,12 +414,14 @@ export class ForumsWatchNotificationService {
     params: PublishForumsPostNotificationParams,
     templateId: string,
     recipients: string[],
+    challengeTitle: string | undefined,
   ): ForumsWatchNotificationEmailPayload {
     return {
       data: {
         ...(params.restrictions.challengeId
           ? { challengeId: params.restrictions.challengeId }
           : {}),
+        ...(challengeTitle ? { challengeTitle } : {}),
         topicId: params.topic.id,
         topicTitle: params.topic.title,
         postContent: params.post.content ?? '',
