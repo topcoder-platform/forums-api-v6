@@ -5,7 +5,7 @@
  * notification publisher. Missing template configuration disables notification
  * publishing without affecting forum writes.
  *
- * @returns SendGrid template, Bus and Challenge API bases, Kafka error topic, and Auth0 M2M values.
+ * @returns SendGrid template, Bus, Challenge API, and public web bases, Kafka error topic, and Auth0 M2M values.
  * @throws Does not throw; consumers decide whether optional values are required.
  */
 export default () => ({
@@ -14,6 +14,7 @@ export default () => ({
     busApiUrl: process.env.BUSAPI_URL,
     busApiUrlAlias: process.env.BUS_API_URL,
     topcoderApiUrlBase: process.env.TOPCODER_API_URL_BASE,
+    topcoderUrl: process.env.TOPCODER_URL,
     challengeApiUrl: process.env.CHALLENGE_API_URL,
     kafkaErrorTopic: process.env.KAFKA_ERROR_TOPIC,
     auth0Url: process.env.AUTH0_URL,

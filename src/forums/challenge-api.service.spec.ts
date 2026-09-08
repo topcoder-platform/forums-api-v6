@@ -78,6 +78,35 @@ describe('ChallengeApiService', () => {
     );
   });
 
+  it('builds an environment-correct Opportunities link from the shared API host', () => {
+    expect(createService().getChallengeUrl('challenge/id?query')).toBe(
+      'https://www.topcoder-dev.com/opportunities/challenge/challenge%2Fid%3Fquery',
+    );
+  });
+
+  it('uses the explicit Topcoder web URL for public challenge links', () => {
+    const service = createService({
+      'notifications.topcoderUrl': 'https://community.example.com/ignored/path?query=1',
+    });
+
+    expect(service.getChallengeUrl('challenge-1')).toBe(
+      'https://community.example.com/opportunities/challenge/challenge-1',
+    );
+  });
+
+  it.each([
+    [{ 'notifications.topcoderApiUrlBase': undefined }, 'must configure'],
+    [
+      { 'notifications.topcoderUrl': 'javascript:alert(1)' },
+      'absolute HTTP(S) URL',
+    ],
+    [{ 'notifications.topcoderUrl': 'not-a-url' }, 'absolute HTTP(S) URL'],
+  ])('rejects unusable public challenge URL configuration: %p', (overrides, message) => {
+    expect(() => createService(overrides).getChallengeUrl('challenge-1')).toThrow(
+      message,
+    );
+  });
+
   it.each([
     ['notifications.topcoderApiUrlBase', 'CHALLENGE_API_URL'],
     ['notifications.m2mClientId', 'M2M_CLIENT_ID'],

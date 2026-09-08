@@ -1,6 +1,9 @@
 {
   "challengeId": "12345678-1234-4234-8234-123456789abc",
+  "challengeName": "Topcoder Forum Export Challenge",
   "challengeTitle": "Topcoder Forum Export Challenge",
+  "challengeURL": "https://www.topcoder-dev.com/opportunities/challenge/12345678-1234-4234-8234-123456789abc",
+  "challengeUrl": "https://www.topcoder-dev.com/opportunities/challenge/12345678-1234-4234-8234-123456789abc",
   "topicId": "87654321-4321-4321-8321-cba987654321",
   "topicTitle": "Challenge questions and clarifications",
   "postContent": "Hi everyone,\n\nThe requirements have been updated with an example for the export flow. Please review the discussion and share any questions.\n\nThanks!",
