@@ -239,7 +239,10 @@ describe('ForumsAccessPolicyService', () => {
     });
     expect(topicDecisions.canControlAnnouncement).toEqual({ allowed: true });
     expect(postDecisions.canUpdatePost).toEqual({ allowed: true });
-    expect(postDecisions.canDeletePost).toEqual({ allowed: true });
+    expect(postDecisions.canDeletePost).toEqual({
+      allowed: false,
+      reason: 'Only an administrator may delete a post.',
+    });
   });
 
   it('denies dual-restricted visibility and elevation for a challenge copilot without the role', async () => {
@@ -326,14 +329,22 @@ describe('ForumsAccessPolicyService', () => {
     expect(topicDecisions.canControlAnnouncement).toEqual({ allowed: true });
   });
 
-  it('lets an author edit but not delete their own topic', async () => {
+  it('lets an author edit but not delete their own topic or post', async () => {
     const { service } = createPolicyHarness();
-    const decisions = await service.decideForTopic(
-      makePrincipal({ memberId: 'author-1' }),
-      makeTopicContext({
+    const principal = makePrincipal({ memberId: 'author-1' });
+    const context = makeTopicContext({
+      effectiveChallengeId: null,
+      effectiveRoleName: null,
+      isTopicAuthor: true,
+    });
+    const decisions = await service.decideForTopic(principal, context);
+    const postDecisions = await service.decideForPost(
+      principal,
+      makePostContext({
+        ...context,
         effectiveChallengeId: null,
         effectiveRoleName: null,
-        isTopicAuthor: true,
+        isPostAuthor: true,
       }),
     );
 
@@ -341,6 +352,11 @@ describe('ForumsAccessPolicyService', () => {
     expect(decisions.canDeleteTopic).toEqual({
       allowed: false,
       reason: 'Only an administrator may delete a topic.',
+    });
+    expect(postDecisions.canUpdatePost).toEqual({ allowed: true });
+    expect(postDecisions.canDeletePost).toEqual({
+      allowed: false,
+      reason: 'Only an administrator may delete a post.',
     });
   });
 
@@ -509,11 +525,23 @@ describe('ForumsAccessPolicyService', () => {
       machinePrincipal,
       makeTopicContext({ hasRestrictionConflict: true }),
     );
+    const adminPostDecisions = await service.decideForPost(
+      adminPrincipal,
+      makePostContext({ hasRestrictionConflict: true }),
+    );
+    const machinePostDecisions = await service.decideForPost(
+      machinePrincipal,
+      makePostContext({ hasRestrictionConflict: true }),
+    );
 
     expect(adminTopicDecisions.canUpdateTopic).toEqual({ allowed: true });
     expect(machineTopicDecisions.canUpdateTopic).toEqual({ allowed: true });
     expect(adminTopicDecisions.canDeleteTopic).toEqual({ allowed: true });
     expect(machineTopicDecisions.canDeleteTopic).toEqual({ allowed: true });
+    expect(adminPostDecisions.canUpdatePost).toEqual({ allowed: true });
+    expect(machinePostDecisions.canUpdatePost).toEqual({ allowed: true });
+    expect(adminPostDecisions.canDeletePost).toEqual({ allowed: true });
+    expect(machinePostDecisions.canDeletePost).toEqual({ allowed: true });
     expect(
       challengeAccessService.getChallengeAccessFacts,
     ).not.toHaveBeenCalled();

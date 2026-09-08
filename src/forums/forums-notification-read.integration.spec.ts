@@ -174,8 +174,7 @@ function createSeededForumsDb(seed: SeededForumsData) {
               updatedAt: post.updatedAt,
               deletedAt: post.deletedAt,
               thumbsUpCount: reactions.filter(
-                (reaction) =>
-                  reaction.reaction === PostReactionType.THUMBS_UP,
+                (reaction) => reaction.reaction === PostReactionType.THUMBS_UP,
               ).length,
               thumbsDownCount: reactions.filter(
                 (reaction) =>
@@ -307,9 +306,7 @@ function createSeededForumsDb(seed: SeededForumsData) {
         seed.postReactions.push(args.create);
         return args.create;
       },
-      deleteMany: (args: {
-        where: { postId: string; memberId: string };
-      }) => {
+      deleteMany: (args: { where: { postId: string; memberId: string } }) => {
         const index = seed.postReactions.findIndex(
           (reaction) =>
             reaction.postId === args.where.postId &&
@@ -771,6 +768,16 @@ describe('forums notification/read integration', () => {
       })
       .overrideProvider(ResourceAccessService)
       .useValue({
+        getChallengeCopilotMemberIds: jest.fn(
+          (challengeId: string, memberIds: readonly string[]) =>
+            new Set(
+              challengeId === 'challenge-1'
+                ? memberIds.filter((memberId) =>
+                    challengeCopilots.has(memberId),
+                  )
+                : [],
+            ),
+        ),
         getResourceAccessFacts: jest.fn(
           (_challengeId: string, memberId: string | null) => ({
             configured: true,
@@ -837,6 +844,36 @@ describe('forums notification/read integration', () => {
     await app?.close();
   });
 
+  it('notifies a member who watches through the API while excluding the posting author', async () => {
+    seedData.topicWatches = [{ topicId: 'parent-1', memberId: '1' }];
+
+    await request(app.getHttpServer())
+      .put('/topics/parent-1/watch')
+      .set('x-member-id', '2')
+      .send({})
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .post('/topics/parent-1/posts')
+      .set('x-member-id', '1')
+      .send({ content: 'A watched-topic update.' })
+      .expect(201);
+
+    expect(seedData.topicWatches).toEqual([
+      { topicId: 'parent-1', memberId: '1' },
+      { topicId: 'parent-1', memberId: '2' },
+    ]);
+    expect(publishedEvents).toHaveLength(1);
+    expect(publishedEvents[0]).toEqual({
+      topic: 'external.action.email',
+      payload: expect.objectContaining({
+        recipients: ['two@example.com'],
+        sendgrid_template_id: 'template-id',
+        version: 'v3',
+      }),
+    });
+  });
+
   it('matches role-restricted child-topic notification recipients to read-visible ancestor watchers while excluding the author', async () => {
     const createResponse = await request(app.getHttpServer())
       .post('/topics')
@@ -874,9 +911,7 @@ describe('forums notification/read integration', () => {
         locked: false,
         lockedBy: null,
         lockedAt: null,
-        participants: [
-          { handle: 'author', memberId: '1' },
-        ],
+        participants: [{ handle: 'author', memberId: '1' }],
         participantsCount: 1,
         starterPostExcerpt: 'Restricted starter content',
         viewsCount: 1,
@@ -990,8 +1025,83 @@ describe('forums notification/read integration', () => {
     );
   });
 
+  it('returns challenge posts and replies oldest-first with copilot author metadata', async () => {
+    seedData.topics.push(
+      makeTopic({
+        id: 'challenge-topic',
+        challengeId: 'challenge-1',
+        title: 'Challenge topic',
+      }),
+    );
+    seedData.topicClosures.push({
+      ancestorTopicId: 'challenge-topic',
+      descendantTopicId: 'challenge-topic',
+      depth: 0,
+    });
+    seedData.posts.push(
+      makePost({
+        id: 'root-newest',
+        topicId: 'challenge-topic',
+        parentId: 'challenge-topic',
+        authorMemberId: '2',
+        authorHandle: 'member-2',
+        createdAt: new Date('2026-06-08T00:00:00.000Z'),
+      }),
+      makePost({
+        id: 'root-oldest',
+        topicId: 'challenge-topic',
+        parentId: 'challenge-topic',
+        authorMemberId: '6',
+        authorHandle: 'member-6',
+        createdAt: new Date('2026-06-05T00:00:00.000Z'),
+      }),
+      makePost({
+        id: 'reply-newest',
+        topicId: 'challenge-topic',
+        parentType: 'POST',
+        parentId: 'root-oldest',
+        authorMemberId: '2',
+        authorHandle: 'member-2',
+        createdAt: new Date('2026-06-07T00:00:00.000Z'),
+      }),
+      makePost({
+        id: 'reply-oldest',
+        topicId: 'challenge-topic',
+        parentType: 'POST',
+        parentId: 'root-oldest',
+        authorMemberId: '6',
+        authorHandle: 'member-6',
+        createdAt: new Date('2026-06-06T00:00:00.000Z'),
+      }),
+    );
+
+    const response = await request(app.getHttpServer())
+      .get('/topics/challenge-topic')
+      .set('x-member-id', '1')
+      .expect(200);
+
+    expect(response.body.posts.map((post: Post) => post.id)).toEqual([
+      'root-oldest',
+      'root-newest',
+    ]);
+    expect(response.body.posts[0].replies.map((post: Post) => post.id)).toEqual(
+      ['reply-oldest', 'reply-newest'],
+    );
+    expect(response.body.posts[0]).toEqual(
+      expect.objectContaining({ authorIsCopilot: true }),
+    );
+    expect(response.body.posts[0].replies[0]).toEqual(
+      expect.objectContaining({ authorIsCopilot: true }),
+    );
+    expect(response.body.posts[1]).toEqual(
+      expect.objectContaining({ authorIsCopilot: false }),
+    );
+  });
+
   it('shares post reaction counts while preserving each member viewer state', async () => {
-    seedData.posts.push(makePost({ topicId: 'parent-1', parentId: 'parent-1' }));
+    seedData.posts.push(
+      makePost({ topicId: 'parent-1', parentId: 'parent-1' }),
+    );
     seedData.postReactions.push(
       {
         postId: 'post-1',
