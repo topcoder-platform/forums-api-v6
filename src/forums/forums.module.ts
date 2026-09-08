@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DbModule } from '../db/db.module';
 import { ChallengeAccessService } from './challenge-access.service';
+import { ChallengeApiService } from './challenge-api.service';
 import { EventBusService } from './event-bus.service';
 import { ForumsAccessPolicyService } from './forums-access-policy.service';
 import { ForumsCommandService } from './forums-command.service';
@@ -31,6 +32,7 @@ import { TopicsController } from './topics.controller';
   controllers: [TopicsController, PostsController, ModerationController],
   providers: [
     ChallengeAccessService,
+    ChallengeApiService,
     EventBusService,
     ForumsAccessPolicyService,
     ForumsCommandService,
