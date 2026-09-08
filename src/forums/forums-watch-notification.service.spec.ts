@@ -102,6 +102,11 @@ function createService(templateId: string | null = 'template-id') {
   };
   const challengeApiService = {
     getChallengeTitle: jest.fn().mockResolvedValue('Challenge title'),
+    getChallengeUrl: jest
+      .fn()
+      .mockReturnValue(
+        'https://www.topcoder-dev.com/opportunities/challenge/challenge-1',
+      ),
   };
   const configService = {
     get: jest.fn((key: string) =>
@@ -167,6 +172,7 @@ describe('ForumsWatchNotificationService', () => {
     });
     expect(eventBusService.postEvent).toHaveBeenCalledTimes(1);
     expect(challengeApiService.getChallengeTitle).not.toHaveBeenCalled();
+    expect(challengeApiService.getChallengeUrl).not.toHaveBeenCalled();
     expect(eventBusService.postEvent.mock.calls[0][1].data).not.toHaveProperty(
       'challengeTitle',
     );
@@ -513,12 +519,21 @@ describe('ForumsWatchNotificationService', () => {
       expect(challengeApiService.getChallengeTitle).toHaveBeenCalledWith(
         'challenge-1',
       );
+      expect(challengeApiService.getChallengeUrl).toHaveBeenCalledTimes(1);
+      expect(challengeApiService.getChallengeUrl).toHaveBeenCalledWith(
+        'challenge-1',
+      );
       expect(eventBusService.postEvent).toHaveBeenCalledWith(
         'external.action.email',
         {
           data: {
             challengeId: 'challenge-1',
+            challengeName: 'Challenge title',
             challengeTitle: 'Challenge title',
+            challengeURL:
+              'https://www.topcoder-dev.com/opportunities/challenge/challenge-1',
+            challengeUrl:
+              'https://www.topcoder-dev.com/opportunities/challenge/challenge-1',
             topicId: 'topic-1',
             topicTitle: 'Topic title',
             postContent: 'Persisted post content',
@@ -556,8 +571,38 @@ describe('ForumsWatchNotificationService', () => {
     const payload = eventBusService.postEvent.mock.calls[0][1];
     expect(payload.data.challengeId).toBe('challenge-1');
     expect(payload.data).not.toHaveProperty('challengeTitle');
+    expect(payload.data.challengeURL).toBe(
+      'https://www.topcoder-dev.com/opportunities/challenge/challenge-1',
+    );
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('challenge challenge-1 title lookup failed'),
+    );
+  });
+
+  it('still publishes the challenge name when public URL configuration is invalid', async () => {
+    const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { challengeApiService, eventBusService, service } = createService();
+    challengeApiService.getChallengeUrl.mockImplementation(() => {
+      throw new Error('TOPCODER_URL is invalid');
+    });
+
+    const result = await service.publishPostNotification({
+      topic: makeTopic(),
+      post: makePost(),
+      restrictions: {
+        challengeId: 'challenge-1',
+        roleName: null,
+        hasRestrictionConflict: false,
+      },
+      operationName: 'createPost',
+    });
+
+    expect(result).toEqual({ attemptedRecipientCount: 1, published: true });
+    const payload = eventBusService.postEvent.mock.calls[0][1];
+    expect(payload.data.challengeName).toBe('Challenge title');
+    expect(payload.data).not.toHaveProperty('challengeURL');
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('challenge challenge-1 URL resolution failed'),
     );
   });
 });

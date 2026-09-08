@@ -62,10 +62,12 @@ the content write.
 
 For challenge-scoped notifications, the publisher fetches the effective challenge
 from `GET /v6/challenges/:challengeId` using the configured M2M credentials and
-includes its `name` as `data.challengeTitle`. This lookup runs once per outgoing
-notification, after recipient authorization, and uses a five-second HTTP timeout.
-Lookup failures are logged and the email still publishes with `challengeId` but
-without `challengeTitle`.
+includes its name and environment-correct Opportunities link. The established
+`challengeName` / `challengeURL` SendGrid keys and the `challengeTitle` /
+`challengeUrl` compatibility aliases carry identical values. This lookup runs
+once per outgoing notification, after recipient authorization, and uses a
+five-second HTTP timeout. Name and URL failures are logged independently, and
+the email still publishes with every field that could be resolved.
 
 The [forum notification HTML template](docs/email-templates/forum-notification.html)
 adapts the Topcoder support email design for these notifications. Use the subject
@@ -79,7 +81,10 @@ Template variables come from the event payload's `data` object:
 | Field | Value |
 | --- | --- |
 | `challengeId` | Effective challenge ID; omitted when absent. The template hides this row when absent. |
-| `challengeTitle` | Challenge API `name`; omitted for non-challenge topics or failed lookups. The template hides this row when absent. |
+| `challengeName` | Challenge API `name`; omitted for non-challenge topics or failed lookups. The template hides this row when absent. |
+| `challengeURL` | Public `/opportunities/challenge/:challengeId` URL. |
+| `challengeTitle` | Compatibility alias of `challengeName`. |
+| `challengeUrl` | Compatibility alias of `challengeURL`. |
 | `topicId` | Created content's topic ID. |
 | `topicTitle` | Topic title. |
 | `postContent` | Persisted post content, or an empty string when null. |
@@ -88,13 +93,14 @@ Template variables come from the event payload's `data` object:
 
 Use the [sample template data](docs/email-templates/forum-notification.sample.json)
 in SendGrid's preview editor; it contains only the `data` fields, without the
-event envelope. Remove `challengeId` and `challengeTitle` to preview a non-challenge notification.
+event envelope. Remove all challenge fields to preview a non-challenge notification.
 User content uses escaped double-brace substitutions and is displayed as text,
 with line breaks preserved where the email client supports `white-space: pre-wrap`;
 Markdown and HTML are not rendered. See SendGrid's
 [Handlebars documentation](https://www.twilio.com/docs/sendgrid/for-developers/sending-email/using-handlebars)
-for substitution and conditional syntax. The current payload has no discussion
-URL, so the template currently displays the topic ID without a discussion link.
+for substitution and conditional syntax. The challenge name links to the new
+Opportunities challenge-details route; the topic ID remains unlinked because the
+page does not yet expose a stable topic-detail URL.
 
 ## Environment
 
@@ -114,6 +120,7 @@ SENDGRID_NOTIFICATION_TEMPLATE="sendgrid-template-id"
 BUSAPI_URL="https://api.topcoder-dev.com/v6"
 BUS_API_URL="https://api.topcoder-dev.com/v6/bus/events"
 TOPCODER_API_URL_BASE="https://api.topcoder-dev.com"
+TOPCODER_URL="https://www.topcoder-dev.com"
 CHALLENGE_API_URL="https://api.topcoder-dev.com/v6/challenges"
 KAFKA_ERROR_TOPIC="common.error.reporting"
 AUTH0_URL="https://auth.topcoder-dev.com/"
@@ -134,7 +141,7 @@ PORT=3000
 `VANILLA_DB_URL` is used only by the standalone Vanilla import CLI for legacy MySQL reads. The runtime HTTP service does not connect to Vanilla.
 `AUTH_SECRET` is required; the service fails during startup when it is omitted.
 `SENDGRID_NOTIFICATION_TEMPLATE` enables forum watch notification emails. When omitted, notification publishing is skipped and content writes still succeed.
-`CHALLENGE_API_URL` optionally configures the challenges collection endpoint for notification titles. When omitted, it defaults to `${TOPCODER_API_URL_BASE}/v6/challenges`. The lookup uses the same Auth0 configuration and `M2M_CLIENT_ID` / `M2M_CLIENT_SECRET` as outbound bus publishing; the M2M client must have challenge read access.
+`CHALLENGE_API_URL` optionally configures the challenges collection endpoint for notification titles. When omitted, it defaults to `${TOPCODER_API_URL_BASE}/v6/challenges`. The lookup uses the same Auth0 configuration and `M2M_CLIENT_ID` / `M2M_CLIENT_SECRET` as outbound bus publishing; the M2M client must have challenge read access. `TOPCODER_URL` optionally configures the public web origin used by challenge links. When omitted, the service derives it from `TOPCODER_API_URL_BASE` by replacing the conventional `api.` hostname prefix with `www.`.
 `BUSAPI_URL` configures the shared Bus API v6 base for `external.action.email`; the backwards-compatible `BUS_API_URL` alias may contain either that base or the complete `/v6/bus/events` endpoint. Both values are normalized to the `/v6` base because `tc-bus-api-wrapper` appends `/bus/events`, and conflicting aliases or legacy `/eventBus` and `/v5` values are rejected. When neither alias is set, the service derives the v6 base from `TOPCODER_API_URL_BASE`. `KAFKA_ERROR_TOPIC`, `AUTH0_URL`, `AUTH0_AUDIENCE`, `TOKEN_CACHE_TIME`, `M2M_CLIENT_ID`, `M2M_CLIENT_SECRET`, and `AUTH0_PROXY_SERVER_URL` are passed to the standard bus wrapper for outbound authenticated publishing.
 `TRUST_FORWARDED_CLIENT_IP=true` enables forwarded client-IP moderation using the first exact IPv4/IPv6 host from trusted forwarding headers. When disabled, or when the forwarded value is missing, malformed, CIDR, wildcard, or otherwise non-exact, no client IP is resolved and IP-ban enforcement is skipped for that request. Do not enable this unless the service is behind infrastructure that strips or controls inbound forwarding headers.
 
