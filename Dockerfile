@@ -35,7 +35,8 @@ RUN DATABASE_URL="postgresql://user:password@localhost:5432/forums" pnpm prisma:
   && pnpm lint \
   && pnpm build \
   && rm -rf node_modules \
-  && pnpm install --prod --frozen-lockfile --ignore-scripts
+  && pnpm install --prod --frozen-lockfile --ignore-scripts \
+  && pnpm rebuild @prisma/engines
 
 FROM node:${NODE_VERSION}-alpine AS production
 
@@ -43,13 +44,20 @@ RUN apk upgrade --no-cache \
   && rm -rf /usr/local/lib/node_modules/npm \
   && rm -f /usr/local/bin/npm /usr/local/bin/npx
 
-ENV NODE_ENV=production
+# External Prisma clients are copied beside the application under /usr/src.
+# Expose the application's production dependencies to their CommonJS imports.
+ENV NODE_ENV=production \
+  NODE_PATH=/usr/src/app/node_modules
 WORKDIR /usr/src/app
 
 COPY --from=build --chown=node:node /usr/src/app/dist ./dist
 COPY --from=build --chown=node:node /usr/src/app/node_modules ./node_modules
 COPY --from=build --chown=node:node /usr/src/app/prisma/generated ./prisma/generated
+COPY --from=build --chown=node:node /usr/src/app/prisma/migrations ./prisma/migrations
+COPY --from=build --chown=node:node /usr/src/app/prisma/schema.prisma ./prisma/schema.prisma
+COPY --from=build --chown=node:node /usr/src/app/prisma.config.ts ./prisma.config.ts
 COPY --from=build --chown=node:node /usr/src/app/package.json ./package.json
+COPY --from=build --chown=node:node --chmod=0555 /usr/src/app/appStartUp.sh ./appStartUp.sh
 COPY --from=external-clients --chown=node:node /clients/challenge-api-v6/packages/challenge-prisma-client /usr/src/challenge-api-v6/packages/challenge-prisma-client
 COPY --from=external-clients --chown=node:node /clients/identity-api-v6/packages/identity-prisma-client /usr/src/identity-api-v6/packages/identity-prisma-client
 COPY --from=external-clients --chown=node:node /clients/member-api-v6/packages/member-prisma-client /usr/src/member-api-v6/packages/member-prisma-client
@@ -58,4 +66,4 @@ COPY --from=external-clients --chown=node:node /clients/resource-api-v6/packages
 USER node
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+CMD ["./appStartUp.sh"]

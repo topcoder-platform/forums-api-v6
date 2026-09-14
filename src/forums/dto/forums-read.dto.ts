@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PostReactionType } from '../../../prisma/generated/client';
 
 /**
  * Query parameters for paginated forum topic list reads.
@@ -87,12 +88,28 @@ export class ForumsLatestActivityDto {
 }
 
 /**
+ * Compact participant snapshot embedded in a forum topic summary.
+ *
+ * The snapshot uses the immutable author identity captured on visible posts so
+ * list clients can render participant groups without additional forum reads.
+ */
+export class ForumsTopicParticipantDto {
+  @ApiProperty({ description: 'Member id captured on a visible post.' })
+  memberId: string;
+
+  @ApiProperty({ description: 'Latest handle captured for that member.' })
+  handle: string;
+}
+
+/**
  * Topic summary returned by list routes and reused as the topic detail header.
  *
  * `postsCount` counts only non-deleted posts. `latestActivity` is nullable when
  * no non-deleted posts remain, `unread` is derived from
  * `TopicReadState.lastReadAt` compared with the latest visible activity, and
- * lock metadata may be null for imported legacy locked topics.
+ * lock metadata may be null for imported legacy locked topics. `viewsCount`
+ * counts unique authenticated members with a read-state row, while participant
+ * snapshots are limited and paired with the complete `participantsCount`.
  */
 export class ForumsTopicSummaryDto {
   @ApiProperty({ description: 'Topic id.' })
@@ -162,6 +179,35 @@ export class ForumsTopicSummaryDto {
   })
   postsCount: number;
 
+  @ApiProperty({
+    description:
+      'Number of unique authenticated members who have read or authored the topic.',
+  })
+  viewsCount: number;
+
+  @ApiProperty({
+    description: 'Whether the authenticated member is watching this topic.',
+  })
+  watching: boolean;
+
+  @ApiPropertyOptional({
+    description:
+      'Bounded plain starter-post excerpt for topic-list presentation.',
+    nullable: true,
+  })
+  starterPostExcerpt: string | null;
+
+  @ApiProperty({
+    description: 'Total number of distinct visible post participants.',
+  })
+  participantsCount: number;
+
+  @ApiProperty({
+    description: 'First five visible participants in activity order.',
+    type: [ForumsTopicParticipantDto],
+  })
+  participants: ForumsTopicParticipantDto[];
+
   @ApiPropertyOptional({
     description: 'Newest non-deleted post snapshot, or null when none remain.',
     nullable: true,
@@ -227,6 +273,18 @@ export class ForumsPostTreeNodeDto {
   @ApiProperty({ description: 'Handle captured on the post author snapshot.' })
   authorHandle: string;
 
+  @ApiProperty({
+    description:
+      'Whether the author currently holds a copilot resource role on the effective challenge.',
+  })
+  authorIsCopilot: boolean;
+
+  @ApiProperty({
+    description:
+      'Number of non-deleted posts by this author in the current topic.',
+  })
+  authorPostsCount: number;
+
   @ApiPropertyOptional({
     description: 'Markdown content, or null for deleted placeholders.',
     nullable: true,
@@ -243,7 +301,25 @@ export class ForumsPostTreeNodeDto {
   deleted: boolean;
 
   @ApiProperty({
-    description: 'Nested replies ordered by newest visible subtree activity.',
+    description: 'Number of current thumbs-up reactions from all members.',
+  })
+  thumbsUpCount: number;
+
+  @ApiProperty({
+    description: 'Number of current thumbs-down reactions from all members.',
+  })
+  thumbsDownCount: number;
+
+  @ApiPropertyOptional({
+    description: "Authenticated member's current reaction on this post.",
+    enum: PostReactionType,
+    nullable: true,
+  })
+  viewerReaction: PostReactionType | null;
+
+  @ApiProperty({
+    description:
+      'Nested replies ordered chronologically from oldest to newest.',
     type: () => [ForumsPostTreeNodeDto],
   })
   replies: ForumsPostTreeNodeDto[];
@@ -264,7 +340,8 @@ export class ForumsTopicDetailDto {
   topic: ForumsTopicSummaryDto;
 
   @ApiProperty({
-    description: 'Top-level posts and nested replies for the topic.',
+    description:
+      'Top-level posts and nested replies ordered chronologically from oldest to newest.',
     type: [ForumsPostTreeNodeDto],
   })
   posts: ForumsPostTreeNodeDto[];

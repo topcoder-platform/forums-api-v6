@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '../../prisma/generated/client';
+import { PostReactionType, Prisma } from '../../prisma/generated/client';
 import { DbService } from '../db/db.service';
 
 /**
@@ -23,11 +23,24 @@ export interface ForumsTopicSummaryRow {
   createdAt: Date;
   updatedAt: Date;
   postsCount: number;
+  viewsCount: number;
+  watching: boolean;
+  starterPostExcerpt: string | null;
+  participantsCount: number;
+  participants: ForumsTopicParticipantRow[];
   latestPostId: string | null;
   latestPostAuthorMemberId: string | null;
   latestPostAuthorHandle: string | null;
   latestActivityAt: Date | null;
   unread: boolean;
+}
+
+/**
+ * Participant snapshot returned by topic-summary SQL aggregation.
+ */
+export interface ForumsTopicParticipantRow {
+  memberId: string;
+  handle: string;
 }
 
 /**
@@ -40,10 +53,14 @@ export interface ForumsPostTreeRow {
   parentId: string;
   authorMemberId: string;
   authorHandle: string;
+  authorPostsCount: number;
   content: string | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
+  thumbsUpCount: number;
+  thumbsDownCount: number;
+  viewerReaction: PostReactionType | null;
 }
 
 /**
@@ -206,12 +223,14 @@ export class ForumsReadQueryService {
    * Fetches all posts for a topic, including soft-deleted placeholders.
    *
    * @param topicId Topic id whose posts should be returned.
+   * @param memberId Authenticated member id used to resolve viewer reaction state.
    * @param client Optional transaction client used to bind this read to a snapshot.
-   * @returns Post rows ordered by creation time for deterministic tree assembly.
+   * @returns Post rows with aggregate and viewer reactions, ordered for deterministic tree assembly.
    * @throws Prisma errors when the raw query fails.
    */
   findTopicPostRows(
     topicId: string,
+    memberId: string | null,
     client: ForumsReadQueryClient = this.db,
   ): Promise<ForumsPostTreeRow[]> {
     return client.$queryRaw<ForumsPostTreeRow[]>(Prisma.sql`
@@ -222,11 +241,33 @@ export class ForumsReadQueryService {
         p."parentId",
         p."authorMemberId",
         p."authorHandle",
+        CAST(
+          COUNT(*) FILTER (WHERE p."deletedAt" IS NULL)
+            OVER (PARTITION BY p."authorMemberId")
+          AS integer
+        ) AS "authorPostsCount",
         p.content,
         p."createdAt",
         p."updatedAt",
-        p."deletedAt"
+        p."deletedAt",
+        reaction_stats."thumbsUpCount",
+        reaction_stats."thumbsDownCount",
+        reaction_stats."viewerReaction"
       FROM "Post" p
+      LEFT JOIN LATERAL (
+        SELECT
+          COUNT(*) FILTER (
+            WHERE post_reaction.reaction::text = 'THUMBS_UP'
+          )::integer AS "thumbsUpCount",
+          COUNT(*) FILTER (
+            WHERE post_reaction.reaction::text = 'THUMBS_DOWN'
+          )::integer AS "thumbsDownCount",
+          MAX(post_reaction.reaction::text) FILTER (
+            WHERE post_reaction."memberId" = CAST(${memberId} AS text)
+          ) AS "viewerReaction"
+        FROM "PostReaction" post_reaction
+        WHERE post_reaction."postId" = p.id
+      ) reaction_stats ON true
       WHERE p."topicId" = ${topicId}
       ORDER BY p."createdAt" ASC, p.id ASC
     `);
@@ -283,7 +324,7 @@ export class ForumsReadQueryService {
           return null;
         }
 
-        const postRows = await this.findTopicPostRows(topicId, tx);
+        const postRows = await this.findTopicPostRows(topicId, memberId, tx);
 
         return { summaryRow, postRows };
       },
@@ -297,7 +338,7 @@ export class ForumsReadQueryService {
    * @param whereClause Parameterized SQL fragment limiting candidate topics.
    * @param memberId Authenticated member id used for unread derivation, or null.
    * @param client Optional transaction client used to bind this read to a snapshot.
-   * @returns Ordered candidate topic summary rows with lock and read metadata.
+   * @returns Ordered candidate topic summary rows with lock, read, watch, excerpt, view, and participant metadata.
    * @throws Prisma errors when the raw query fails.
    */
   private findTopicSummaryRows(
@@ -321,6 +362,11 @@ export class ForumsReadQueryService {
         t."createdAt",
         t."updatedAt",
         post_stats."postsCount",
+        view_stats."viewsCount",
+        watch_state."topicId" IS NOT NULL AS watching,
+        starter."starterPostExcerpt",
+        participant_stats."participantsCount",
+        participant_snapshots.participants,
         latest."latestPostId",
         latest."latestPostAuthorMemberId",
         latest."latestPostAuthorHandle",
@@ -338,6 +384,57 @@ export class ForumsReadQueryService {
         WHERE count_post."topicId" = t.id
           AND count_post."deletedAt" IS NULL
       ) post_stats ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(*)::integer AS "viewsCount"
+        FROM "TopicReadState" topic_view
+        WHERE topic_view."topicId" = t.id
+      ) view_stats ON true
+      LEFT JOIN "TopicWatch" watch_state
+        ON watch_state."topicId" = t.id
+        AND watch_state."memberId" = CAST(${memberId} AS text)
+      LEFT JOIN LATERAL (
+        SELECT LEFT(starter_post.content, 280) AS "starterPostExcerpt"
+        FROM "Post" starter_post
+        WHERE starter_post."topicId" = t.id
+          AND starter_post."deletedAt" IS NULL
+          AND starter_post.content IS NOT NULL
+        ORDER BY starter_post."createdAt" ASC, starter_post.id ASC
+        LIMIT 1
+      ) starter ON true
+      LEFT JOIN LATERAL (
+        SELECT COUNT(DISTINCT participant_post."authorMemberId")::integer
+          AS "participantsCount"
+        FROM "Post" participant_post
+        WHERE participant_post."topicId" = t.id
+          AND participant_post."deletedAt" IS NULL
+      ) participant_stats ON true
+      LEFT JOIN LATERAL (
+        SELECT COALESCE(
+          jsonb_agg(
+            jsonb_build_object(
+              'memberId', participant."authorMemberId",
+              'handle', participant."authorHandle"
+            )
+            ORDER BY participant."firstActivityAt"
+          ),
+          '[]'::jsonb
+        ) AS participants
+        FROM (
+          SELECT
+            participant_post."authorMemberId",
+            (array_agg(
+              participant_post."authorHandle"
+              ORDER BY participant_post."createdAt" DESC, participant_post.id DESC
+            ))[1] AS "authorHandle",
+            MIN(participant_post."createdAt") AS "firstActivityAt"
+          FROM "Post" participant_post
+          WHERE participant_post."topicId" = t.id
+            AND participant_post."deletedAt" IS NULL
+          GROUP BY participant_post."authorMemberId"
+          ORDER BY MIN(participant_post."createdAt") ASC
+          LIMIT 5
+        ) participant
+      ) participant_snapshots ON true
       LEFT JOIN LATERAL (
         SELECT
           latest_post.id AS "latestPostId",

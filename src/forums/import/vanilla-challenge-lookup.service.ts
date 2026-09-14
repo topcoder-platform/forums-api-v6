@@ -1,6 +1,9 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient as ChallengePrismaClient } from '../../../../challenge-api-v6/packages/challenge-prisma-client';
+import {
+  createChallengePrismaClient,
+  PrismaClient as ChallengePrismaClient,
+} from '../../../../challenge-api-v6/packages/challenge-prisma-client';
 
 /**
  * Importer-only challenge existence cache for challenge-scoped discussions.
@@ -95,13 +98,7 @@ export class VanillaChallengeLookupService implements OnModuleDestroy {
       );
     }
 
-    this.client = new ChallengePrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
-    });
+    this.client = createChallengePrismaClient(databaseUrl);
 
     return this.client;
   }

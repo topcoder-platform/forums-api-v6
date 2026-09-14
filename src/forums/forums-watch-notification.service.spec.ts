@@ -100,6 +100,9 @@ function createService(templateId: string | null = 'template-id') {
   const eventBusService = {
     postEvent: jest.fn().mockResolvedValue(undefined),
   };
+  const challengeApiService = {
+    getChallengeTitle: jest.fn().mockResolvedValue('Challenge title'),
+  };
   const configService = {
     get: jest.fn((key: string) =>
       key === 'notifications.sendgridNotificationTemplate'
@@ -115,10 +118,12 @@ function createService(templateId: string | null = 'template-id') {
     moderationService as any,
     eventBusService as any,
     configService as any,
+    challengeApiService as any,
   );
 
   return {
     accessPolicyService,
+    challengeApiService,
     configService,
     db,
     eventBusService,
@@ -135,7 +140,7 @@ describe('ForumsWatchNotificationService', () => {
   });
 
   it('dedupes topic and ancestor watches into one recipient email event', async () => {
-    const { db, eventBusService, service } = createService();
+    const { challengeApiService, db, eventBusService, service } = createService();
     db.topicWatch.findMany.mockResolvedValue([
       { memberId: '2' },
       { memberId: '2' },
@@ -161,6 +166,10 @@ describe('ForumsWatchNotificationService', () => {
       select: { memberId: true },
     });
     expect(eventBusService.postEvent).toHaveBeenCalledTimes(1);
+    expect(challengeApiService.getChallengeTitle).not.toHaveBeenCalled();
+    expect(eventBusService.postEvent.mock.calls[0][1].data).not.toHaveProperty(
+      'challengeTitle',
+    );
     expect(eventBusService.postEvent).toHaveBeenCalledWith(
       'external.action.email',
       expect.objectContaining({
@@ -197,7 +206,8 @@ describe('ForumsWatchNotificationService', () => {
   });
 
   it('filters watched members who cannot view a restricted child topic', async () => {
-    const { accessPolicyService, eventBusService, service } = createService();
+    const { accessPolicyService, challengeApiService, eventBusService, service } =
+      createService();
     accessPolicyService.decideForRestrictionVisibility.mockResolvedValue({
       allowed: false,
       reason: 'Required forum role is missing.',
@@ -226,6 +236,7 @@ describe('ForumsWatchNotificationService', () => {
       },
     );
     expect(eventBusService.postEvent).not.toHaveBeenCalled();
+    expect(challengeApiService.getChallengeTitle).not.toHaveBeenCalled();
   });
 
   it('filters banned watched members out of recipient email events', async () => {
@@ -427,6 +438,7 @@ describe('ForumsWatchNotificationService', () => {
     });
 
     expect(missingTemplate.db.topicClosure.findMany).not.toHaveBeenCalled();
+    expect(missingTemplate.challengeApiService.getChallengeTitle).not.toHaveBeenCalled();
     expect(missingTemplate.eventBusService.postEvent).not.toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining(
@@ -464,6 +476,88 @@ describe('ForumsWatchNotificationService', () => {
           topicTitle: 'Topic title',
         }),
       }),
+    );
+  });
+
+  it.each(['createPost', 'createTopic'] as const)(
+    'includes the inherited challenge title once for all %s recipients',
+    async (operationName) => {
+      const {
+        challengeApiService,
+        db,
+        eventBusService,
+        memberDirectoryService,
+        service,
+      } = createService();
+      db.topicWatch.findMany.mockResolvedValue([
+        { memberId: '2' },
+        { memberId: '3' },
+      ]);
+      memberDirectoryService.getMembersByIds.mockResolvedValue([
+        { memberId: '2', email: 'two@example.com', handle: 'two' },
+        { memberId: '3', email: 'three@example.com', handle: 'three' },
+      ]);
+
+      await service.publishPostNotification({
+        topic: makeTopic({ parentTopicId: 'root-1', challengeId: null }),
+        post: makePost(),
+        restrictions: {
+          challengeId: 'challenge-1',
+          roleName: null,
+          hasRestrictionConflict: false,
+        },
+        operationName,
+      });
+
+      expect(challengeApiService.getChallengeTitle).toHaveBeenCalledTimes(1);
+      expect(challengeApiService.getChallengeTitle).toHaveBeenCalledWith(
+        'challenge-1',
+      );
+      expect(eventBusService.postEvent).toHaveBeenCalledWith(
+        'external.action.email',
+        {
+          data: {
+            challengeId: 'challenge-1',
+            challengeTitle: 'Challenge title',
+            topicId: 'topic-1',
+            topicTitle: 'Topic title',
+            postContent: 'Persisted post content',
+            authorHandle: 'author',
+            createdAt: createdAt.toISOString(),
+          },
+          recipients: ['two@example.com', 'three@example.com'],
+          sendgrid_template_id: 'template-id',
+          version: 'v3',
+        },
+      );
+    },
+  );
+
+  it('still publishes without a title when the challenge lookup fails', async () => {
+    const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const { challengeApiService, eventBusService, service } = createService();
+    challengeApiService.getChallengeTitle.mockRejectedValue(
+      new Error('Challenge API unavailable'),
+    );
+
+    const result = await service.publishPostNotification({
+      topic: makeTopic(),
+      post: makePost(),
+      restrictions: {
+        challengeId: 'challenge-1',
+        roleName: null,
+        hasRestrictionConflict: false,
+      },
+      operationName: 'createPost',
+    });
+
+    expect(result).toEqual({ attemptedRecipientCount: 1, published: true });
+    expect(eventBusService.postEvent).toHaveBeenCalledTimes(1);
+    const payload = eventBusService.postEvent.mock.calls[0][1];
+    expect(payload.data.challengeId).toBe('challenge-1');
+    expect(payload.data).not.toHaveProperty('challengeTitle');
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('challenge challenge-1 title lookup failed'),
     );
   });
 });

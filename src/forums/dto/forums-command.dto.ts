@@ -1,12 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsEnum,
   IsIn,
   IsOptional,
   IsString,
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { PostReactionType } from '../../../prisma/generated/client';
 
 /**
  * Request body for creating a topic with its starter post.
@@ -169,4 +171,19 @@ export class UpdatePostDto {
   @IsString()
   @MinLength(1)
   content: string;
+}
+
+/**
+ * Request body for setting the authenticated member's reaction on a post.
+ *
+ * A member has at most one reaction per post. Sending the other reaction type
+ * replaces the existing value; removing a reaction uses the DELETE endpoint.
+ */
+export class SetPostReactionDto {
+  @ApiProperty({
+    description: 'Thumb reaction to add or replace for the current member.',
+    enum: PostReactionType,
+  })
+  @IsEnum(PostReactionType)
+  reaction: PostReactionType;
 }

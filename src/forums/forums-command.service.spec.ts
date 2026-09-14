@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { JwtUser } from '../auth/jwt.service';
-import { Post, Topic } from '../../prisma/generated/client';
+import { Post, PostReactionType, Topic } from '../../prisma/generated/client';
+import { CreatePostDto, UpdateTopicDto } from './dto/forums-command.dto';
 import { ForumsCommandService } from './forums-command.service';
 
 const createdAt = new Date('2026-06-04T00:00:00.000Z');
@@ -84,6 +85,20 @@ function createCommandService(order: string[] = []) {
       findUnique: jest.fn().mockResolvedValue(post),
       update: jest.fn().mockResolvedValue(post),
     },
+    postReaction: {
+      upsert: jest.fn().mockResolvedValue({
+        postId: 'post-1',
+        memberId: '1',
+        reaction: PostReactionType.THUMBS_UP,
+        createdAt,
+        updatedAt: createdAt,
+      }),
+      deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
+      count: jest.fn().mockImplementation(
+        (args: { where: { reaction: PostReactionType } }) =>
+          args.where.reaction === PostReactionType.THUMBS_UP ? 2 : 1,
+      ),
+    },
     topicClosure: {
       findFirst: jest.fn().mockResolvedValue(null),
       findMany: jest.fn().mockResolvedValue([]),
@@ -129,6 +144,7 @@ function createCommandService(order: string[] = []) {
       canUpdateTopic: { allowed: true },
     }),
     decideForPost: jest.fn().mockResolvedValue({
+      canView: { allowed: true },
       canDeletePost: { allowed: true },
       canUpdatePost: { allowed: true },
     }),
@@ -260,6 +276,22 @@ describe('ForumsCommandService notification boundary', () => {
         topic: expect.objectContaining({ id: 'topic-1' }),
       }),
     );
+  });
+
+  it('treats transformed undefined post parent fields as omitted', async () => {
+    const { service, tx } = createCommandService();
+    const dto = new CreatePostDto();
+    dto.content = 'Persisted content';
+
+    await expect(service.createPost('topic-1', dto, user)).resolves.toEqual(
+      expect.objectContaining({ id: 'post-1' }),
+    );
+    expect(tx.post.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        parentId: 'topic-1',
+        parentType: 'TOPIC',
+      }),
+    });
   });
 
   it('attempts starter-post notification for a child createTopic command', async () => {
@@ -483,6 +515,32 @@ describe('ForumsCommandService notification boundary', () => {
     expect(tx.topic.update).not.toHaveBeenCalled();
   });
 
+  it('ignores transformed undefined announcement state during a title-only update', async () => {
+    const { accessPolicyService, service, tx } = createCommandService();
+    accessPolicyService.decideForTopic.mockResolvedValue({
+      canAddWatch: { allowed: true },
+      canCreatePost: { allowed: true },
+      canControlAnnouncement: {
+        allowed: false,
+        reason: 'Announcement control requires elevated forums access.',
+      },
+      canDeleteTopic: { allowed: false },
+      canMarkRead: { allowed: true },
+      canRemoveWatch: { allowed: true },
+      canUpdateTopic: { allowed: true },
+    });
+    const dto = new UpdateTopicDto();
+    dto.title = 'Updated title';
+
+    await expect(service.updateTopic('topic-1', dto, user)).resolves.toEqual(
+      expect.objectContaining({ id: 'topic-1' }),
+    );
+    expect(tx.topic.update).toHaveBeenCalledWith({
+      data: { title: 'Updated title' },
+      where: { id: 'topic-1' },
+    });
+  });
+
   it('rejects locked role updates before restriction or descendant checks', async () => {
     const { accessPolicyService, db, moderationService, service } =
       createCommandService();
@@ -557,6 +615,88 @@ describe('ForumsCommandService notification boundary', () => {
       expect.any(Object),
     );
     expect(tx.post.create).toHaveBeenCalled();
+  });
+});
+
+describe('ForumsCommandService post reactions', () => {
+  it('upserts a member reaction and returns both shared counts', async () => {
+    const { moderationService, service, tx } = createCommandService();
+
+    await expect(
+      service.setPostReaction(
+        'post-1',
+        { reaction: PostReactionType.THUMBS_DOWN },
+        user,
+        '203.0.113.10',
+      ),
+    ).resolves.toEqual({
+      postId: 'post-1',
+      viewerReaction: PostReactionType.THUMBS_DOWN,
+      thumbsUpCount: 2,
+      thumbsDownCount: 1,
+    });
+
+    expect(moderationService.decideForRequestActorBan).toHaveBeenCalledWith(
+      expect.objectContaining({ memberId: '1' }),
+      '203.0.113.10',
+    );
+    expect(tx.postReaction.upsert).toHaveBeenCalledWith({
+      where: {
+        postId_memberId: { postId: 'post-1', memberId: '1' },
+      },
+      create: {
+        postId: 'post-1',
+        memberId: '1',
+        reaction: PostReactionType.THUMBS_DOWN,
+      },
+      update: { reaction: PostReactionType.THUMBS_DOWN },
+    });
+    expect(tx.postReaction.count).toHaveBeenCalledTimes(2);
+    expect(moderationService.decideForLockedTopicMutation).not.toHaveBeenCalled();
+  });
+
+  it('removes a member reaction idempotently and returns a null viewer state', async () => {
+    const { service, tx } = createCommandService();
+    tx.postReaction.deleteMany.mockResolvedValue({ count: 0 });
+    tx.postReaction.count.mockResolvedValue(0);
+
+    await expect(
+      service.removePostReaction('post-1', user),
+    ).resolves.toEqual({
+      postId: 'post-1',
+      viewerReaction: null,
+      thumbsUpCount: 0,
+      thumbsDownCount: 0,
+    });
+    expect(tx.postReaction.deleteMany).toHaveBeenCalledWith({
+      where: { postId: 'post-1', memberId: '1' },
+    });
+  });
+
+  it('rejects reactions when post visibility is denied before persistence', async () => {
+    const { accessPolicyService, db, service, tx } = createCommandService();
+    accessPolicyService.decideForPost.mockResolvedValue({
+      canView: { allowed: false, reason: 'Insufficient forums access.' },
+    });
+
+    await expect(
+      service.setPostReaction(
+        'post-1',
+        { reaction: PostReactionType.THUMBS_UP },
+        user,
+      ),
+    ).rejects.toThrow('Insufficient forums access.');
+    expect(db.$transaction).not.toHaveBeenCalled();
+    expect(tx.postReaction.upsert).not.toHaveBeenCalled();
+  });
+
+  it('rejects machine callers because reactions belong to human members', async () => {
+    const { db, service } = createCommandService();
+
+    await expect(
+      service.removePostReaction('post-1', machineUser),
+    ).rejects.toThrow('Authenticated member token required.');
+    expect(db.$transaction).not.toHaveBeenCalled();
   });
 });
 
