@@ -72,11 +72,15 @@ membership, migration conflicts and reruns without sending notifications.
 ## Remaining production gates
 
 The [UI PR](https://github.com/topcoder-platform/platform-ui/pull/2444) contains
-the new app and passed lint, build and focused regression tests. No browser was
-connected for live desktop/mobile Figma comparison or real login/attachment
-smoke tests. Complete those checks and accept the dev data/role mappings before
-production cutover. Follow [the migration runbook](public-forums.md); production
-has not been migrated.
+the new app and passed lint, dev/prod builds and 58 focused regression tests.
+Connected Chrome verification covered desktop/mobile Figma layouts, category
+navigation, search/pagination, guest login return URLs, signed-in composers,
+live member suggestions and Markdown preview. No test posts were submitted to
+migrated discussions. A real attachment upload still awaits the browser
+extension's file-URL access setting; automated upload tests pass. Accept the
+dev data/role mappings and finish attachment verification before production
+cutover. Follow [the migration runbook](public-forums.md); production has not
+been migrated.
 
 Full owner-readable reports were retained outside the repository at
 `/tmp/public-forums-dev-{dry-run,applied,rerun}.json` and
