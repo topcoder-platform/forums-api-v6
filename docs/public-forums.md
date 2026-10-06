@@ -11,6 +11,7 @@ The public catalog is a projection over that engine, not a second post store.
 - `GET /v6/forums/public/topics` accepts `categoryId`, `search`, `watching=true`,
   `sort=active|recent|oldest`, `page` and `perPage` (maximum 100). Search includes
   non-deleted post content. Visibility is applied before totals and pagination.
+  Identity-dependent read responses send `Cache-Control: private, no-store`.
 - Existing general topic list, children and detail GET routes accept guests.
   Challenge-specific lists still require authentication, and challenge visibility
   still requires the existing challenge/resource checks. Supplied invalid tokens

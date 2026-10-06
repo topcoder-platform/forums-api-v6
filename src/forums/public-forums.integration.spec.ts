@@ -198,6 +198,7 @@ integration('public forums PostgreSQL/HTTP access boundaries', () => {
   it('allows anonymous public reads but hides roles, private parents, search results and identities', async () => {
     const categories = await request(app.getHttpServer())
       .get('/public/categories')
+      .expect('Cache-Control', 'private, no-store')
       .expect(200);
     expect(
       categories.body.map((category: { id: string }) => category.id),

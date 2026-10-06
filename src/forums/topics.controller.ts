@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Patch,
   Post,
@@ -139,6 +140,7 @@ export class TopicsController {
    * @returns Paginated visible general root topics.
    * @throws UnauthorizedException when no authenticated read caller is present.
    */
+  @Header('Cache-Control', 'private, no-store')
   @Get()
   @OptionalRead()
   @Roles(AUTHENTICATED_USER_ROLE)
@@ -186,6 +188,7 @@ export class TopicsController {
    * @throws ForbiddenException when challenge visibility is denied.
    * @throws NotFoundException when the challenge is missing or hidden by policy.
    */
+  @Header('Cache-Control', 'private, no-store')
   @Get('challenges/:challengeId')
   @Roles(AUTHENTICATED_USER_ROLE)
   @Scopes(FORUMS_SCOPE_READ_TOPICS)
@@ -241,6 +244,7 @@ export class TopicsController {
    * @throws ForbiddenException when parent topic visibility is denied.
    * @throws NotFoundException when the parent topic is missing or hidden.
    */
+  @Header('Cache-Control', 'private, no-store')
   @Get(':topicId/children')
   @OptionalRead()
   @Roles(AUTHENTICATED_USER_ROLE)
@@ -280,6 +284,7 @@ export class TopicsController {
    * @throws ForbiddenException when topic visibility is denied.
    * @throws NotFoundException when the topic is missing or hidden.
    */
+  @Header('Cache-Control', 'private, no-store')
   @Get(':topicId')
   @OptionalRead()
   @Roles(AUTHENTICATED_USER_ROLE)

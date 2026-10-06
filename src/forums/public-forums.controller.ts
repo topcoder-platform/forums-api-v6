@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Header, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { OptionalRead } from '../auth/decorators/optional-read.decorator';
 import {
@@ -24,6 +24,7 @@ export class PublicForumsController {
   constructor(private readonly service: PublicForumsService) {}
 
   /** @param user Optional validated identity. @param ip Trusted IP. @returns Visible category cards. @throws Ban/database errors. */
+  @Header('Cache-Control', 'private, no-store')
   @Get('categories')
   @ApiOperation({
     summary:
@@ -36,6 +37,7 @@ export class PublicForumsController {
   /** @param query Validated filters/page. @param user Optional identity. @param ip Trusted IP.
    * @returns Visible thread page. @throws Access, validation and database errors.
    */
+  @Header('Cache-Control', 'private, no-store')
   @Get('topics')
   @ApiOperation({ summary: 'Search public threads or list watched content' })
   topics(
