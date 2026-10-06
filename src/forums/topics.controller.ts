@@ -25,6 +25,7 @@ import {
   AUTHENTICATED_USER_ROLE,
   Roles,
 } from '../auth/decorators/roles.decorator';
+import { OptionalRead } from '../auth/decorators/optional-read.decorator';
 import { ClientIp } from '../auth/decorators/client-ip.decorator';
 import { Scopes } from '../auth/decorators/scopes.decorator';
 import { CurrentUser } from '../auth/decorators/user.decorator';
@@ -66,7 +67,8 @@ import { ForumsReadService } from './forums-read.service';
  * read-state routes.
  *
  * Routes are mounted under the global `/v6/forums` prefix. Topic list and
- * detail reads are protected by `read:forums-topics`; embedded posts in topic
+ * detail reads accept guests after visibility checks; authenticated M2M reads
+ * require `read:forums-topics`. Embedded posts in topic
  * detail remain on the topics read surface rather than `read:forums-posts`.
  * Trusted client-IP context is resolved at the request boundary and forwarded
  * to services as a string for runtime ban checks.
@@ -138,12 +140,13 @@ export class TopicsController {
    * @throws UnauthorizedException when no authenticated read caller is present.
    */
   @Get()
+  @OptionalRead()
   @Roles(AUTHENTICATED_USER_ROLE)
   @Scopes(FORUMS_SCOPE_READ_TOPICS)
   @ApiOperation({
     summary: 'List general forum root topics',
     description:
-      'Requires an authenticated member token or `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before visibility checks. Returns non-challenge root topics the caller can see, including role-restricted general topics after centralized forums policy filtering.',
+      'Accepts guests for unrestricted public topics; M2M requires `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before visibility checks. Returns non-challenge root topics the caller can see, including role-restricted general topics after centralized forums policy filtering.',
   })
   @ApiQuery({
     name: 'page',
@@ -239,6 +242,7 @@ export class TopicsController {
    * @throws NotFoundException when the parent topic is missing or hidden.
    */
   @Get(':topicId/children')
+  @OptionalRead()
   @Roles(AUTHENTICATED_USER_ROLE)
   @Scopes(FORUMS_SCOPE_READ_TOPICS)
   @ApiOperation({
@@ -277,6 +281,7 @@ export class TopicsController {
    * @throws NotFoundException when the topic is missing or hidden.
    */
   @Get(':topicId')
+  @OptionalRead()
   @Roles(AUTHENTICATED_USER_ROLE)
   @Scopes(FORUMS_SCOPE_READ_TOPICS)
   @ApiOperation({

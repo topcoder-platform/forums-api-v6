@@ -19,6 +19,8 @@ import {
   ResourceAccessService,
 } from './resource-access.service';
 
+import { PublicForumAccessService } from './public-forum-access.service';
+
 const CHALLENGE_CHILD_TOPIC_DENY_REASON =
   'Child-topic creation is only allowed for non-challenge effective contexts.';
 
@@ -43,11 +45,13 @@ export class ForumsAccessPolicyService {
    *
    * @param challengeAccessService Adapter for challenge existence and member access facts.
    * @param resourceAccessService Adapter for resource-role and challenge-copilot facts.
+   * @param publicAccess Inherited public category ACLs, including Vanilla-only memberships.
    * @throws Does not throw directly; dependencies are resolved by Nest.
    */
   constructor(
     private readonly challengeAccessService: ChallengeAccessService,
     private readonly resourceAccessService: ResourceAccessService,
+    private readonly publicAccess: PublicForumAccessService,
   ) {}
 
   /**
@@ -77,8 +81,13 @@ export class ForumsAccessPolicyService {
       },
       options,
     );
+    const categoryAccess = await this.publicAccess.decide(this.resolveEvaluationPrincipal(principal, options), context.topic.id);
+    if (!categoryAccess.view) return this.denyTopicDecisions('Required public forum access is missing.');
+    if (!evaluation.visibility.allowed) return this.denyTopicDecisions(evaluation.visibility.reason ?? 'Insufficient forums access.');
+    const authenticated = !!principal.memberId || principal.isMachine;
+    const canParticipate = evaluation.visibility.allowed && authenticated;
     const canOwnContent =
-      evaluation.visibility.allowed && context.isTopicAuthor;
+      evaluation.visibility.allowed && context.isTopicAuthor && (!categoryAccess.category || evaluation.isElevated);
     const canMutateContent =
       evaluation.isElevated || canOwnContent
         ? this.allow()
@@ -91,15 +100,15 @@ export class ForumsAccessPolicyService {
     return {
       canView: evaluation.visibility,
       canCreateTopLevelTopic: this.deny('Use create-topic evaluation.'),
-      canCreateChildTopic: evaluation.visibility,
-      canCreatePost: evaluation.visibility,
+      canCreateChildTopic: canParticipate && categoryAccess.create ? this.allow() : this.deny('Topic creation is not allowed.'),
+      canCreatePost: canParticipate && categoryAccess.reply ? this.allow() : this.deny('Replying is not allowed.'),
       canUpdateTopic: canMutateContent,
       canDeleteTopic,
-      canAddWatch: evaluation.visibility,
-      canRemoveWatch: evaluation.visibility,
-      canMarkRead: evaluation.visibility,
+      canAddWatch: canParticipate ? this.allow() : this.deny('Authenticated member required.'),
+      canRemoveWatch: canParticipate ? this.allow() : this.deny('Authenticated member required.'),
+      canMarkRead: canParticipate ? this.allow() : this.deny('Authenticated member required.'),
       canControlAnnouncement,
-      canReceiveNotification: evaluation.visibility,
+      canReceiveNotification: canParticipate ? this.allow() : this.deny('Authenticated member required.'),
     };
   }
 
@@ -123,7 +132,7 @@ export class ForumsAccessPolicyService {
       options,
     );
 
-    if (!this.isTopicTargetAvailable(context)) {
+    if (!this.isTopicTargetAvailable(context) || !topicDecisions.canView.allowed) {
       return {
         ...topicDecisions,
         canUpdatePost: this.deny('Post not found.'),
@@ -188,6 +197,11 @@ export class ForumsAccessPolicyService {
   ): Promise<ForumsTopicAccessDecisions> {
     if (parentContext && !this.isTopicTargetAvailable(parentContext)) {
       return this.denyTopicDecisions('Topic not found.');
+    }
+
+    if (!principal.memberId && !principal.isMachine) return this.denyTopicDecisions('Authenticated member required.');
+    if (parentContext && !(await this.publicAccess.decide(principal, parentContext.topic.id)).create) {
+      return this.denyTopicDecisions('Topic creation is not allowed in this category.');
     }
 
     const parentVisibility = parentContext
@@ -323,6 +337,9 @@ export class ForumsAccessPolicyService {
     target: ForumsRestrictionVisibilityTarget,
     options: ForumsAccessEvaluationOptions = {},
   ): Promise<ForumsAccessDecision> {
+    if (target.topicId && !(await this.publicAccess.decide(this.resolveEvaluationPrincipal(principal, options), target.topicId)).view) {
+      return this.deny('Required public forum access is missing.');
+    }
     return (await this.evaluateRestrictions(principal, target, options))
       .visibility;
   }
@@ -345,6 +362,10 @@ export class ForumsAccessPolicyService {
       principal,
       options,
     );
+
+    if (!evaluationPrincipal.memberId && !evaluationPrincipal.isMachine && (input.challengeId || input.roleName)) {
+      return { visibility: this.deny('Authenticated member required.'), isElevated: false, isChallengeCopilot: false };
+    }
 
     if (
       input.hasRestrictionConflict &&

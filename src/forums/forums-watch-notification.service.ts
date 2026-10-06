@@ -318,7 +318,7 @@ export class ForumsWatchNotificationService {
       const decision =
         await this.accessPolicyService.decideForRestrictionVisibility(
           principal,
-          params.restrictions,
+          { ...params.restrictions, topicId: params.topic.id },
         );
 
       if (!decision.allowed) {
