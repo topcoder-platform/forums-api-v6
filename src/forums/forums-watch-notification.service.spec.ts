@@ -230,6 +230,7 @@ describe('ForumsWatchNotificationService', () => {
     ).toHaveBeenCalledWith(
       expect.objectContaining({ memberId: '2', isMachine: false }),
       {
+        topicId: 'topic-1',
         challengeId: 'challenge-1',
         roleName: 'reviewer',
         hasRestrictionConflict: false,

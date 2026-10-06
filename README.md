@@ -8,6 +8,8 @@ and post-commit watch notifications.
 - `GET /v6/forums/health`
 - `GET /v6/forums/readiness`
 - `GET /v6/forums/api-docs`
+- `GET /v6/forums/public/categories`
+- `GET /v6/forums/public/topics`
 - `GET /v6/forums/topics`
 - `GET /v6/forums/topics/challenges/:challengeId`
 - `GET /v6/forums/topics/:topicId/children`
@@ -140,6 +142,14 @@ PORT=3000
 
 Health and readiness checks intentionally remain DB-only; they do not validate
 event-bus, SendGrid template, producer, or outbound Auth0 readiness.
+
+## Public forums
+
+See [Public forums and migration](docs/public-forums.md) for guest reads, category
+ACLs, target-member mapping, insert-only Vanilla import and cutover checks.
+Public and general read routes accept anonymous callers, while mutations and
+challenge lists still require authentication. Restricted category content is
+filtered before statistics, search, pagination, watches and notifications.
 
 ## Authentication
 

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Patch,
   Post,
@@ -25,6 +26,7 @@ import {
   AUTHENTICATED_USER_ROLE,
   Roles,
 } from '../auth/decorators/roles.decorator';
+import { OptionalRead } from '../auth/decorators/optional-read.decorator';
 import { ClientIp } from '../auth/decorators/client-ip.decorator';
 import { Scopes } from '../auth/decorators/scopes.decorator';
 import { CurrentUser } from '../auth/decorators/user.decorator';
@@ -66,7 +68,8 @@ import { ForumsReadService } from './forums-read.service';
  * read-state routes.
  *
  * Routes are mounted under the global `/v6/forums` prefix. Topic list and
- * detail reads are protected by `read:forums-topics`; embedded posts in topic
+ * detail reads accept guests after visibility checks; authenticated M2M reads
+ * require `read:forums-topics`. Embedded posts in topic
  * detail remain on the topics read surface rather than `read:forums-posts`.
  * Trusted client-IP context is resolved at the request boundary and forwarded
  * to services as a string for runtime ban checks.
@@ -132,18 +135,20 @@ export class TopicsController {
    * Lists visible non-challenge root topics.
    *
    * @param query Pagination query parameters.
-   * @param user Authenticated token payload for the read caller.
+   * @param user Optional validated token payload; guests remain subject to inherited visibility policy.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Paginated visible general root topics.
-   * @throws UnauthorizedException when no authenticated read caller is present.
+   * @throws UnauthorizedException when a supplied bearer token is invalid.
    */
+  @Header('Cache-Control', 'private, no-store')
   @Get()
+  @OptionalRead()
   @Roles(AUTHENTICATED_USER_ROLE)
   @Scopes(FORUMS_SCOPE_READ_TOPICS)
   @ApiOperation({
     summary: 'List general forum root topics',
     description:
-      'Requires an authenticated member token or `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before visibility checks. Returns non-challenge root topics the caller can see, including role-restricted general topics after centralized forums policy filtering.',
+      'Accepts guests for unrestricted public topics; M2M requires `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before visibility checks. Returns non-challenge root topics the caller can see, including role-restricted general topics after centralized forums policy filtering.',
   })
   @ApiQuery({
     name: 'page',
@@ -161,7 +166,7 @@ export class TopicsController {
     type: ForumsTopicSummaryPageDto,
   })
   @ApiBadRequestResponse({ description: 'Invalid pagination query.' })
-  @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
+  @ApiUnauthorizedResponse({ description: 'A supplied bearer token is invalid.' })
   @ApiForbiddenResponse({ description: 'Active forums ban.' })
   listGeneralRootTopics(
     @Query() query: ForumsTopicListQueryDto,
@@ -183,6 +188,7 @@ export class TopicsController {
    * @throws ForbiddenException when challenge visibility is denied.
    * @throws NotFoundException when the challenge is missing or hidden by policy.
    */
+  @Header('Cache-Control', 'private, no-store')
   @Get('challenges/:challengeId')
   @Roles(AUTHENTICATED_USER_ROLE)
   @Scopes(FORUMS_SCOPE_READ_TOPICS)
@@ -231,20 +237,22 @@ export class TopicsController {
    * Lists visible direct child topics for a parent topic.
    *
    * @param topicId Parent topic id from the route.
-   * @param user Authenticated token payload for the read caller.
+   * @param user Optional validated token payload; guests remain subject to inherited visibility policy.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Ordered visible direct child topic summaries.
-   * @throws UnauthorizedException when no authenticated read caller is present.
+   * @throws UnauthorizedException when a supplied bearer token is invalid.
    * @throws ForbiddenException when parent topic visibility is denied.
    * @throws NotFoundException when the parent topic is missing or hidden.
    */
+  @Header('Cache-Control', 'private, no-store')
   @Get(':topicId/children')
+  @OptionalRead()
   @Roles(AUTHENTICATED_USER_ROLE)
   @Scopes(FORUMS_SCOPE_READ_TOPICS)
   @ApiOperation({
     summary: 'List direct child forum topics',
     description:
-      'Requires an authenticated member token or `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before parent visibility checks. The parent topic must be visible first, then child rows are filtered through centralized forums policy using inherited parent restrictions plus each child direct restriction. Locked topics remain readable.',
+      'Accepts guest reads when inherited visibility policy permits; M2M tokens require `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before parent visibility checks. The parent topic must be visible first, then child rows are filtered through centralized forums policy using inherited parent restrictions plus each child direct restriction. Locked topics remain readable.',
   })
   @ApiParam({ name: 'topicId', description: 'Parent topic id.' })
   @ApiResponse({
@@ -252,7 +260,7 @@ export class TopicsController {
     description: 'Visible direct child topics.',
     type: [ForumsTopicSummaryDto],
   })
-  @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
+  @ApiUnauthorizedResponse({ description: 'A supplied bearer token is invalid.' })
   @ApiForbiddenResponse({
     description: 'Active forums ban or parent topic visibility denied.',
   })
@@ -269,20 +277,22 @@ export class TopicsController {
    * Loads topic detail with embedded posts.
    *
    * @param topicId Topic id from the route.
-   * @param user Authenticated token payload for the read caller.
+   * @param user Optional validated token payload; guests remain subject to inherited visibility policy.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Topic detail with nested posts and replies.
-   * @throws UnauthorizedException when no authenticated read caller is present.
+   * @throws UnauthorizedException when a supplied bearer token is invalid.
    * @throws ForbiddenException when topic visibility is denied.
    * @throws NotFoundException when the topic is missing or hidden.
    */
+  @Header('Cache-Control', 'private, no-store')
   @Get(':topicId')
+  @OptionalRead()
   @Roles(AUTHENTICATED_USER_ROLE)
   @Scopes(FORUMS_SCOPE_READ_TOPICS)
   @ApiOperation({
     summary: 'Get forum topic detail',
     description:
-      'Requires an authenticated member token or `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before topic visibility checks. Returns the topic summary and embedded post tree under the topics read scope; locked topics remain readable. `read:forums-posts` remains reserved for future post-specific reads.',
+      'Accepts guest reads when inherited visibility policy permits; M2M tokens require `read:forums-topics`. Active member bans and trusted exact-IP bans return 403 before topic visibility checks. Returns the topic summary and embedded post tree under the topics read scope; locked topics remain readable. `read:forums-posts` remains reserved for future post-specific reads.',
   })
   @ApiParam({ name: 'topicId', description: 'Topic id.' })
   @ApiResponse({
@@ -290,7 +300,7 @@ export class TopicsController {
     description: 'Topic detail with embedded post tree.',
     type: ForumsTopicDetailDto,
   })
-  @ApiUnauthorizedResponse({ description: 'Authenticated token required.' })
+  @ApiUnauthorizedResponse({ description: 'A supplied bearer token is invalid.' })
   @ApiForbiddenResponse({
     description: 'Active forums ban or topic visibility denied.',
   })

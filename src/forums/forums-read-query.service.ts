@@ -341,7 +341,7 @@ export class ForumsReadQueryService {
    * @returns Ordered candidate topic summary rows with lock, read, watch, excerpt, view, and participant metadata.
    * @throws Prisma errors when the raw query fails.
    */
-  private findTopicSummaryRows(
+  findTopicSummaryRows(
     whereClause: Prisma.Sql,
     memberId: string | null,
     client: ForumsReadQueryClient = this.db,

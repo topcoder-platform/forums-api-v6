@@ -150,10 +150,9 @@ export class ForumsReadService {
    * filtering.
    *
    * @param query Pagination query parameters.
-   * @param user Authenticated token payload for the read caller.
+   * @param user Optional validated token; guests can read unrestricted public content.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Paginated visible general topic summaries.
-   * @throws UnauthorizedException when no authenticated read caller is present.
    * @throws ForbiddenException when the caller is globally banned.
    */
   async listGeneralRootTopics(
@@ -161,7 +160,7 @@ export class ForumsReadService {
     user: JwtUser | undefined,
     trustedClientIp?: string,
   ): Promise<ForumsTopicSummaryPageDto> {
-    const principal = this.requirePrincipal(user);
+    const principal = this.readPrincipal(user);
     this.assertAllowed(
       await this.moderationService.decideForRequestActorBan(
         principal,
@@ -187,10 +186,9 @@ export class ForumsReadService {
    * liveness and child summaries are re-read from one snapshot before return.
    *
    * @param topicId Parent topic id supplied in the route.
-   * @param user Authenticated token payload for the read caller.
+   * @param user Optional validated token; guests can read unrestricted public content.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Ordered child topic summaries visible to the caller.
-   * @throws UnauthorizedException when no authenticated read caller is present.
    * @throws ForbiddenException when the caller is globally banned.
    * @throws ForbiddenException when parent topic visibility is denied.
    * @throws NotFoundException when the parent topic is missing or hidden.
@@ -200,7 +198,7 @@ export class ForumsReadService {
     user: JwtUser | undefined,
     trustedClientIp?: string,
   ): Promise<ForumsTopicSummaryDto[]> {
-    const principal = this.requirePrincipal(user);
+    const principal = this.readPrincipal(user);
     this.assertAllowed(
       await this.moderationService.decideForRequestActorBan(
         principal,
@@ -245,10 +243,9 @@ export class ForumsReadService {
    * placeholders.
    *
    * @param topicId Topic id supplied in the route.
-   * @param user Authenticated token payload for the read caller.
+   * @param user Optional validated token; guests can read unrestricted public content.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Topic summary and nested post tree.
-   * @throws UnauthorizedException when no authenticated read caller is present.
    * @throws ForbiddenException when the caller is globally banned.
    * @throws ForbiddenException when topic visibility is denied.
    * @throws NotFoundException when the topic is missing or hidden.
@@ -258,7 +255,7 @@ export class ForumsReadService {
     user: JwtUser | undefined,
     trustedClientIp?: string,
   ): Promise<ForumsTopicDetailDto> {
-    const principal = this.requirePrincipal(user);
+    const principal = this.readPrincipal(user);
     this.assertAllowed(
       await this.moderationService.decideForRequestActorBan(
         principal,
@@ -291,6 +288,7 @@ export class ForumsReadService {
     );
 
     return {
+      permissions: { createPost: topicDecisions.canCreatePost.allowed, createTopic: topicDecisions.canCreateChildTopic.allowed, watch: topicDecisions.canAddWatch.allowed, update: topicDecisions.canUpdateTopic.allowed, delete: topicDecisions.canDeleteTopic.allowed },
       topic: this.mapTopicSummary(detailSnapshot.summaryRow),
       posts: this.buildPostTree(
         topicId,
@@ -301,11 +299,18 @@ export class ForumsReadService {
   }
 
   /**
-   * Builds the reusable forums principal required by policy checks.
+   * Builds a validated reader or a non-elevated anonymous principal.
    *
    * @param user Authenticated token payload from request middleware.
    * @returns Normalized forums principal.
-   * @throws UnauthorizedException when no authenticated token is present.
+   * @throws Does not throw.
+   */
+  private readPrincipal(user: JwtUser | undefined): ForumsPrincipal {
+    return buildForumsPrincipal(user) ?? { memberId: null, roles: [], scopes: [], isAdmin: false, isMachine: false };
+  }
+
+  /** Requires a validated identity for challenge-specific listing.
+   * @param user Validated JWT. @returns Principal. @throws UnauthorizedException for guests.
    */
   private requirePrincipal(user: JwtUser | undefined): ForumsPrincipal {
     const principal = buildForumsPrincipal(user);
@@ -351,7 +356,7 @@ export class ForumsReadService {
    * @returns Candidate rows visible to the caller.
    * @throws Prisma errors when external policy fact lookups fail.
    */
-  private async filterVisibleRows(
+  async filterVisibleRows(
     principal: ForumsPrincipal,
     rows: readonly ForumsTopicSummaryRow[],
     resolveRestrictions: (
@@ -401,6 +406,7 @@ export class ForumsReadService {
     row: ForumsTopicSummaryRow,
   ): ForumsRestrictionVisibilityTarget {
     return {
+      topicId: row.id,
       challengeId: normalizeForumsOptionalText(row.challengeId) ?? null,
       roleName: normalizeForumRoleName(row.roleName),
       hasRestrictionConflict: false,
@@ -424,6 +430,7 @@ export class ForumsReadService {
     const directRoleName = normalizeForumRoleName(row.roleName);
 
     return {
+      topicId: row.id,
       challengeId: directChallengeId ?? parentContext.effectiveChallengeId,
       roleName: directRoleName ?? parentContext.effectiveRoleName,
       hasRestrictionConflict:
@@ -467,6 +474,7 @@ export class ForumsReadService {
     target: ForumsRestrictionVisibilityTarget,
   ): string {
     return [
+      target.topicId ?? '',
       target.challengeId ?? '',
       target.roleName ?? '',
       target.hasRestrictionConflict ? 'conflict' : 'consistent',
@@ -481,7 +489,7 @@ export class ForumsReadService {
    * @returns Paginated response containing summary DTOs and metadata.
    * @throws Does not throw.
    */
-  private paginateRows(
+  paginateRows(
     rows: readonly ForumsTopicSummaryRow[],
     query: ForumsTopicListQueryDto,
   ): ForumsTopicSummaryPageDto {
@@ -514,7 +522,7 @@ export class ForumsReadService {
    * @returns Topic summary DTO.
    * @throws Does not throw.
    */
-  private mapTopicSummary(row: ForumsTopicSummaryRow): ForumsTopicSummaryDto {
+  mapTopicSummary(row: ForumsTopicSummaryRow): ForumsTopicSummaryDto {
     return {
       id: row.id,
       parentTopicId: row.parentTopicId,
