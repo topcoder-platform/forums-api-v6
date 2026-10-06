@@ -49,6 +49,8 @@ export interface ForumsEffectiveRestrictions {
  */
 export interface ForumsRestrictionVisibilityTarget extends ForumsEffectiveRestrictions {
   hasRestrictionConflict: boolean;
+  /** Existing topic whose public category ACL must also be evaluated. */
+  topicId?: string;
 }
 
 /**

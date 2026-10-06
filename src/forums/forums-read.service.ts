@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -30,12 +31,13 @@ import {
 } from './forums-read-query.service';
 import { ForumsModerationService } from './forums-moderation.service';
 import { ForumsTopicContextService } from './forums-topic-context.service';
+import { ResourceAccessService } from './resource-access.service';
 
 const POST_PARENT_POST = 'POST';
 const POST_PARENT_TOPIC = 'TOPIC';
 
 /**
- * Internal post tree node carrying subtree sort metadata.
+ * Internal post tree node carrying presentation metadata.
  */
 interface ForumsPostTreeNodeInternal {
   id: string;
@@ -44,6 +46,7 @@ interface ForumsPostTreeNodeInternal {
   parentId: string;
   authorMemberId: string;
   authorHandle: string;
+  authorIsCopilot: boolean;
   authorPostsCount: number;
   content: string | null;
   createdAt: Date;
@@ -53,7 +56,6 @@ interface ForumsPostTreeNodeInternal {
   thumbsDownCount: number;
   viewerReaction: PostReactionType | null;
   replies: ForumsPostTreeNodeInternal[];
-  subtreeLatestActivityAt: Date | null;
 }
 
 /**
@@ -67,6 +69,8 @@ interface ForumsPostTreeNodeInternal {
  */
 @Injectable()
 export class ForumsReadService {
+  private readonly logger = new Logger(ForumsReadService.name);
+
   /**
    * Creates a forums read service.
    *
@@ -74,6 +78,7 @@ export class ForumsReadService {
    * @param topicContextService Loader for effective topic restrictions.
    * @param readQueryService Side-effect-free raw-query reader.
    * @param moderationService Shared runtime ban and lock gate.
+   * @param resourceAccessService Adapter for challenge copilot assignments.
    * @throws Does not throw directly; dependencies are resolved by Nest.
    */
   constructor(
@@ -81,6 +86,7 @@ export class ForumsReadService {
     private readonly topicContextService: ForumsTopicContextService,
     private readonly readQueryService: ForumsReadQueryService,
     private readonly moderationService: ForumsModerationService,
+    private readonly resourceAccessService: ResourceAccessService,
   ) {}
 
   /**
@@ -144,10 +150,9 @@ export class ForumsReadService {
    * filtering.
    *
    * @param query Pagination query parameters.
-   * @param user Authenticated token payload for the read caller.
+   * @param user Optional validated token; guests can read unrestricted public content.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Paginated visible general topic summaries.
-   * @throws UnauthorizedException when no authenticated read caller is present.
    * @throws ForbiddenException when the caller is globally banned.
    */
   async listGeneralRootTopics(
@@ -155,7 +160,7 @@ export class ForumsReadService {
     user: JwtUser | undefined,
     trustedClientIp?: string,
   ): Promise<ForumsTopicSummaryPageDto> {
-    const principal = this.requirePrincipal(user);
+    const principal = this.readPrincipal(user);
     this.assertAllowed(
       await this.moderationService.decideForRequestActorBan(
         principal,
@@ -181,10 +186,9 @@ export class ForumsReadService {
    * liveness and child summaries are re-read from one snapshot before return.
    *
    * @param topicId Parent topic id supplied in the route.
-   * @param user Authenticated token payload for the read caller.
+   * @param user Optional validated token; guests can read unrestricted public content.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Ordered child topic summaries visible to the caller.
-   * @throws UnauthorizedException when no authenticated read caller is present.
    * @throws ForbiddenException when the caller is globally banned.
    * @throws ForbiddenException when parent topic visibility is denied.
    * @throws NotFoundException when the parent topic is missing or hidden.
@@ -194,7 +198,7 @@ export class ForumsReadService {
     user: JwtUser | undefined,
     trustedClientIp?: string,
   ): Promise<ForumsTopicSummaryDto[]> {
-    const principal = this.requirePrincipal(user);
+    const principal = this.readPrincipal(user);
     this.assertAllowed(
       await this.moderationService.decideForRequestActorBan(
         principal,
@@ -239,10 +243,9 @@ export class ForumsReadService {
    * placeholders.
    *
    * @param topicId Topic id supplied in the route.
-   * @param user Authenticated token payload for the read caller.
+   * @param user Optional validated token; guests can read unrestricted public content.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
    * @returns Topic summary and nested post tree.
-   * @throws UnauthorizedException when no authenticated read caller is present.
    * @throws ForbiddenException when the caller is globally banned.
    * @throws ForbiddenException when topic visibility is denied.
    * @throws NotFoundException when the topic is missing or hidden.
@@ -252,7 +255,7 @@ export class ForumsReadService {
     user: JwtUser | undefined,
     trustedClientIp?: string,
   ): Promise<ForumsTopicDetailDto> {
-    const principal = this.requirePrincipal(user);
+    const principal = this.readPrincipal(user);
     this.assertAllowed(
       await this.moderationService.decideForRequestActorBan(
         principal,
@@ -279,18 +282,35 @@ export class ForumsReadService {
       throw new NotFoundException('Topic not found.');
     }
 
+    const copilotMemberIds = await this.resolvePostAuthorCopilots(
+      context.effectiveChallengeId,
+      detailSnapshot.postRows,
+    );
+
     return {
+      permissions: { createPost: topicDecisions.canCreatePost.allowed, createTopic: topicDecisions.canCreateChildTopic.allowed, watch: topicDecisions.canAddWatch.allowed, update: topicDecisions.canUpdateTopic.allowed, delete: topicDecisions.canDeleteTopic.allowed },
       topic: this.mapTopicSummary(detailSnapshot.summaryRow),
-      posts: this.buildPostTree(topicId, detailSnapshot.postRows),
+      posts: this.buildPostTree(
+        topicId,
+        detailSnapshot.postRows,
+        copilotMemberIds,
+      ),
     };
   }
 
   /**
-   * Builds the reusable forums principal required by policy checks.
+   * Builds a validated reader or a non-elevated anonymous principal.
    *
    * @param user Authenticated token payload from request middleware.
    * @returns Normalized forums principal.
-   * @throws UnauthorizedException when no authenticated token is present.
+   * @throws Does not throw.
+   */
+  private readPrincipal(user: JwtUser | undefined): ForumsPrincipal {
+    return buildForumsPrincipal(user) ?? { memberId: null, roles: [], scopes: [], isAdmin: false, isMachine: false };
+  }
+
+  /** Requires a validated identity for challenge-specific listing.
+   * @param user Validated JWT. @returns Principal. @throws UnauthorizedException for guests.
    */
   private requirePrincipal(user: JwtUser | undefined): ForumsPrincipal {
     const principal = buildForumsPrincipal(user);
@@ -336,7 +356,7 @@ export class ForumsReadService {
    * @returns Candidate rows visible to the caller.
    * @throws Prisma errors when external policy fact lookups fail.
    */
-  private async filterVisibleRows(
+  async filterVisibleRows(
     principal: ForumsPrincipal,
     rows: readonly ForumsTopicSummaryRow[],
     resolveRestrictions: (
@@ -386,6 +406,7 @@ export class ForumsReadService {
     row: ForumsTopicSummaryRow,
   ): ForumsRestrictionVisibilityTarget {
     return {
+      topicId: row.id,
       challengeId: normalizeForumsOptionalText(row.challengeId) ?? null,
       roleName: normalizeForumRoleName(row.roleName),
       hasRestrictionConflict: false,
@@ -409,6 +430,7 @@ export class ForumsReadService {
     const directRoleName = normalizeForumRoleName(row.roleName);
 
     return {
+      topicId: row.id,
       challengeId: directChallengeId ?? parentContext.effectiveChallengeId,
       roleName: directRoleName ?? parentContext.effectiveRoleName,
       hasRestrictionConflict:
@@ -452,6 +474,7 @@ export class ForumsReadService {
     target: ForumsRestrictionVisibilityTarget,
   ): string {
     return [
+      target.topicId ?? '',
       target.challengeId ?? '',
       target.roleName ?? '',
       target.hasRestrictionConflict ? 'conflict' : 'consistent',
@@ -466,7 +489,7 @@ export class ForumsReadService {
    * @returns Paginated response containing summary DTOs and metadata.
    * @throws Does not throw.
    */
-  private paginateRows(
+  paginateRows(
     rows: readonly ForumsTopicSummaryRow[],
     query: ForumsTopicListQueryDto,
   ): ForumsTopicSummaryPageDto {
@@ -499,7 +522,7 @@ export class ForumsReadService {
    * @returns Topic summary DTO.
    * @throws Does not throw.
    */
-  private mapTopicSummary(row: ForumsTopicSummaryRow): ForumsTopicSummaryDto {
+  mapTopicSummary(row: ForumsTopicSummaryRow): ForumsTopicSummaryDto {
     return {
       id: row.id,
       parentTopicId: row.parentTopicId,
@@ -537,26 +560,62 @@ export class ForumsReadService {
   }
 
   /**
-   * Assembles post rows into a newest-active embedded thread tree.
+   * Resolves copilot presentation metadata for post authors without making a
+   * readable forum unavailable when the resource-domain projection fails.
+   *
+   * @param challengeId Effective challenge restriction for the topic.
+   * @param rows Post rows returned by the detail query.
+   * @returns Candidate author member ids currently assigned a copilot role.
+   * @throws Does not throw; resource lookup failures are logged and omitted.
+   */
+  private async resolvePostAuthorCopilots(
+    challengeId: string | null,
+    rows: readonly ForumsPostTreeRow[],
+  ): Promise<ReadonlySet<string>> {
+    if (!challengeId || rows.length === 0) {
+      return new Set<string>();
+    }
+
+    try {
+      return await this.resourceAccessService.getChallengeCopilotMemberIds(
+        challengeId,
+        rows.map((row) => row.authorMemberId),
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Unable to resolve forum post copilot badges for challenge ${challengeId}.`,
+        error instanceof Error ? error.message : String(error),
+      );
+      return new Set<string>();
+    }
+  }
+
+  /**
+   * Assembles post rows into an oldest-first embedded thread tree.
    *
    * Top-level `TOPIC` children and nested `POST` replies are preserved. Deleted
-   * rows stay as placeholders with null content, and branch ordering is based on
-   * each subtree's latest non-deleted post timestamp.
+   * rows stay as placeholders with null content, and every sibling list is
+   * ordered chronologically with a stable id fallback.
    *
    * @param topicId Topic id used to identify top-level post parentage.
    * @param rows Post rows returned by the detail query.
+   * @param copilotMemberIds Post authors assigned a challenge copilot role.
    * @returns Public post tree DTOs.
    * @throws Does not throw.
    */
   private buildPostTree(
     topicId: string,
     rows: readonly ForumsPostTreeRow[],
+    copilotMemberIds: ReadonlySet<string>,
   ): ForumsPostTreeNodeDto[] {
     const nodesById = new Map<string, ForumsPostTreeNodeInternal>();
     const roots: ForumsPostTreeNodeInternal[] = [];
 
     for (const row of rows) {
-      nodesById.set(row.id, this.mapPostNode(row));
+      nodesById.set(
+        row.id,
+        this.mapPostNode(row, copilotMemberIds.has(row.authorMemberId)),
+      );
     }
 
     for (const row of rows) {
@@ -584,7 +643,7 @@ export class ForumsReadService {
     }
 
     for (const root of roots) {
-      this.refreshSubtreeLatestActivity(root);
+      this.sortRepliesChronologically(root);
     }
 
     roots.sort((left, right) => this.comparePostNodes(left, right));
@@ -596,10 +655,14 @@ export class ForumsReadService {
    * Maps a raw post row into an internal post tree node.
    *
    * @param row Raw post row from the detail query.
-   * @returns Internal node with subtree sort metadata.
+   * @param authorIsCopilot Whether the author holds a challenge copilot role.
+   * @returns Internal post tree node.
    * @throws Does not throw.
    */
-  private mapPostNode(row: ForumsPostTreeRow): ForumsPostTreeNodeInternal {
+  private mapPostNode(
+    row: ForumsPostTreeRow,
+    authorIsCopilot: boolean,
+  ): ForumsPostTreeNodeInternal {
     const deleted = Boolean(row.deletedAt);
 
     return {
@@ -609,6 +672,7 @@ export class ForumsReadService {
       parentId: row.parentId,
       authorMemberId: row.authorMemberId,
       authorHandle: row.authorHandle,
+      authorIsCopilot,
       authorPostsCount: Number(row.authorPostsCount),
       content: deleted ? null : row.content,
       createdAt: row.createdAt,
@@ -618,41 +682,26 @@ export class ForumsReadService {
       thumbsDownCount: Number(row.thumbsDownCount),
       viewerReaction: row.viewerReaction,
       replies: [],
-      subtreeLatestActivityAt: deleted ? null : row.createdAt,
     };
   }
 
   /**
-   * Computes subtree latest visible activity and sorts each reply list.
+   * Sorts every nested reply list chronologically.
    *
-   * @param node Internal post tree node to refresh.
-   * @returns Latest non-deleted post timestamp for the subtree, or null.
+   * @param node Internal post tree node to sort recursively.
+   * @returns Nothing.
    * @throws Does not throw.
    */
-  private refreshSubtreeLatestActivity(
-    node: ForumsPostTreeNodeInternal,
-  ): Date | null {
-    let latest = node.deleted ? null : node.createdAt;
-
+  private sortRepliesChronologically(node: ForumsPostTreeNodeInternal): void {
     for (const reply of node.replies) {
-      const replyLatest = this.refreshSubtreeLatestActivity(reply);
-
-      if (
-        replyLatest &&
-        (!latest || replyLatest.getTime() > latest.getTime())
-      ) {
-        latest = replyLatest;
-      }
+      this.sortRepliesChronologically(reply);
     }
 
-    node.subtreeLatestActivityAt = latest;
     node.replies.sort((left, right) => this.comparePostNodes(left, right));
-
-    return latest;
   }
 
   /**
-   * Compares post tree nodes by subtree activity and stable fallback fields.
+   * Compares post tree nodes by creation time and a stable id fallback.
    *
    * @param left First post tree node.
    * @param right Second post tree node.
@@ -663,15 +712,8 @@ export class ForumsReadService {
     left: ForumsPostTreeNodeInternal,
     right: ForumsPostTreeNodeInternal,
   ): number {
-    const leftActivity = left.subtreeLatestActivityAt?.getTime() ?? -Infinity;
-    const rightActivity = right.subtreeLatestActivityAt?.getTime() ?? -Infinity;
-
-    if (leftActivity !== rightActivity) {
-      return rightActivity - leftActivity;
-    }
-
     const createdAtDifference =
-      right.createdAt.getTime() - left.createdAt.getTime();
+      left.createdAt.getTime() - right.createdAt.getTime();
 
     return createdAtDifference !== 0
       ? createdAtDifference
@@ -679,7 +721,7 @@ export class ForumsReadService {
   }
 
   /**
-   * Strips internal subtree sort metadata from a post node.
+   * Maps an internal post tree node to the public response contract.
    *
    * @param node Internal post tree node.
    * @returns Public post tree DTO.
@@ -695,6 +737,7 @@ export class ForumsReadService {
       parentId: node.parentId,
       authorMemberId: node.authorMemberId,
       authorHandle: node.authorHandle,
+      authorIsCopilot: node.authorIsCopilot,
       authorPostsCount: node.authorPostsCount,
       content: node.content,
       createdAt: node.createdAt,

@@ -202,7 +202,7 @@ export class PostsController {
   @ApiOperation({
     summary: 'Delete a forum post placeholder',
     description:
-      'Command route for post soft deletion. Post deletion requires an authenticated member token or `delete:forums-posts`, then passes inherited topic visibility, ownership, and elevated challenge-access policy checks. Active member bans and trusted exact-IP bans return 403 before writes. Locked owning topics reject deletion unless the caller is an administrator or eligible challenge copilot.',
+      'Command route for post soft deletion. Human deletion is administrator-only; M2M callers require `delete:forums-posts`. Authors and challenge copilots may edit eligible posts but cannot delete them. Active member bans and trusted exact-IP bans return 403 before writes, and locked owning topics reject non-administrator deletion.',
   })
   @ApiParam({ name: 'postId', description: 'Post id.' })
   @ApiResponse({

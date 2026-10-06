@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { JwtUser } from '../auth/jwt.service';
 import { Post, PostReactionType, Topic } from '../../prisma/generated/client';
+import { CreatePostDto, UpdateTopicDto } from './dto/forums-command.dto';
 import { ForumsCommandService } from './forums-command.service';
 
 const createdAt = new Date('2026-06-04T00:00:00.000Z');
@@ -277,6 +278,22 @@ describe('ForumsCommandService notification boundary', () => {
     );
   });
 
+  it('treats transformed undefined post parent fields as omitted', async () => {
+    const { service, tx } = createCommandService();
+    const dto = new CreatePostDto();
+    dto.content = 'Persisted content';
+
+    await expect(service.createPost('topic-1', dto, user)).resolves.toEqual(
+      expect.objectContaining({ id: 'post-1' }),
+    );
+    expect(tx.post.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        parentId: 'topic-1',
+        parentType: 'TOPIC',
+      }),
+    });
+  });
+
   it('attempts starter-post notification for a child createTopic command', async () => {
     const order: string[] = [];
     const { notificationService, service, tx } = createCommandService(order);
@@ -496,6 +513,32 @@ describe('ForumsCommandService notification boundary', () => {
 
     expect(db.$transaction).not.toHaveBeenCalled();
     expect(tx.topic.update).not.toHaveBeenCalled();
+  });
+
+  it('ignores transformed undefined announcement state during a title-only update', async () => {
+    const { accessPolicyService, service, tx } = createCommandService();
+    accessPolicyService.decideForTopic.mockResolvedValue({
+      canAddWatch: { allowed: true },
+      canCreatePost: { allowed: true },
+      canControlAnnouncement: {
+        allowed: false,
+        reason: 'Announcement control requires elevated forums access.',
+      },
+      canDeleteTopic: { allowed: false },
+      canMarkRead: { allowed: true },
+      canRemoveWatch: { allowed: true },
+      canUpdateTopic: { allowed: true },
+    });
+    const dto = new UpdateTopicDto();
+    dto.title = 'Updated title';
+
+    await expect(service.updateTopic('topic-1', dto, user)).resolves.toEqual(
+      expect.objectContaining({ id: 'topic-1' }),
+    );
+    expect(tx.topic.update).toHaveBeenCalledWith({
+      data: { title: 'Updated title' },
+      where: { id: 'topic-1' },
+    });
   });
 
   it('rejects locked role updates before restriction or descendant checks', async () => {

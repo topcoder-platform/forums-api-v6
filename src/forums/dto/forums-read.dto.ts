@@ -275,6 +275,12 @@ export class ForumsPostTreeNodeDto {
 
   @ApiProperty({
     description:
+      'Whether the author currently holds a copilot resource role on the effective challenge.',
+  })
+  authorIsCopilot: boolean;
+
+  @ApiProperty({
+    description:
       'Number of non-deleted posts by this author in the current topic.',
   })
   authorPostsCount: number;
@@ -312,7 +318,8 @@ export class ForumsPostTreeNodeDto {
   viewerReaction: PostReactionType | null;
 
   @ApiProperty({
-    description: 'Nested replies ordered by newest visible subtree activity.',
+    description:
+      'Nested replies ordered chronologically from oldest to newest.',
     type: () => [ForumsPostTreeNodeDto],
   })
   replies: ForumsPostTreeNodeDto[];
@@ -326,6 +333,8 @@ export class ForumsPostTreeNodeDto {
  * topic-detail surface.
  */
 export class ForumsTopicDetailDto {
+  @ApiProperty({ description: "Actions authorized for this reader; commands recheck permissions." })
+  permissions?: { createPost: boolean; createTopic: boolean; watch: boolean; update: boolean; delete: boolean };
   @ApiProperty({
     description: 'Topic summary header for the requested topic.',
     type: ForumsTopicSummaryDto,
@@ -333,7 +342,8 @@ export class ForumsTopicDetailDto {
   topic: ForumsTopicSummaryDto;
 
   @ApiProperty({
-    description: 'Top-level posts and nested replies for the topic.',
+    description:
+      'Top-level posts and nested replies ordered chronologically from oldest to newest.',
     type: [ForumsPostTreeNodeDto],
   })
   posts: ForumsPostTreeNodeDto[];

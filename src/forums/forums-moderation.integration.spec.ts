@@ -195,7 +195,7 @@ function createModerationDb(seed: ModerationSeedData) {
 
         memberBanCounter += 1;
         seed.memberBans.push(ban);
-        return ban;
+        return Promise.resolve(ban);
       },
       update: (args: {
         where: { id: string };
@@ -243,7 +243,7 @@ function createModerationDb(seed: ModerationSeedData) {
 
         ipBanCounter += 1;
         seed.ipBans.push(ban);
-        return ban;
+        return Promise.resolve(ban);
       },
       update: (args: {
         where: { id: string };

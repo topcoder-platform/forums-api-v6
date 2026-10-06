@@ -19,6 +19,97 @@ type BusApiClient = {
 };
 
 /**
+ * Resolves the Bus API v6 base consumed by `tc-bus-api-wrapper`.
+ *
+ * The wrapper appends `/bus/events` itself. The canonical `BUSAPI_URL` and
+ * backwards-compatible `BUS_API_URL` alias may therefore provide either the
+ * v6 base or the complete event URL; complete URLs are reduced to the base.
+ * When neither is configured, `TOPCODER_API_URL_BASE` supplies the API host.
+ *
+ * @param configService Nest configuration service containing notification settings.
+ * @returns An absolute URL whose path ends in `/v6`.
+ * @throws Error when configuration is missing, invalid, non-v6, or conflicting.
+ */
+export function resolveV6BusApiBase(configService: ConfigService): string {
+  const canonical = configService
+    .get<string>('notifications.busApiUrl')
+    ?.trim();
+  const alias = configService
+    .get<string>('notifications.busApiUrlAlias')
+    ?.trim();
+  const canonicalBase = canonical
+    ? normalizeV6BusApiBase(canonical, 'BUSAPI_URL')
+    : undefined;
+  const aliasBase = alias
+    ? normalizeV6BusApiBase(alias, 'BUS_API_URL')
+    : undefined;
+
+  if (canonicalBase && aliasBase && canonicalBase !== aliasBase) {
+    throw new Error(
+      'BUSAPI_URL and BUS_API_URL resolve to different Bus API v6 bases.',
+    );
+  }
+
+  if (canonicalBase) {
+    return canonicalBase;
+  }
+
+  if (aliasBase) {
+    return aliasBase;
+  }
+
+  const topcoderApiUrlBase = configService
+    .get<string>('notifications.topcoderApiUrlBase')
+    ?.trim();
+
+  if (!topcoderApiUrlBase) {
+    throw new Error(
+      'BUSAPI_URL, BUS_API_URL, or TOPCODER_API_URL_BASE must configure the Bus API v6 base.',
+    );
+  }
+
+  return normalizeV6BusApiBase(
+    `${topcoderApiUrlBase.replace(/\/+$/, '')}/v6`,
+    'TOPCODER_API_URL_BASE',
+  );
+}
+
+/**
+ * Normalizes a configured Bus API base or complete event URL.
+ *
+ * @param configured Configured URL value.
+ * @param key Environment key represented by the value.
+ * @returns Absolute v6 API base without a trailing slash.
+ * @throws Error when the URL is invalid or does not target Bus API v6.
+ */
+function normalizeV6BusApiBase(configured: string, key: string): string {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(configured);
+  } catch {
+    throw new Error(`${key} must be an absolute Bus API v6 URL.`);
+  }
+
+  let pathname = parsed.pathname.replace(/\/+$/, '');
+
+  if (pathname.endsWith('/bus/events')) {
+    pathname = pathname.slice(0, -'/bus/events'.length);
+  }
+
+  if (!pathname.endsWith('/v6')) {
+    throw new Error(
+      `${key} must be the Bus API base ending in /v6 or its /bus/events endpoint.`,
+    );
+  }
+
+  parsed.pathname = pathname;
+  parsed.search = '';
+  parsed.hash = '';
+  return parsed.toString().replace(/\/$/, '');
+}
+
+/**
  * Local adapter for publishing forums events to the shared event bus.
  *
  * The adapter mirrors the v6 `postEvent` convention used by neighboring
@@ -98,9 +189,7 @@ export class EventBusService {
         AUTH0_CLIENT_SECRET: this.configService.get<string>(
           'notifications.m2mClientSecret',
         ),
-        BUSAPI_URL:
-          this.configService.get<string>('notifications.busApiUrl') ||
-          'http://localhost:4000/eventBus',
+        BUSAPI_URL: resolveV6BusApiBase(this.configService),
         KAFKA_ERROR_TOPIC:
           this.configService.get<string>('notifications.kafkaErrorTopic') ||
           'common.error.reporting',
