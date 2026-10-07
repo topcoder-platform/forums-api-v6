@@ -48,6 +48,56 @@ export class ForumsTopicContextService {
     return this.buildTopicContext(topic, principal);
   }
 
+  /** Loads catalog authorization contexts with two batched database reads.
+   * @param topicIds Category topic IDs to resolve. Missing topics are omitted.
+   * @param principal Reader whose ownership flags are computed.
+   * @returns Contexts keyed by topic ID, using the same inherited rules as individual reads.
+   * @throws Prisma errors when either read fails.
+   */
+  async loadTopicContexts(
+    topicIds: string[],
+    principal: ForumsPrincipal,
+  ): Promise<Map<string, ForumsTopicContext>> {
+    if (!topicIds.length) return new Map();
+    const closures = await this.db.topicClosure.findMany({
+      where: { descendantTopicId: { in: topicIds } },
+      select: { descendantTopicId: true, ancestorTopicId: true, depth: true },
+      orderBy: { depth: 'asc' },
+    });
+    const allIds = [
+      ...new Set([...topicIds, ...closures.map((row) => row.ancestorTopicId)]),
+    ];
+    const topics = await this.db.topic.findMany({
+      where: { id: { in: allIds } },
+    });
+    const byId = new Map(topics.map((topic) => [topic.id, topic]));
+    const ancestors = new Map<string, Topic[]>();
+    for (const closure of closures) {
+      const ancestor = byId.get(closure.ancestorTopicId);
+      if (!ancestor) continue;
+      const group = ancestors.get(closure.descendantTopicId) ?? [];
+      group.push(ancestor);
+      ancestors.set(closure.descendantTopicId, group);
+    }
+    return new Map(
+      topicIds.flatMap((id) => {
+        const topic = byId.get(id);
+        return topic
+          ? [
+              [
+                id,
+                this.contextFromAncestors(
+                  topic,
+                  ancestors.get(id) ?? [topic],
+                  principal,
+                ),
+              ] as const,
+            ]
+          : [];
+      }),
+    );
+  }
+
   /**
    * Loads context for a post target.
    *
@@ -103,6 +153,19 @@ export class ForumsTopicContextService {
     const ancestors = closureRows.length
       ? closureRows.map((closure) => closure.ancestorTopic)
       : [topic];
+    return this.contextFromAncestors(topic, ancestors, principal);
+  }
+
+  /** Resolves a previously loaded ancestor chain for both single and batch reads.
+   * @param topic Target topic. @param ancestors Target-first ancestor chain.
+   * @param principal Reader identity. @returns Effective restrictions and ownership.
+   * @throws Never; this is an in-memory projection.
+   */
+  private contextFromAncestors(
+    topic: Topic,
+    ancestors: Topic[],
+    principal: ForumsPrincipal,
+  ): ForumsTopicContext {
     const ancestorTopics = ancestors.filter(
       (ancestor) => ancestor.id !== topic.id,
     );

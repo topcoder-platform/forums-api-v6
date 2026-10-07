@@ -119,11 +119,85 @@ Use a disposable local database whose name ends in `_http_test`, apply Prisma
 migrations, then run:
 
 ```sh
-PUBLIC_FORUMS_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55439/public_forums_http_test \
+TZ=UTC PUBLIC_FORUMS_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55439/public_forums_http_test \
   pnpm test --runInBand
 ```
 
 That suite truncates its dedicated local test database, rejects remote hosts and
 other database names, uses real SQL and policies, and substitutes JWT validation
 and email publishing so it cannot notify real users. The standalone unit suite
-runs without a database.
+runs without a database. Use `TZ=UTC` for the database suite so PostgreSQL
+timestamps without time zones are compared consistently by the import checks.
+
+## Catalog query behavior
+
+Public catalog reads batch category ancestry, inherited ACLs, and imported role
+memberships once per request. Topic lists apply visibility, direct topic roles,
+search, watches, and sorting in PostgreSQL before pagination. Only the selected
+page receives full post/participant summaries; totals remain available for an
+out-of-range page. Search treats `%` and `_` as literal substring characters.
+
+Category statistics are aggregated in SQL over authorized threads and their
+non-deleted posts. Each response contains at most five participant previews per
+category, selected by latest activity with deterministic ID tie-breaking. Counts
+include all distinct authorized participants. Latest activity and unread state
+exclude restricted or deleted descendants. No shared cache stores personalized
+ACLs, watches, or unread state, so permission and membership changes are visible
+on the next request.
+
+## Development latency remediation — 7 October 2026
+
+The public legacy import exposed full-catalog reads, per-category authorization
+queries, CPU saturation and a Node heap crash. The read-path changes above are
+implemented in source commit `a4691d4` on `codex/forum-catalog-latency`.
+
+The development ECS service `tc-forums-serverless/forums-api-v6` now has a desired
+count of **two tasks**, each retaining **1 vCPU / 2,048 MiB**. The existing deploy
+suite updates only the task definition and therefore preserves the service's
+desired count. There is no service autoscaling target overriding that count.
+Both tasks retain the existing subnet placement; this adds process redundancy,
+not multi-AZ redundancy.
+
+The dev `services-alb` HTTPS listener default action now returns HTTP **404** with
+`application/json` body `{"message":"Not found"}`. Its non-default route rules
+are unchanged. Previously unmatched requests reached the empty retired
+`tc-email-service-svc-tg` target group and generated HTTP 503. No monitoring or
+alarm configuration was changed.
+
+Deployment artifact:
+
+- Task definition: `forums-api-v6:27`.
+- Image tag: `forums-api-v6:catalog-latency-a4691d4`.
+- Image digest: `sha256:5b38d36f40f2287d9b04a7d57beaeeef2aa12d707cca7cf231a274e8af3b4a65`.
+- Runtime base: the existing `legacy-jive-catalog-4bee3af` image, pinned to
+  `sha256:7e108dd776dba91546a2cfb057010f3b5bbf8a2871fceb9317508dec2f75e4fb`.
+
+The release reuses the unchanged runtime/dependencies and copies the compiled
+JavaScript and source maps for `forums-access-policy.service`,
+`forums-topic-context.service`, `forums.module`, `public-forum-access.service`,
+`public-forums.service`, and `public-forums-query.service` into
+`/usr/src/app/dist/forums/`. Every copied artifact's SHA-256 was checked against
+the local validated build. No database migration is required by this change.
+The standard source Docker build includes the same implementation for subsequent
+releases. Task revision 24 remains available as the previous application version;
+an application rollback can preserve the two-task count and the default 404.
+
+Validation includes `pnpm lint`, `pnpm build`, 173 passing tests (four optional
+tests skipped), real local PostgreSQL/HTTP permission and pagination checks,
+and read-only dev verification against the immutable migration source. The
+source audit matched all 844 guest-visible and 854 member-visible legacy
+categories, the respective thread/post counts, and private-thread denial.
+
+The focused PR branch `codex/forum-catalog-latency-develop` carries the same
+catalog implementation onto `develop` without the earlier Jive migration tools
+or dependency changes. Its lint and build checks pass, and its UTC/local
+PostgreSQL test run passes 170 tests across 21 suites (three optional tests
+skipped); the additional Jive tests above belong to the original deployment
+branch.
+
+Initial live checks of the optimized read path measured topic pages at
+1.7–2.2 seconds versus 14.6 seconds before remediation, and categories at
+4.3–5.0 seconds versus 10.9 seconds. The category response still aggregates the
+full authorized tree and is approximately 700 KB; these are sampled timings,
+not a sustained-load benchmark. Verification artifacts and pre-change AWS
+snapshots are retained in `/tmp/dev-latency-triage` on the operator workstation.

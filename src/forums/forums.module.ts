@@ -17,6 +17,7 @@ import { ModerationController } from './moderation.controller';
 import { PostsController } from './posts.controller';
 import { ResourceAccessService } from './resource-access.service';
 import { PublicForumsController } from './public-forums.controller';
+import { PublicForumsQueryService } from './public-forums-query.service';
 import { PublicForumsService } from './public-forums.service';
 import { PublicForumAccessService } from './public-forum-access.service';
 import { TopicsController } from './topics.controller';
@@ -32,7 +33,12 @@ import { TopicsController } from './topics.controller';
  */
 @Module({
   imports: [DbModule],
-  controllers: [TopicsController, PostsController, ModerationController, PublicForumsController],
+  controllers: [
+    TopicsController,
+    PostsController,
+    ModerationController,
+    PublicForumsController,
+  ],
   providers: [
     ChallengeAccessService,
     ChallengeApiService,
@@ -40,6 +46,7 @@ import { TopicsController } from './topics.controller';
     ForumsAccessPolicyService,
     PublicForumAccessService,
     PublicForumsService,
+    PublicForumsQueryService,
     ForumsCommandService,
     ForumsMemberDirectoryService,
     ForumsModerationService,

@@ -19,7 +19,10 @@ import {
   ResourceAccessService,
 } from './resource-access.service';
 
-import { PublicForumAccessService } from './public-forum-access.service';
+import {
+  PublicForumAccess,
+  PublicForumAccessService,
+} from './public-forum-access.service';
 
 const CHALLENGE_CHILD_TOPIC_DENY_REASON =
   'Child-topic creation is only allowed for non-challenge effective contexts.';
@@ -71,6 +74,63 @@ export class ForumsAccessPolicyService {
     if (!this.isTopicTargetAvailable(context)) {
       return this.denyTopicDecisions('Topic not found.');
     }
+    const categoryAccess = await this.publicAccess.decide(
+      this.resolveEvaluationPrincipal(principal, options),
+      context.topic.id,
+    );
+    return this.evaluateTopicAccess(
+      principal,
+      context,
+      categoryAccess,
+      options,
+    );
+  }
+
+  /** Evaluates category actions in a batch while preserving the shared topic policy.
+   * @param principal Catalog reader. @param contexts Preloaded category contexts.
+   * @returns Topic decisions keyed by ID, including inherited ACLs and restrictions.
+   * @throws Database errors from ACL and challenge access lookups.
+   */
+  async decideForTopics(
+    principal: ForumsPrincipal,
+    contexts: ForumsTopicContext[],
+  ): Promise<Map<string, ForumsTopicAccessDecisions>> {
+    const access = await this.publicAccess.decideMany(
+      principal,
+      contexts.map((context) => context.topic.id),
+    );
+    return new Map(
+      await Promise.all(
+        contexts.map(
+          async (context) =>
+            [
+              context.topic.id,
+              await this.evaluateTopicAccess(
+                principal,
+                context,
+                access.get(context.topic.id)!,
+                {},
+              ),
+            ] as const,
+        ),
+      ),
+    );
+  }
+
+  /** Applies the shared topic action rules to preloaded public ACL facts.
+   * @param principal Actor. @param context Target context. @param categoryAccess Resolved category ACL.
+   * @param options Optional on-behalf identity. @returns Topic action decisions.
+   * @throws Database errors from challenge/resource policy adapters.
+   */
+  private async evaluateTopicAccess(
+    principal: ForumsPrincipal,
+    context: ForumsTopicContext,
+    categoryAccess: PublicForumAccess,
+    options: ForumsAccessEvaluationOptions,
+  ): Promise<ForumsTopicAccessDecisions> {
+    if (!this.isTopicTargetAvailable(context)) {
+      return this.denyTopicDecisions('Topic not found.');
+    }
 
     const evaluation = await this.evaluateRestrictions(
       principal,
@@ -81,13 +141,20 @@ export class ForumsAccessPolicyService {
       },
       options,
     );
-    const categoryAccess = await this.publicAccess.decide(this.resolveEvaluationPrincipal(principal, options), context.topic.id);
-    if (!categoryAccess.view) return this.denyTopicDecisions('Required public forum access is missing.');
-    if (!evaluation.visibility.allowed) return this.denyTopicDecisions(evaluation.visibility.reason ?? 'Insufficient forums access.');
+    if (!categoryAccess.view)
+      return this.denyTopicDecisions(
+        'Required public forum access is missing.',
+      );
+    if (!evaluation.visibility.allowed)
+      return this.denyTopicDecisions(
+        evaluation.visibility.reason ?? 'Insufficient forums access.',
+      );
     const authenticated = !!principal.memberId || principal.isMachine;
     const canParticipate = evaluation.visibility.allowed && authenticated;
     const canOwnContent =
-      evaluation.visibility.allowed && context.isTopicAuthor && (!categoryAccess.category || evaluation.isElevated);
+      evaluation.visibility.allowed &&
+      context.isTopicAuthor &&
+      (!categoryAccess.category || evaluation.isElevated);
     const canMutateContent =
       evaluation.isElevated || canOwnContent
         ? this.allow()
@@ -100,15 +167,29 @@ export class ForumsAccessPolicyService {
     return {
       canView: evaluation.visibility,
       canCreateTopLevelTopic: this.deny('Use create-topic evaluation.'),
-      canCreateChildTopic: canParticipate && categoryAccess.create ? this.allow() : this.deny('Topic creation is not allowed.'),
-      canCreatePost: canParticipate && categoryAccess.reply ? this.allow() : this.deny('Replying is not allowed.'),
+      canCreateChildTopic:
+        canParticipate && categoryAccess.create
+          ? this.allow()
+          : this.deny('Topic creation is not allowed.'),
+      canCreatePost:
+        canParticipate && categoryAccess.reply
+          ? this.allow()
+          : this.deny('Replying is not allowed.'),
       canUpdateTopic: canMutateContent,
       canDeleteTopic,
-      canAddWatch: canParticipate ? this.allow() : this.deny('Authenticated member required.'),
-      canRemoveWatch: canParticipate ? this.allow() : this.deny('Authenticated member required.'),
-      canMarkRead: canParticipate ? this.allow() : this.deny('Authenticated member required.'),
+      canAddWatch: canParticipate
+        ? this.allow()
+        : this.deny('Authenticated member required.'),
+      canRemoveWatch: canParticipate
+        ? this.allow()
+        : this.deny('Authenticated member required.'),
+      canMarkRead: canParticipate
+        ? this.allow()
+        : this.deny('Authenticated member required.'),
       canControlAnnouncement,
-      canReceiveNotification: canParticipate ? this.allow() : this.deny('Authenticated member required.'),
+      canReceiveNotification: canParticipate
+        ? this.allow()
+        : this.deny('Authenticated member required.'),
     };
   }
 
@@ -132,7 +213,10 @@ export class ForumsAccessPolicyService {
       options,
     );
 
-    if (!this.isTopicTargetAvailable(context) || !topicDecisions.canView.allowed) {
+    if (
+      !this.isTopicTargetAvailable(context) ||
+      !topicDecisions.canView.allowed
+    ) {
       return {
         ...topicDecisions,
         canUpdatePost: this.deny('Post not found.'),
@@ -199,9 +283,16 @@ export class ForumsAccessPolicyService {
       return this.denyTopicDecisions('Topic not found.');
     }
 
-    if (!principal.memberId && !principal.isMachine) return this.denyTopicDecisions('Authenticated member required.');
-    if (parentContext && !(await this.publicAccess.decide(principal, parentContext.topic.id)).create) {
-      return this.denyTopicDecisions('Topic creation is not allowed in this category.');
+    if (!principal.memberId && !principal.isMachine)
+      return this.denyTopicDecisions('Authenticated member required.');
+    if (
+      parentContext &&
+      !(await this.publicAccess.decide(principal, parentContext.topic.id))
+        .create
+    ) {
+      return this.denyTopicDecisions(
+        'Topic creation is not allowed in this category.',
+      );
     }
 
     const parentVisibility = parentContext
@@ -337,7 +428,15 @@ export class ForumsAccessPolicyService {
     target: ForumsRestrictionVisibilityTarget,
     options: ForumsAccessEvaluationOptions = {},
   ): Promise<ForumsAccessDecision> {
-    if (target.topicId && !(await this.publicAccess.decide(this.resolveEvaluationPrincipal(principal, options), target.topicId)).view) {
+    if (
+      target.topicId &&
+      !(
+        await this.publicAccess.decide(
+          this.resolveEvaluationPrincipal(principal, options),
+          target.topicId,
+        )
+      ).view
+    ) {
       return this.deny('Required public forum access is missing.');
     }
     return (await this.evaluateRestrictions(principal, target, options))
@@ -363,8 +462,16 @@ export class ForumsAccessPolicyService {
       options,
     );
 
-    if (!evaluationPrincipal.memberId && !evaluationPrincipal.isMachine && (input.challengeId || input.roleName)) {
-      return { visibility: this.deny('Authenticated member required.'), isElevated: false, isChallengeCopilot: false };
+    if (
+      !evaluationPrincipal.memberId &&
+      !evaluationPrincipal.isMachine &&
+      (input.challengeId || input.roleName)
+    ) {
+      return {
+        visibility: this.deny('Authenticated member required.'),
+        isElevated: false,
+        isChallengeCopilot: false,
+      };
     }
 
     if (
