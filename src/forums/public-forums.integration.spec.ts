@@ -60,14 +60,19 @@ integration('public forums PostgreSQL/HTTP access boundaries', () => {
           if (token === 'invalid')
             throw new UnauthorizedException('Invalid token');
           return {
-            userId: token === 'local' ? '202' : '101',
+            userId:
+              token === 'idless-admin'
+                ? undefined
+                : token === 'local'
+                  ? '202'
+                  : '101',
             handle: 'test-member',
             roles:
               token === 'copilot'
                 ? ['copilot']
                 : token === 'reviewer'
                   ? ['reviewer']
-                  : token === 'admin'
+                  : token === 'admin' || token === 'idless-admin'
                     ? ['administrator']
                     : [],
             isMachine: token === 'machine',
@@ -238,6 +243,34 @@ integration('public forums PostgreSQL/HTTP access boundaries', () => {
       .get('/public/topics?categoryId=pfprivate')
       .expect(403);
   });
+  it('batches catalog ACLs without changing inherited, imported, or elevated access', async () => {
+    for (const [identity, expected] of [
+      ['member', ['pfprivate', 'pfpublic']],
+      ['copilot', ['pfcopilot', 'pfprivate', 'pfpublic']],
+      ['reviewer', ['pfprivate', 'pfpublic', 'pfreviewer']],
+      ['local', ['pflocal', 'pfprivate', 'pfpublic']],
+      [
+        'admin',
+        ['pfcopilot', 'pflocal', 'pfprivate', 'pfpublic', 'pfreviewer'],
+      ],
+    ] as const) {
+      const response = await request(app.getHttpServer())
+        .get('/public/categories')
+        .set('Authorization', `Bearer ${identity}`)
+        .expect(200);
+      expect(response.body.map((row: { id: string }) => row.id).sort()).toEqual(
+        expected,
+      );
+      const topics = await request(app.getHttpServer())
+        .get('/public/topics?perPage=100')
+        .set('Authorization', `Bearer ${identity}`)
+        .expect(200);
+      expect(topics.body.meta.totalCount).toBe(expected.length);
+      expect(
+        topics.body.data.map((row: { id: string }) => row.id).sort(),
+      ).toEqual(expected.map((id) => `${id}t`));
+    }
+  });
   it('enforces roles and local memberships without granting identity privileges', async () => {
     await request(app.getHttpServer())
       .get('/topics/pfcopilott')
@@ -339,6 +372,278 @@ integration('public forums PostgreSQL/HTTP access boundaries', () => {
       .set('Authorization', 'Bearer member')
       .send({ content: 'Denied' })
       .expect(403);
+  });
+  it('rolls up distinct participants across nested forums without exposing private authors', async () => {
+    for (const [id, parent, category, role] of [
+      ['pfrollup', null, true, '$public'],
+      ['pfrollupchild', 'pfrollup', true, '$public'],
+      ['pfrolluphide', 'pfrollup', true, 'copilot'],
+      ['pfrollupt1', 'pfrollupchild', false, ''],
+      ['pfrollupt2', 'pfrollupchild', false, ''],
+      ['pfrollupt3', 'pfrolluphide', false, ''],
+    ] as const) {
+      await db.topic.create({
+        data: {
+          id,
+          parentTopicId: parent,
+          title: id,
+          authorMemberId: '101',
+          authorHandle: 'member',
+        },
+      });
+      if (category)
+        await db.publicForumCategory.create({
+          data: {
+            topicId: id,
+            legacyId:
+              -10 - ['pfrollup', 'pfrollupchild', 'pfrolluphide'].indexOf(id),
+            legacySlug: id,
+            description: '',
+            displayAs: id === 'pfrollup' ? 'Categories' : 'Discussions',
+            sortOrder: 2,
+            readRoles: [role],
+            createRoles: [],
+            replyRoles: [],
+            source: {},
+          },
+        });
+    }
+    await sql.query(`WITH RECURSIVE paths AS (
+      SELECT id AS ancestor, id AS descendant, 0 AS depth FROM forums."Topic" WHERE id LIKE 'pfrollup%'
+      UNION ALL SELECT p.ancestor,t.id,p.depth+1 FROM paths p JOIN forums."Topic" t ON t."parentTopicId"=p.descendant
+    ) INSERT INTO forums."TopicClosure" ("ancestorTopicId","descendantTopicId",depth) SELECT * FROM paths`);
+    for (const [id, topicId, member, handle] of [
+      ['pfrollupp1', 'pfrollupt1', '101', 'shared-author'],
+      ['pfrollupp2', 'pfrollupt2', '101', 'shared-author'],
+      ['pfrollupp3', 'pfrollupt2', '202', 'second-author'],
+      ['pfrollupp4', 'pfrollupt3', '303', 'private-author'],
+    ])
+      await db.post.create({
+        data: {
+          id,
+          topicId,
+          parentType: 'TOPIC',
+          parentId: topicId,
+          authorMemberId: member,
+          authorHandle: handle,
+          content: 'test',
+        },
+      });
+    const guest = await request(app.getHttpServer())
+      .get('/public/categories')
+      .expect(200);
+    const publicRoot = guest.body.find(
+      (c: { id: string }) => c.id === 'pfrollup',
+    );
+    expect(publicRoot).toMatchObject({
+      topicsCount: 2,
+      postsCount: 3,
+      participantsCount: 2,
+    });
+    expect(
+      new Set(
+        publicRoot.participants.map((p: { memberId: string }) => p.memberId),
+      ),
+    ).toEqual(new Set(['101', '202']));
+    expect(JSON.stringify(guest.body)).not.toContain('private-author');
+    const copilot = await request(app.getHttpServer())
+      .get('/public/categories')
+      .set('Authorization', 'Bearer copilot')
+      .expect(200);
+    expect(
+      copilot.body.find((c: { id: string }) => c.id === 'pfrollup'),
+    ).toMatchObject({ topicsCount: 3, postsCount: 4, participantsCount: 3 });
+  });
+  it('paginates after role/search/watch filtering and retains totals beyond the last page', async () => {
+    await db.topic.create({
+      data: {
+        id: 'pfpage',
+        title: 'Paging category',
+        authorMemberId: '101',
+        authorHandle: 'member',
+      },
+    });
+    await db.publicForumCategory.create({
+      data: {
+        topicId: 'pfpage',
+        legacyId: -90,
+        legacySlug: 'paging',
+        source: {},
+        description: '',
+        displayAs: 'Discussions',
+        sortOrder: 9,
+        readRoles: ['$public'],
+        createRoles: ['$authenticated'],
+        replyRoles: ['$authenticated'],
+      },
+    });
+    await db.topicClosure.create({
+      data: {
+        ancestorTopicId: 'pfpage',
+        descendantTopicId: 'pfpage',
+        depth: 0,
+      },
+    });
+    for (let i = 0; i < 15; i++) {
+      const id = `pfpage${String(i).padStart(2, '0')}`;
+      const date = new Date(Date.UTC(2026, 0, 1, 0, 0, i));
+      await db.topic.create({
+        data: {
+          id,
+          parentTopicId: 'pfpage',
+          title: `Paging ${i}`,
+          createdAt: date,
+          authorMemberId: '101',
+          authorHandle: 'member',
+          roleName: i >= 12 ? 'copilot' : null,
+          deletedAt: i === 14 ? date : null,
+        },
+      });
+      await db.topicClosure.createMany({
+        data: [
+          { ancestorTopicId: id, descendantTopicId: id, depth: 0 },
+          { ancestorTopicId: 'pfpage', descendantTopicId: id, depth: 1 },
+        ],
+      });
+      await db.post.create({
+        data: {
+          id: `ppage${i}`,
+          topicId: id,
+          parentType: 'TOPIC',
+          parentId: id,
+          authorMemberId: i >= 12 ? 'private-page-author' : String(100 + i),
+          authorHandle: i >= 12 ? 'hidden-paging-author' : `author-${i}`,
+          content: i === 2 ? 'literal_%needle' : 'ordinary body',
+          createdAt: date,
+        },
+      });
+    }
+    const page = await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage&sort=oldest&page=2&perPage=5')
+      .expect(200);
+    expect(page.body.meta).toEqual({
+      page: 2,
+      perPage: 5,
+      totalCount: 12,
+      totalPages: 3,
+    });
+    expect(page.body.data.map((row: { id: string }) => row.id)).toEqual([
+      'pfpage05',
+      'pfpage06',
+      'pfpage07',
+      'pfpage08',
+      'pfpage09',
+    ]);
+    const recent = await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage&sort=recent&perPage=2')
+      .expect(200);
+    expect(recent.body.data.map((row: { id: string }) => row.id)).toEqual([
+      'pfpage11',
+      'pfpage10',
+    ]);
+    await db.topic.update({
+      where: { id: 'pfpage00' },
+      data: { isAnnouncement: true },
+    });
+    const active = await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage&perPage=2')
+      .expect(200);
+    expect(active.body.data.map((row: { id: string }) => row.id)).toEqual([
+      'pfpage00',
+      'pfpage11',
+    ]);
+    const empty = await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage&page=100&perPage=5')
+      .expect(200);
+    expect(empty.body.data).toEqual([]);
+    expect(empty.body.meta.totalCount).toBe(12);
+    const huge = await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage&page=1e100&perPage=5')
+      .expect(200);
+    expect(huge.body.data).toEqual([]);
+    expect(huge.body.meta.totalCount).toBe(12);
+    const search = await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage&search=%25&perPage=1')
+      .expect(200);
+    expect(search.body.meta.totalCount).toBe(1);
+    expect(search.body.data[0].id).toBe('pfpage02');
+    const categories = await request(app.getHttpServer())
+      .get('/public/categories')
+      .expect(200);
+    const category = categories.body.find(
+      (row: { id: string }) => row.id === 'pfpage',
+    );
+    expect(category).toMatchObject({
+      topicsCount: 12,
+      postsCount: 12,
+      participantsCount: 12,
+      unread: false,
+    });
+    expect(category.participants).toHaveLength(5);
+    expect(category.latestActivity.postId).toBe('ppage11');
+    expect(JSON.stringify(category)).not.toContain('hidden-paging-author');
+    const copilot = await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage&perPage=1')
+      .set('Authorization', 'Bearer copilot')
+      .expect(200);
+    expect(copilot.body.meta.totalCount).toBe(14);
+    const idlessAdmin = await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage&perPage=1')
+      .set('Authorization', 'Bearer idless-admin')
+      .expect(200);
+    expect(idlessAdmin.body.meta.totalCount).toBe(12);
+    await db.topicWatch.createMany({
+      data: [
+        { topicId: 'pfpage', memberId: '101' },
+        { topicId: 'pfpage02', memberId: '101' },
+        { topicId: 'pfpage13', memberId: '101' },
+      ],
+    });
+    const watched = await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage&watching=true&perPage=1')
+      .set('Authorization', 'Bearer member')
+      .expect(200);
+    expect(watched.body.meta.totalCount).toBe(2);
+    const anonymous = await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage&watching=true')
+      .expect(200);
+    expect(anonymous.body.meta.totalCount).toBe(0);
+    await db.topicReadState.createMany({
+      data: Array.from({ length: 12 }, (_, i) => ({
+        topicId: `pfpage${String(i).padStart(2, '0')}`,
+        memberId: '101',
+        lastReadAt: new Date('2026-02-01T00:00:00Z'),
+      })),
+    });
+    const read = await request(app.getHttpServer())
+      .get('/public/categories')
+      .set('Authorization', 'Bearer member')
+      .expect(200);
+    expect(
+      read.body.find((row: { id: string }) => row.id === 'pfpage').unread,
+    ).toBe(false);
+    await db.topicReadState.update({
+      where: { topicId_memberId: { topicId: 'pfpage11', memberId: '101' } },
+      data: { lastReadAt: new Date('2025-01-01T00:00:00Z') },
+    });
+    const unread = await request(app.getHttpServer())
+      .get('/public/categories')
+      .set('Authorization', 'Bearer member')
+      .expect(200);
+    expect(
+      unread.body.find((row: { id: string }) => row.id === 'pfpage').unread,
+    ).toBe(true);
+    await db.topic.update({
+      where: { id: 'pfpage' },
+      data: { deletedAt: new Date() },
+    });
+    await request(app.getHttpServer())
+      .get('/public/topics?categoryId=pfpage')
+      .expect(403);
+    const hidden = await request(app.getHttpServer())
+      .get('/public/topics?search=literal_%25needle')
+      .expect(200);
+    expect(hidden.body.meta.totalCount).toBe(0);
   });
   it('imports atomically, preserves challenge rows, reruns safely, and refuses changed targets/source', async () => {
     const date = new Date('2026-01-01T00:00:00Z');
