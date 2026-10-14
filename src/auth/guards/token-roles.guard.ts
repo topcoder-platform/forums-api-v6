@@ -10,6 +10,7 @@ import {
   AUTHENTICATED_USER_ROLE,
   ROLES_KEY,
 } from '../decorators/roles.decorator';
+import { OPTIONAL_READ_KEY } from '../decorators/optional-read.decorator';
 import { SCOPES_KEY } from '../decorators/scopes.decorator';
 import { AuthenticatedRequest } from '../request/authenticated-request.interface';
 
@@ -60,6 +61,10 @@ export class TokenRolesGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const user = request.user;
+
+    if (!user && this.reflector.getAllAndOverride<boolean>(OPTIONAL_READ_KEY, [context.getHandler(), context.getClass()])) {
+      return true;
+    }
 
     if (!user) {
       throw new UnauthorizedException('Missing or invalid token.');

@@ -8,6 +8,8 @@ and post-commit watch notifications.
 - `GET /v6/forums/health`
 - `GET /v6/forums/readiness`
 - `GET /v6/forums/api-docs`
+- `GET /v6/forums/public/categories`
+- `GET /v6/forums/public/topics`
 - `GET /v6/forums/topics`
 - `GET /v6/forums/topics/challenges/:challengeId`
 - `GET /v6/forums/topics/:topicId/children`
@@ -141,6 +143,14 @@ PORT=3000
 Health and readiness checks intentionally remain DB-only; they do not validate
 event-bus, SendGrid template, producer, or outbound Auth0 readiness.
 
+## Public forums
+
+See [Public forums and migration](docs/public-forums.md) for guest reads, category
+ACLs, target-member mapping, insert-only Vanilla import and cutover checks.
+Public and general read routes accept anonymous callers, while mutations and
+challenge lists still require authentication. Restricted category content is
+filtered before statistics, search, pagination, watches and notifications.
+
 ## Authentication
 
 Bearer tokens are validated with `tc-core-library-js` and normalized before guards
@@ -214,8 +224,11 @@ but the `/moderation` endpoints require administrator role access for humans or
 
 ## Development
 
-The supported local and container runtime is Node.js 26.5.0 with pnpm 11.15.1.
+The supported local and container runtime is Node.js 26.5.1 with pnpm 11.15.1.
 The checked-in `.nvmrc` selects the required Node.js release.
+The production image installs Alpine's dynamically linked Node.js package and
+runs as an unprivileged application user so patched system libraries are used at
+runtime without shipping package-manager tooling.
 
 ```bash
 nvm use

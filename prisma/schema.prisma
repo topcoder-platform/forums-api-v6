@@ -156,3 +156,41 @@ model TopicReadState {
   @@index([lastReadAt])
   @@schema("forums")
 }
+
+
+// Presentation and access rules for imported public category topics only.
+model PublicForumCategory {
+  topicId       String   @id @db.VarChar(14)
+  description   String   @default("") @db.Text
+  displayAs     String   @db.VarChar(16)
+  sortOrder     Int
+  readRoles     String[]
+  createRoles   String[]
+  replyRoles    String[]
+  legacyId      Int      @unique
+  legacySlug    String   @db.Text
+  source        Json
+  @@schema("forums")
+}
+
+// Vanilla-only role assignments never grant identity-wide roles.
+model PublicForumRoleMember {
+  roleName String @db.VarChar(128)
+  memberId String @db.VarChar(64)
+  @@id([roleName, memberId])
+  @@index([memberId])
+  @@schema("forums")
+}
+
+// Immutable provenance makes imports insert-only and safely repeatable.
+model PublicForumImportRecord {
+  entityType String @db.VarChar(32)
+  sourceId String @db.VarChar(64)
+  targetId String @db.VarChar(64)
+  sourceHash String @db.VarChar(64)
+  targetHash String @db.VarChar(64)
+  createdAt DateTime @default(now())
+  @@id([entityType, sourceId])
+  @@unique([entityType, targetId])
+  @@schema("forums")
+}

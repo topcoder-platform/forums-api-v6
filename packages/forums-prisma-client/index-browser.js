@@ -197,9 +197,40 @@ exports.Prisma.TopicReadStateScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PublicForumCategoryScalarFieldEnum = {
+  topicId: 'topicId',
+  description: 'description',
+  displayAs: 'displayAs',
+  sortOrder: 'sortOrder',
+  readRoles: 'readRoles',
+  createRoles: 'createRoles',
+  replyRoles: 'replyRoles',
+  legacyId: 'legacyId',
+  legacySlug: 'legacySlug',
+  source: 'source'
+};
+
+exports.Prisma.PublicForumRoleMemberScalarFieldEnum = {
+  roleName: 'roleName',
+  memberId: 'memberId'
+};
+
+exports.Prisma.PublicForumImportRecordScalarFieldEnum = {
+  entityType: 'entityType',
+  sourceId: 'sourceId',
+  targetId: 'targetId',
+  sourceHash: 'sourceHash',
+  targetHash: 'targetHash',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -210,6 +241,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.PostReactionType = exports.$Enums.PostReactionType = {
   THUMBS_UP: 'THUMBS_UP',
@@ -224,7 +261,10 @@ exports.Prisma.ModelName = {
   PostReaction: 'PostReaction',
   TopicClosure: 'TopicClosure',
   TopicWatch: 'TopicWatch',
-  TopicReadState: 'TopicReadState'
+  TopicReadState: 'TopicReadState',
+  PublicForumCategory: 'PublicForumCategory',
+  PublicForumRoleMember: 'PublicForumRoleMember',
+  PublicForumImportRecord: 'PublicForumImportRecord'
 };
 
 /**

@@ -35,7 +35,7 @@ export type IpBan = $Result.DefaultSelection<Prisma.$IpBanPayload>
 export type Post = $Result.DefaultSelection<Prisma.$PostPayload>
 /**
  * Model PostReaction
- *
+ * 
  */
 export type PostReaction = $Result.DefaultSelection<Prisma.$PostReactionPayload>
 /**
@@ -53,6 +53,21 @@ export type TopicWatch = $Result.DefaultSelection<Prisma.$TopicWatchPayload>
  * 
  */
 export type TopicReadState = $Result.DefaultSelection<Prisma.$TopicReadStatePayload>
+/**
+ * Model PublicForumCategory
+ * 
+ */
+export type PublicForumCategory = $Result.DefaultSelection<Prisma.$PublicForumCategoryPayload>
+/**
+ * Model PublicForumRoleMember
+ * 
+ */
+export type PublicForumRoleMember = $Result.DefaultSelection<Prisma.$PublicForumRoleMemberPayload>
+/**
+ * Model PublicForumImportRecord
+ * 
+ */
+export type PublicForumImportRecord = $Result.DefaultSelection<Prisma.$PublicForumImportRecordPayload>
 
 /**
  * Enums
@@ -271,6 +286,36 @@ export class PrismaClient<
     * ```
     */
   get topicReadState(): Prisma.TopicReadStateDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.publicForumCategory`: Exposes CRUD operations for the **PublicForumCategory** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PublicForumCategories
+    * const publicForumCategories = await prisma.publicForumCategory.findMany()
+    * ```
+    */
+  get publicForumCategory(): Prisma.PublicForumCategoryDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.publicForumRoleMember`: Exposes CRUD operations for the **PublicForumRoleMember** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PublicForumRoleMembers
+    * const publicForumRoleMembers = await prisma.publicForumRoleMember.findMany()
+    * ```
+    */
+  get publicForumRoleMember(): Prisma.PublicForumRoleMemberDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.publicForumImportRecord`: Exposes CRUD operations for the **PublicForumImportRecord** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PublicForumImportRecords
+    * const publicForumImportRecords = await prisma.publicForumImportRecord.findMany()
+    * ```
+    */
+  get publicForumImportRecord(): Prisma.PublicForumImportRecordDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -725,7 +770,10 @@ export namespace Prisma {
     PostReaction: 'PostReaction',
     TopicClosure: 'TopicClosure',
     TopicWatch: 'TopicWatch',
-    TopicReadState: 'TopicReadState'
+    TopicReadState: 'TopicReadState',
+    PublicForumCategory: 'PublicForumCategory',
+    PublicForumRoleMember: 'PublicForumRoleMember',
+    PublicForumImportRecord: 'PublicForumImportRecord'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -741,7 +789,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "topic" | "memberBan" | "ipBan" | "post" | "postReaction" | "topicClosure" | "topicWatch" | "topicReadState"
+      modelProps: "topic" | "memberBan" | "ipBan" | "post" | "postReaction" | "topicClosure" | "topicWatch" | "topicReadState" | "publicForumCategory" | "publicForumRoleMember" | "publicForumImportRecord"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1337,6 +1385,228 @@ export namespace Prisma {
           }
         }
       }
+      PublicForumCategory: {
+        payload: Prisma.$PublicForumCategoryPayload<ExtArgs>
+        fields: Prisma.PublicForumCategoryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PublicForumCategoryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PublicForumCategoryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload>
+          }
+          findFirst: {
+            args: Prisma.PublicForumCategoryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PublicForumCategoryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload>
+          }
+          findMany: {
+            args: Prisma.PublicForumCategoryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload>[]
+          }
+          create: {
+            args: Prisma.PublicForumCategoryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload>
+          }
+          createMany: {
+            args: Prisma.PublicForumCategoryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PublicForumCategoryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload>[]
+          }
+          delete: {
+            args: Prisma.PublicForumCategoryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload>
+          }
+          update: {
+            args: Prisma.PublicForumCategoryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload>
+          }
+          deleteMany: {
+            args: Prisma.PublicForumCategoryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PublicForumCategoryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PublicForumCategoryUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload>[]
+          }
+          upsert: {
+            args: Prisma.PublicForumCategoryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumCategoryPayload>
+          }
+          aggregate: {
+            args: Prisma.PublicForumCategoryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePublicForumCategory>
+          }
+          groupBy: {
+            args: Prisma.PublicForumCategoryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PublicForumCategoryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PublicForumCategoryCountArgs<ExtArgs>
+            result: $Utils.Optional<PublicForumCategoryCountAggregateOutputType> | number
+          }
+        }
+      }
+      PublicForumRoleMember: {
+        payload: Prisma.$PublicForumRoleMemberPayload<ExtArgs>
+        fields: Prisma.PublicForumRoleMemberFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PublicForumRoleMemberFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PublicForumRoleMemberFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload>
+          }
+          findFirst: {
+            args: Prisma.PublicForumRoleMemberFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PublicForumRoleMemberFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload>
+          }
+          findMany: {
+            args: Prisma.PublicForumRoleMemberFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload>[]
+          }
+          create: {
+            args: Prisma.PublicForumRoleMemberCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload>
+          }
+          createMany: {
+            args: Prisma.PublicForumRoleMemberCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PublicForumRoleMemberCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload>[]
+          }
+          delete: {
+            args: Prisma.PublicForumRoleMemberDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload>
+          }
+          update: {
+            args: Prisma.PublicForumRoleMemberUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload>
+          }
+          deleteMany: {
+            args: Prisma.PublicForumRoleMemberDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PublicForumRoleMemberUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PublicForumRoleMemberUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload>[]
+          }
+          upsert: {
+            args: Prisma.PublicForumRoleMemberUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumRoleMemberPayload>
+          }
+          aggregate: {
+            args: Prisma.PublicForumRoleMemberAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePublicForumRoleMember>
+          }
+          groupBy: {
+            args: Prisma.PublicForumRoleMemberGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PublicForumRoleMemberGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PublicForumRoleMemberCountArgs<ExtArgs>
+            result: $Utils.Optional<PublicForumRoleMemberCountAggregateOutputType> | number
+          }
+        }
+      }
+      PublicForumImportRecord: {
+        payload: Prisma.$PublicForumImportRecordPayload<ExtArgs>
+        fields: Prisma.PublicForumImportRecordFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PublicForumImportRecordFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PublicForumImportRecordFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload>
+          }
+          findFirst: {
+            args: Prisma.PublicForumImportRecordFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PublicForumImportRecordFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload>
+          }
+          findMany: {
+            args: Prisma.PublicForumImportRecordFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload>[]
+          }
+          create: {
+            args: Prisma.PublicForumImportRecordCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload>
+          }
+          createMany: {
+            args: Prisma.PublicForumImportRecordCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PublicForumImportRecordCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload>[]
+          }
+          delete: {
+            args: Prisma.PublicForumImportRecordDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload>
+          }
+          update: {
+            args: Prisma.PublicForumImportRecordUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload>
+          }
+          deleteMany: {
+            args: Prisma.PublicForumImportRecordDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PublicForumImportRecordUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PublicForumImportRecordUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload>[]
+          }
+          upsert: {
+            args: Prisma.PublicForumImportRecordUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PublicForumImportRecordPayload>
+          }
+          aggregate: {
+            args: Prisma.PublicForumImportRecordAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePublicForumImportRecord>
+          }
+          groupBy: {
+            args: Prisma.PublicForumImportRecordGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PublicForumImportRecordGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PublicForumImportRecordCountArgs<ExtArgs>
+            result: $Utils.Optional<PublicForumImportRecordCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1468,6 +1738,9 @@ export namespace Prisma {
     topicClosure?: TopicClosureOmit
     topicWatch?: TopicWatchOmit
     topicReadState?: TopicReadStateOmit
+    publicForumCategory?: PublicForumCategoryOmit
+    publicForumRoleMember?: PublicForumRoleMemberOmit
+    publicForumImportRecord?: PublicForumImportRecordOmit
   }
 
   /* Types for Logging */
@@ -6301,43 +6574,43 @@ export namespace Prisma {
     where?: PostReactionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of PostReactions to fetch.
      */
     orderBy?: PostReactionOrderByWithRelationInput | PostReactionOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the start position
      */
     cursor?: PostReactionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` PostReactions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` PostReactions.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Count returned PostReactions
     **/
     _count?: true | PostReactionCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: PostReactionMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Select which fields to find the maximum value
     **/
     _max?: PostReactionMaxAggregateInputType
@@ -6527,13 +6800,13 @@ export namespace Prisma {
      * @example
      * // Get all PostReactions
      * const postReactions = await prisma.postReaction.findMany()
-     *
+     * 
      * // Get first 10 PostReactions
      * const postReactions = await prisma.postReaction.findMany({ take: 10 })
-     *
+     * 
      * // Only select the `postId`
      * const postReactionWithPostIdOnly = await prisma.postReaction.findMany({ select: { postId: true } })
-     *
+     * 
      */
     findMany<T extends PostReactionFindManyArgs>(args?: SelectSubset<T, PostReactionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
@@ -6547,7 +6820,7 @@ export namespace Prisma {
      *     // ... data to create a PostReaction
      *   }
      * })
-     *
+     * 
      */
     create<T extends PostReactionCreateArgs>(args: SelectSubset<T, PostReactionCreateArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
@@ -6561,7 +6834,7 @@ export namespace Prisma {
      *     // ... provide data here
      *   ]
      * })
-     *
+     *     
      */
     createMany<T extends PostReactionCreateManyArgs>(args?: SelectSubset<T, PostReactionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
@@ -6575,7 +6848,7 @@ export namespace Prisma {
      *     // ... provide data here
      *   ]
      * })
-     *
+     * 
      * // Create many PostReactions and only return the `postId`
      * const postReactionWithPostIdOnly = await prisma.postReaction.createManyAndReturn({
      *   select: { postId: true },
@@ -6585,7 +6858,7 @@ export namespace Prisma {
      * })
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     *
+     * 
      */
     createManyAndReturn<T extends PostReactionCreateManyAndReturnArgs>(args?: SelectSubset<T, PostReactionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
@@ -6599,7 +6872,7 @@ export namespace Prisma {
      *     // ... filter to delete one PostReaction
      *   }
      * })
-     *
+     * 
      */
     delete<T extends PostReactionDeleteArgs>(args: SelectSubset<T, PostReactionDeleteArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
@@ -6616,7 +6889,7 @@ export namespace Prisma {
      *     // ... provide data here
      *   }
      * })
-     *
+     * 
      */
     update<T extends PostReactionUpdateArgs>(args: SelectSubset<T, PostReactionUpdateArgs<ExtArgs>>): Prisma__PostReactionClient<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
@@ -6630,7 +6903,7 @@ export namespace Prisma {
      *     // ... provide filter here
      *   }
      * })
-     *
+     * 
      */
     deleteMany<T extends PostReactionDeleteManyArgs>(args?: SelectSubset<T, PostReactionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
@@ -6649,7 +6922,7 @@ export namespace Prisma {
      *     // ... provide data here
      *   }
      * })
-     *
+     * 
      */
     updateMany<T extends PostReactionUpdateManyArgs>(args: SelectSubset<T, PostReactionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
@@ -6666,7 +6939,7 @@ export namespace Prisma {
      *     // ... provide data here
      *   ]
      * })
-     *
+     * 
      * // Update zero or more PostReactions and only return the `postId`
      * const postReactionWithPostIdOnly = await prisma.postReaction.updateManyAndReturn({
      *   select: { postId: true },
@@ -6679,7 +6952,7 @@ export namespace Prisma {
      * })
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     *
+     * 
      */
     updateManyAndReturn<T extends PostReactionUpdateManyAndReturnArgs>(args: SelectSubset<T, PostReactionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostReactionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
@@ -6768,7 +7041,7 @@ export namespace Prisma {
      *     _all: true
      *   },
      * })
-     *
+     * 
     **/
     groupBy<
       T extends PostReactionGroupByArgs,
@@ -6878,7 +7151,7 @@ export namespace Prisma {
     readonly createdAt: FieldRef<"PostReaction", 'DateTime'>
     readonly updatedAt: FieldRef<"PostReaction", 'DateTime'>
   }
-
+    
 
   // Custom InputTypes
   /**
@@ -6947,31 +7220,31 @@ export namespace Prisma {
     where?: PostReactionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of PostReactions to fetch.
      */
     orderBy?: PostReactionOrderByWithRelationInput | PostReactionOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the position for searching for PostReactions.
      */
     cursor?: PostReactionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` PostReactions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` PostReactions.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
+     * 
      * Filter by unique combinations of PostReactions.
      */
     distinct?: PostReactionScalarFieldEnum | PostReactionScalarFieldEnum[]
@@ -6999,31 +7272,31 @@ export namespace Prisma {
     where?: PostReactionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of PostReactions to fetch.
      */
     orderBy?: PostReactionOrderByWithRelationInput | PostReactionOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the position for searching for PostReactions.
      */
     cursor?: PostReactionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` PostReactions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` PostReactions.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
+     * 
      * Filter by unique combinations of PostReactions.
      */
     distinct?: PostReactionScalarFieldEnum | PostReactionScalarFieldEnum[]
@@ -7051,31 +7324,31 @@ export namespace Prisma {
     where?: PostReactionWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of PostReactions to fetch.
      */
     orderBy?: PostReactionOrderByWithRelationInput | PostReactionOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the position for listing PostReactions.
      */
     cursor?: PostReactionWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` PostReactions from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` PostReactions.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
+     * 
      * Filter by unique combinations of PostReactions.
      */
     distinct?: PostReactionScalarFieldEnum | PostReactionScalarFieldEnum[]
@@ -10463,6 +10736,3067 @@ export namespace Prisma {
 
 
   /**
+   * Model PublicForumCategory
+   */
+
+  export type AggregatePublicForumCategory = {
+    _count: PublicForumCategoryCountAggregateOutputType | null
+    _avg: PublicForumCategoryAvgAggregateOutputType | null
+    _sum: PublicForumCategorySumAggregateOutputType | null
+    _min: PublicForumCategoryMinAggregateOutputType | null
+    _max: PublicForumCategoryMaxAggregateOutputType | null
+  }
+
+  export type PublicForumCategoryAvgAggregateOutputType = {
+    sortOrder: number | null
+    legacyId: number | null
+  }
+
+  export type PublicForumCategorySumAggregateOutputType = {
+    sortOrder: number | null
+    legacyId: number | null
+  }
+
+  export type PublicForumCategoryMinAggregateOutputType = {
+    topicId: string | null
+    description: string | null
+    displayAs: string | null
+    sortOrder: number | null
+    legacyId: number | null
+    legacySlug: string | null
+  }
+
+  export type PublicForumCategoryMaxAggregateOutputType = {
+    topicId: string | null
+    description: string | null
+    displayAs: string | null
+    sortOrder: number | null
+    legacyId: number | null
+    legacySlug: string | null
+  }
+
+  export type PublicForumCategoryCountAggregateOutputType = {
+    topicId: number
+    description: number
+    displayAs: number
+    sortOrder: number
+    readRoles: number
+    createRoles: number
+    replyRoles: number
+    legacyId: number
+    legacySlug: number
+    source: number
+    _all: number
+  }
+
+
+  export type PublicForumCategoryAvgAggregateInputType = {
+    sortOrder?: true
+    legacyId?: true
+  }
+
+  export type PublicForumCategorySumAggregateInputType = {
+    sortOrder?: true
+    legacyId?: true
+  }
+
+  export type PublicForumCategoryMinAggregateInputType = {
+    topicId?: true
+    description?: true
+    displayAs?: true
+    sortOrder?: true
+    legacyId?: true
+    legacySlug?: true
+  }
+
+  export type PublicForumCategoryMaxAggregateInputType = {
+    topicId?: true
+    description?: true
+    displayAs?: true
+    sortOrder?: true
+    legacyId?: true
+    legacySlug?: true
+  }
+
+  export type PublicForumCategoryCountAggregateInputType = {
+    topicId?: true
+    description?: true
+    displayAs?: true
+    sortOrder?: true
+    readRoles?: true
+    createRoles?: true
+    replyRoles?: true
+    legacyId?: true
+    legacySlug?: true
+    source?: true
+    _all?: true
+  }
+
+  export type PublicForumCategoryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PublicForumCategory to aggregate.
+     */
+    where?: PublicForumCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumCategories to fetch.
+     */
+    orderBy?: PublicForumCategoryOrderByWithRelationInput | PublicForumCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PublicForumCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumCategories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PublicForumCategories
+    **/
+    _count?: true | PublicForumCategoryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PublicForumCategoryAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PublicForumCategorySumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PublicForumCategoryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PublicForumCategoryMaxAggregateInputType
+  }
+
+  export type GetPublicForumCategoryAggregateType<T extends PublicForumCategoryAggregateArgs> = {
+        [P in keyof T & keyof AggregatePublicForumCategory]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePublicForumCategory[P]>
+      : GetScalarType<T[P], AggregatePublicForumCategory[P]>
+  }
+
+
+
+
+  export type PublicForumCategoryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PublicForumCategoryWhereInput
+    orderBy?: PublicForumCategoryOrderByWithAggregationInput | PublicForumCategoryOrderByWithAggregationInput[]
+    by: PublicForumCategoryScalarFieldEnum[] | PublicForumCategoryScalarFieldEnum
+    having?: PublicForumCategoryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PublicForumCategoryCountAggregateInputType | true
+    _avg?: PublicForumCategoryAvgAggregateInputType
+    _sum?: PublicForumCategorySumAggregateInputType
+    _min?: PublicForumCategoryMinAggregateInputType
+    _max?: PublicForumCategoryMaxAggregateInputType
+  }
+
+  export type PublicForumCategoryGroupByOutputType = {
+    topicId: string
+    description: string
+    displayAs: string
+    sortOrder: number
+    readRoles: string[]
+    createRoles: string[]
+    replyRoles: string[]
+    legacyId: number
+    legacySlug: string
+    source: JsonValue
+    _count: PublicForumCategoryCountAggregateOutputType | null
+    _avg: PublicForumCategoryAvgAggregateOutputType | null
+    _sum: PublicForumCategorySumAggregateOutputType | null
+    _min: PublicForumCategoryMinAggregateOutputType | null
+    _max: PublicForumCategoryMaxAggregateOutputType | null
+  }
+
+  type GetPublicForumCategoryGroupByPayload<T extends PublicForumCategoryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PublicForumCategoryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PublicForumCategoryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PublicForumCategoryGroupByOutputType[P]>
+            : GetScalarType<T[P], PublicForumCategoryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PublicForumCategorySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    topicId?: boolean
+    description?: boolean
+    displayAs?: boolean
+    sortOrder?: boolean
+    readRoles?: boolean
+    createRoles?: boolean
+    replyRoles?: boolean
+    legacyId?: boolean
+    legacySlug?: boolean
+    source?: boolean
+  }, ExtArgs["result"]["publicForumCategory"]>
+
+  export type PublicForumCategorySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    topicId?: boolean
+    description?: boolean
+    displayAs?: boolean
+    sortOrder?: boolean
+    readRoles?: boolean
+    createRoles?: boolean
+    replyRoles?: boolean
+    legacyId?: boolean
+    legacySlug?: boolean
+    source?: boolean
+  }, ExtArgs["result"]["publicForumCategory"]>
+
+  export type PublicForumCategorySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    topicId?: boolean
+    description?: boolean
+    displayAs?: boolean
+    sortOrder?: boolean
+    readRoles?: boolean
+    createRoles?: boolean
+    replyRoles?: boolean
+    legacyId?: boolean
+    legacySlug?: boolean
+    source?: boolean
+  }, ExtArgs["result"]["publicForumCategory"]>
+
+  export type PublicForumCategorySelectScalar = {
+    topicId?: boolean
+    description?: boolean
+    displayAs?: boolean
+    sortOrder?: boolean
+    readRoles?: boolean
+    createRoles?: boolean
+    replyRoles?: boolean
+    legacyId?: boolean
+    legacySlug?: boolean
+    source?: boolean
+  }
+
+  export type PublicForumCategoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"topicId" | "description" | "displayAs" | "sortOrder" | "readRoles" | "createRoles" | "replyRoles" | "legacyId" | "legacySlug" | "source", ExtArgs["result"]["publicForumCategory"]>
+
+  export type $PublicForumCategoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PublicForumCategory"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      topicId: string
+      description: string
+      displayAs: string
+      sortOrder: number
+      readRoles: string[]
+      createRoles: string[]
+      replyRoles: string[]
+      legacyId: number
+      legacySlug: string
+      source: Prisma.JsonValue
+    }, ExtArgs["result"]["publicForumCategory"]>
+    composites: {}
+  }
+
+  type PublicForumCategoryGetPayload<S extends boolean | null | undefined | PublicForumCategoryDefaultArgs> = $Result.GetResult<Prisma.$PublicForumCategoryPayload, S>
+
+  type PublicForumCategoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PublicForumCategoryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PublicForumCategoryCountAggregateInputType | true
+    }
+
+  export interface PublicForumCategoryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PublicForumCategory'], meta: { name: 'PublicForumCategory' } }
+    /**
+     * Find zero or one PublicForumCategory that matches the filter.
+     * @param {PublicForumCategoryFindUniqueArgs} args - Arguments to find a PublicForumCategory
+     * @example
+     * // Get one PublicForumCategory
+     * const publicForumCategory = await prisma.publicForumCategory.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PublicForumCategoryFindUniqueArgs>(args: SelectSubset<T, PublicForumCategoryFindUniqueArgs<ExtArgs>>): Prisma__PublicForumCategoryClient<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PublicForumCategory that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PublicForumCategoryFindUniqueOrThrowArgs} args - Arguments to find a PublicForumCategory
+     * @example
+     * // Get one PublicForumCategory
+     * const publicForumCategory = await prisma.publicForumCategory.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PublicForumCategoryFindUniqueOrThrowArgs>(args: SelectSubset<T, PublicForumCategoryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PublicForumCategoryClient<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PublicForumCategory that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumCategoryFindFirstArgs} args - Arguments to find a PublicForumCategory
+     * @example
+     * // Get one PublicForumCategory
+     * const publicForumCategory = await prisma.publicForumCategory.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PublicForumCategoryFindFirstArgs>(args?: SelectSubset<T, PublicForumCategoryFindFirstArgs<ExtArgs>>): Prisma__PublicForumCategoryClient<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PublicForumCategory that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumCategoryFindFirstOrThrowArgs} args - Arguments to find a PublicForumCategory
+     * @example
+     * // Get one PublicForumCategory
+     * const publicForumCategory = await prisma.publicForumCategory.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PublicForumCategoryFindFirstOrThrowArgs>(args?: SelectSubset<T, PublicForumCategoryFindFirstOrThrowArgs<ExtArgs>>): Prisma__PublicForumCategoryClient<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PublicForumCategories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumCategoryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PublicForumCategories
+     * const publicForumCategories = await prisma.publicForumCategory.findMany()
+     * 
+     * // Get first 10 PublicForumCategories
+     * const publicForumCategories = await prisma.publicForumCategory.findMany({ take: 10 })
+     * 
+     * // Only select the `topicId`
+     * const publicForumCategoryWithTopicIdOnly = await prisma.publicForumCategory.findMany({ select: { topicId: true } })
+     * 
+     */
+    findMany<T extends PublicForumCategoryFindManyArgs>(args?: SelectSubset<T, PublicForumCategoryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PublicForumCategory.
+     * @param {PublicForumCategoryCreateArgs} args - Arguments to create a PublicForumCategory.
+     * @example
+     * // Create one PublicForumCategory
+     * const PublicForumCategory = await prisma.publicForumCategory.create({
+     *   data: {
+     *     // ... data to create a PublicForumCategory
+     *   }
+     * })
+     * 
+     */
+    create<T extends PublicForumCategoryCreateArgs>(args: SelectSubset<T, PublicForumCategoryCreateArgs<ExtArgs>>): Prisma__PublicForumCategoryClient<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PublicForumCategories.
+     * @param {PublicForumCategoryCreateManyArgs} args - Arguments to create many PublicForumCategories.
+     * @example
+     * // Create many PublicForumCategories
+     * const publicForumCategory = await prisma.publicForumCategory.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PublicForumCategoryCreateManyArgs>(args?: SelectSubset<T, PublicForumCategoryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PublicForumCategories and returns the data saved in the database.
+     * @param {PublicForumCategoryCreateManyAndReturnArgs} args - Arguments to create many PublicForumCategories.
+     * @example
+     * // Create many PublicForumCategories
+     * const publicForumCategory = await prisma.publicForumCategory.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PublicForumCategories and only return the `topicId`
+     * const publicForumCategoryWithTopicIdOnly = await prisma.publicForumCategory.createManyAndReturn({
+     *   select: { topicId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PublicForumCategoryCreateManyAndReturnArgs>(args?: SelectSubset<T, PublicForumCategoryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PublicForumCategory.
+     * @param {PublicForumCategoryDeleteArgs} args - Arguments to delete one PublicForumCategory.
+     * @example
+     * // Delete one PublicForumCategory
+     * const PublicForumCategory = await prisma.publicForumCategory.delete({
+     *   where: {
+     *     // ... filter to delete one PublicForumCategory
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PublicForumCategoryDeleteArgs>(args: SelectSubset<T, PublicForumCategoryDeleteArgs<ExtArgs>>): Prisma__PublicForumCategoryClient<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PublicForumCategory.
+     * @param {PublicForumCategoryUpdateArgs} args - Arguments to update one PublicForumCategory.
+     * @example
+     * // Update one PublicForumCategory
+     * const publicForumCategory = await prisma.publicForumCategory.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PublicForumCategoryUpdateArgs>(args: SelectSubset<T, PublicForumCategoryUpdateArgs<ExtArgs>>): Prisma__PublicForumCategoryClient<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PublicForumCategories.
+     * @param {PublicForumCategoryDeleteManyArgs} args - Arguments to filter PublicForumCategories to delete.
+     * @example
+     * // Delete a few PublicForumCategories
+     * const { count } = await prisma.publicForumCategory.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PublicForumCategoryDeleteManyArgs>(args?: SelectSubset<T, PublicForumCategoryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PublicForumCategories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumCategoryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PublicForumCategories
+     * const publicForumCategory = await prisma.publicForumCategory.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PublicForumCategoryUpdateManyArgs>(args: SelectSubset<T, PublicForumCategoryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PublicForumCategories and returns the data updated in the database.
+     * @param {PublicForumCategoryUpdateManyAndReturnArgs} args - Arguments to update many PublicForumCategories.
+     * @example
+     * // Update many PublicForumCategories
+     * const publicForumCategory = await prisma.publicForumCategory.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PublicForumCategories and only return the `topicId`
+     * const publicForumCategoryWithTopicIdOnly = await prisma.publicForumCategory.updateManyAndReturn({
+     *   select: { topicId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PublicForumCategoryUpdateManyAndReturnArgs>(args: SelectSubset<T, PublicForumCategoryUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PublicForumCategory.
+     * @param {PublicForumCategoryUpsertArgs} args - Arguments to update or create a PublicForumCategory.
+     * @example
+     * // Update or create a PublicForumCategory
+     * const publicForumCategory = await prisma.publicForumCategory.upsert({
+     *   create: {
+     *     // ... data to create a PublicForumCategory
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PublicForumCategory we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PublicForumCategoryUpsertArgs>(args: SelectSubset<T, PublicForumCategoryUpsertArgs<ExtArgs>>): Prisma__PublicForumCategoryClient<$Result.GetResult<Prisma.$PublicForumCategoryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PublicForumCategories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumCategoryCountArgs} args - Arguments to filter PublicForumCategories to count.
+     * @example
+     * // Count the number of PublicForumCategories
+     * const count = await prisma.publicForumCategory.count({
+     *   where: {
+     *     // ... the filter for the PublicForumCategories we want to count
+     *   }
+     * })
+    **/
+    count<T extends PublicForumCategoryCountArgs>(
+      args?: Subset<T, PublicForumCategoryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PublicForumCategoryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PublicForumCategory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumCategoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PublicForumCategoryAggregateArgs>(args: Subset<T, PublicForumCategoryAggregateArgs>): Prisma.PrismaPromise<GetPublicForumCategoryAggregateType<T>>
+
+    /**
+     * Group by PublicForumCategory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumCategoryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PublicForumCategoryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PublicForumCategoryGroupByArgs['orderBy'] }
+        : { orderBy?: PublicForumCategoryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PublicForumCategoryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPublicForumCategoryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PublicForumCategory model
+   */
+  readonly fields: PublicForumCategoryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PublicForumCategory.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PublicForumCategoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PublicForumCategory model
+   */
+  interface PublicForumCategoryFieldRefs {
+    readonly topicId: FieldRef<"PublicForumCategory", 'String'>
+    readonly description: FieldRef<"PublicForumCategory", 'String'>
+    readonly displayAs: FieldRef<"PublicForumCategory", 'String'>
+    readonly sortOrder: FieldRef<"PublicForumCategory", 'Int'>
+    readonly readRoles: FieldRef<"PublicForumCategory", 'String[]'>
+    readonly createRoles: FieldRef<"PublicForumCategory", 'String[]'>
+    readonly replyRoles: FieldRef<"PublicForumCategory", 'String[]'>
+    readonly legacyId: FieldRef<"PublicForumCategory", 'Int'>
+    readonly legacySlug: FieldRef<"PublicForumCategory", 'String'>
+    readonly source: FieldRef<"PublicForumCategory", 'Json'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PublicForumCategory findUnique
+   */
+  export type PublicForumCategoryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumCategory to fetch.
+     */
+    where: PublicForumCategoryWhereUniqueInput
+  }
+
+  /**
+   * PublicForumCategory findUniqueOrThrow
+   */
+  export type PublicForumCategoryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumCategory to fetch.
+     */
+    where: PublicForumCategoryWhereUniqueInput
+  }
+
+  /**
+   * PublicForumCategory findFirst
+   */
+  export type PublicForumCategoryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumCategory to fetch.
+     */
+    where?: PublicForumCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumCategories to fetch.
+     */
+    orderBy?: PublicForumCategoryOrderByWithRelationInput | PublicForumCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PublicForumCategories.
+     */
+    cursor?: PublicForumCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumCategories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PublicForumCategories.
+     */
+    distinct?: PublicForumCategoryScalarFieldEnum | PublicForumCategoryScalarFieldEnum[]
+  }
+
+  /**
+   * PublicForumCategory findFirstOrThrow
+   */
+  export type PublicForumCategoryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumCategory to fetch.
+     */
+    where?: PublicForumCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumCategories to fetch.
+     */
+    orderBy?: PublicForumCategoryOrderByWithRelationInput | PublicForumCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PublicForumCategories.
+     */
+    cursor?: PublicForumCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumCategories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PublicForumCategories.
+     */
+    distinct?: PublicForumCategoryScalarFieldEnum | PublicForumCategoryScalarFieldEnum[]
+  }
+
+  /**
+   * PublicForumCategory findMany
+   */
+  export type PublicForumCategoryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumCategories to fetch.
+     */
+    where?: PublicForumCategoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumCategories to fetch.
+     */
+    orderBy?: PublicForumCategoryOrderByWithRelationInput | PublicForumCategoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PublicForumCategories.
+     */
+    cursor?: PublicForumCategoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumCategories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumCategories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PublicForumCategories.
+     */
+    distinct?: PublicForumCategoryScalarFieldEnum | PublicForumCategoryScalarFieldEnum[]
+  }
+
+  /**
+   * PublicForumCategory create
+   */
+  export type PublicForumCategoryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PublicForumCategory.
+     */
+    data: XOR<PublicForumCategoryCreateInput, PublicForumCategoryUncheckedCreateInput>
+  }
+
+  /**
+   * PublicForumCategory createMany
+   */
+  export type PublicForumCategoryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PublicForumCategories.
+     */
+    data: PublicForumCategoryCreateManyInput | PublicForumCategoryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PublicForumCategory createManyAndReturn
+   */
+  export type PublicForumCategoryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * The data used to create many PublicForumCategories.
+     */
+    data: PublicForumCategoryCreateManyInput | PublicForumCategoryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PublicForumCategory update
+   */
+  export type PublicForumCategoryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PublicForumCategory.
+     */
+    data: XOR<PublicForumCategoryUpdateInput, PublicForumCategoryUncheckedUpdateInput>
+    /**
+     * Choose, which PublicForumCategory to update.
+     */
+    where: PublicForumCategoryWhereUniqueInput
+  }
+
+  /**
+   * PublicForumCategory updateMany
+   */
+  export type PublicForumCategoryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PublicForumCategories.
+     */
+    data: XOR<PublicForumCategoryUpdateManyMutationInput, PublicForumCategoryUncheckedUpdateManyInput>
+    /**
+     * Filter which PublicForumCategories to update
+     */
+    where?: PublicForumCategoryWhereInput
+    /**
+     * Limit how many PublicForumCategories to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PublicForumCategory updateManyAndReturn
+   */
+  export type PublicForumCategoryUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * The data used to update PublicForumCategories.
+     */
+    data: XOR<PublicForumCategoryUpdateManyMutationInput, PublicForumCategoryUncheckedUpdateManyInput>
+    /**
+     * Filter which PublicForumCategories to update
+     */
+    where?: PublicForumCategoryWhereInput
+    /**
+     * Limit how many PublicForumCategories to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PublicForumCategory upsert
+   */
+  export type PublicForumCategoryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PublicForumCategory to update in case it exists.
+     */
+    where: PublicForumCategoryWhereUniqueInput
+    /**
+     * In case the PublicForumCategory found by the `where` argument doesn't exist, create a new PublicForumCategory with this data.
+     */
+    create: XOR<PublicForumCategoryCreateInput, PublicForumCategoryUncheckedCreateInput>
+    /**
+     * In case the PublicForumCategory was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PublicForumCategoryUpdateInput, PublicForumCategoryUncheckedUpdateInput>
+  }
+
+  /**
+   * PublicForumCategory delete
+   */
+  export type PublicForumCategoryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+    /**
+     * Filter which PublicForumCategory to delete.
+     */
+    where: PublicForumCategoryWhereUniqueInput
+  }
+
+  /**
+   * PublicForumCategory deleteMany
+   */
+  export type PublicForumCategoryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PublicForumCategories to delete
+     */
+    where?: PublicForumCategoryWhereInput
+    /**
+     * Limit how many PublicForumCategories to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PublicForumCategory without action
+   */
+  export type PublicForumCategoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumCategory
+     */
+    select?: PublicForumCategorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumCategory
+     */
+    omit?: PublicForumCategoryOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PublicForumRoleMember
+   */
+
+  export type AggregatePublicForumRoleMember = {
+    _count: PublicForumRoleMemberCountAggregateOutputType | null
+    _min: PublicForumRoleMemberMinAggregateOutputType | null
+    _max: PublicForumRoleMemberMaxAggregateOutputType | null
+  }
+
+  export type PublicForumRoleMemberMinAggregateOutputType = {
+    roleName: string | null
+    memberId: string | null
+  }
+
+  export type PublicForumRoleMemberMaxAggregateOutputType = {
+    roleName: string | null
+    memberId: string | null
+  }
+
+  export type PublicForumRoleMemberCountAggregateOutputType = {
+    roleName: number
+    memberId: number
+    _all: number
+  }
+
+
+  export type PublicForumRoleMemberMinAggregateInputType = {
+    roleName?: true
+    memberId?: true
+  }
+
+  export type PublicForumRoleMemberMaxAggregateInputType = {
+    roleName?: true
+    memberId?: true
+  }
+
+  export type PublicForumRoleMemberCountAggregateInputType = {
+    roleName?: true
+    memberId?: true
+    _all?: true
+  }
+
+  export type PublicForumRoleMemberAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PublicForumRoleMember to aggregate.
+     */
+    where?: PublicForumRoleMemberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumRoleMembers to fetch.
+     */
+    orderBy?: PublicForumRoleMemberOrderByWithRelationInput | PublicForumRoleMemberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PublicForumRoleMemberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumRoleMembers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumRoleMembers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PublicForumRoleMembers
+    **/
+    _count?: true | PublicForumRoleMemberCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PublicForumRoleMemberMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PublicForumRoleMemberMaxAggregateInputType
+  }
+
+  export type GetPublicForumRoleMemberAggregateType<T extends PublicForumRoleMemberAggregateArgs> = {
+        [P in keyof T & keyof AggregatePublicForumRoleMember]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePublicForumRoleMember[P]>
+      : GetScalarType<T[P], AggregatePublicForumRoleMember[P]>
+  }
+
+
+
+
+  export type PublicForumRoleMemberGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PublicForumRoleMemberWhereInput
+    orderBy?: PublicForumRoleMemberOrderByWithAggregationInput | PublicForumRoleMemberOrderByWithAggregationInput[]
+    by: PublicForumRoleMemberScalarFieldEnum[] | PublicForumRoleMemberScalarFieldEnum
+    having?: PublicForumRoleMemberScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PublicForumRoleMemberCountAggregateInputType | true
+    _min?: PublicForumRoleMemberMinAggregateInputType
+    _max?: PublicForumRoleMemberMaxAggregateInputType
+  }
+
+  export type PublicForumRoleMemberGroupByOutputType = {
+    roleName: string
+    memberId: string
+    _count: PublicForumRoleMemberCountAggregateOutputType | null
+    _min: PublicForumRoleMemberMinAggregateOutputType | null
+    _max: PublicForumRoleMemberMaxAggregateOutputType | null
+  }
+
+  type GetPublicForumRoleMemberGroupByPayload<T extends PublicForumRoleMemberGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PublicForumRoleMemberGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PublicForumRoleMemberGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PublicForumRoleMemberGroupByOutputType[P]>
+            : GetScalarType<T[P], PublicForumRoleMemberGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PublicForumRoleMemberSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    roleName?: boolean
+    memberId?: boolean
+  }, ExtArgs["result"]["publicForumRoleMember"]>
+
+  export type PublicForumRoleMemberSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    roleName?: boolean
+    memberId?: boolean
+  }, ExtArgs["result"]["publicForumRoleMember"]>
+
+  export type PublicForumRoleMemberSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    roleName?: boolean
+    memberId?: boolean
+  }, ExtArgs["result"]["publicForumRoleMember"]>
+
+  export type PublicForumRoleMemberSelectScalar = {
+    roleName?: boolean
+    memberId?: boolean
+  }
+
+  export type PublicForumRoleMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"roleName" | "memberId", ExtArgs["result"]["publicForumRoleMember"]>
+
+  export type $PublicForumRoleMemberPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PublicForumRoleMember"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      roleName: string
+      memberId: string
+    }, ExtArgs["result"]["publicForumRoleMember"]>
+    composites: {}
+  }
+
+  type PublicForumRoleMemberGetPayload<S extends boolean | null | undefined | PublicForumRoleMemberDefaultArgs> = $Result.GetResult<Prisma.$PublicForumRoleMemberPayload, S>
+
+  type PublicForumRoleMemberCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PublicForumRoleMemberFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PublicForumRoleMemberCountAggregateInputType | true
+    }
+
+  export interface PublicForumRoleMemberDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PublicForumRoleMember'], meta: { name: 'PublicForumRoleMember' } }
+    /**
+     * Find zero or one PublicForumRoleMember that matches the filter.
+     * @param {PublicForumRoleMemberFindUniqueArgs} args - Arguments to find a PublicForumRoleMember
+     * @example
+     * // Get one PublicForumRoleMember
+     * const publicForumRoleMember = await prisma.publicForumRoleMember.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PublicForumRoleMemberFindUniqueArgs>(args: SelectSubset<T, PublicForumRoleMemberFindUniqueArgs<ExtArgs>>): Prisma__PublicForumRoleMemberClient<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PublicForumRoleMember that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PublicForumRoleMemberFindUniqueOrThrowArgs} args - Arguments to find a PublicForumRoleMember
+     * @example
+     * // Get one PublicForumRoleMember
+     * const publicForumRoleMember = await prisma.publicForumRoleMember.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PublicForumRoleMemberFindUniqueOrThrowArgs>(args: SelectSubset<T, PublicForumRoleMemberFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PublicForumRoleMemberClient<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PublicForumRoleMember that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumRoleMemberFindFirstArgs} args - Arguments to find a PublicForumRoleMember
+     * @example
+     * // Get one PublicForumRoleMember
+     * const publicForumRoleMember = await prisma.publicForumRoleMember.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PublicForumRoleMemberFindFirstArgs>(args?: SelectSubset<T, PublicForumRoleMemberFindFirstArgs<ExtArgs>>): Prisma__PublicForumRoleMemberClient<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PublicForumRoleMember that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumRoleMemberFindFirstOrThrowArgs} args - Arguments to find a PublicForumRoleMember
+     * @example
+     * // Get one PublicForumRoleMember
+     * const publicForumRoleMember = await prisma.publicForumRoleMember.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PublicForumRoleMemberFindFirstOrThrowArgs>(args?: SelectSubset<T, PublicForumRoleMemberFindFirstOrThrowArgs<ExtArgs>>): Prisma__PublicForumRoleMemberClient<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PublicForumRoleMembers that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumRoleMemberFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PublicForumRoleMembers
+     * const publicForumRoleMembers = await prisma.publicForumRoleMember.findMany()
+     * 
+     * // Get first 10 PublicForumRoleMembers
+     * const publicForumRoleMembers = await prisma.publicForumRoleMember.findMany({ take: 10 })
+     * 
+     * // Only select the `roleName`
+     * const publicForumRoleMemberWithRoleNameOnly = await prisma.publicForumRoleMember.findMany({ select: { roleName: true } })
+     * 
+     */
+    findMany<T extends PublicForumRoleMemberFindManyArgs>(args?: SelectSubset<T, PublicForumRoleMemberFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PublicForumRoleMember.
+     * @param {PublicForumRoleMemberCreateArgs} args - Arguments to create a PublicForumRoleMember.
+     * @example
+     * // Create one PublicForumRoleMember
+     * const PublicForumRoleMember = await prisma.publicForumRoleMember.create({
+     *   data: {
+     *     // ... data to create a PublicForumRoleMember
+     *   }
+     * })
+     * 
+     */
+    create<T extends PublicForumRoleMemberCreateArgs>(args: SelectSubset<T, PublicForumRoleMemberCreateArgs<ExtArgs>>): Prisma__PublicForumRoleMemberClient<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PublicForumRoleMembers.
+     * @param {PublicForumRoleMemberCreateManyArgs} args - Arguments to create many PublicForumRoleMembers.
+     * @example
+     * // Create many PublicForumRoleMembers
+     * const publicForumRoleMember = await prisma.publicForumRoleMember.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PublicForumRoleMemberCreateManyArgs>(args?: SelectSubset<T, PublicForumRoleMemberCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PublicForumRoleMembers and returns the data saved in the database.
+     * @param {PublicForumRoleMemberCreateManyAndReturnArgs} args - Arguments to create many PublicForumRoleMembers.
+     * @example
+     * // Create many PublicForumRoleMembers
+     * const publicForumRoleMember = await prisma.publicForumRoleMember.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PublicForumRoleMembers and only return the `roleName`
+     * const publicForumRoleMemberWithRoleNameOnly = await prisma.publicForumRoleMember.createManyAndReturn({
+     *   select: { roleName: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PublicForumRoleMemberCreateManyAndReturnArgs>(args?: SelectSubset<T, PublicForumRoleMemberCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PublicForumRoleMember.
+     * @param {PublicForumRoleMemberDeleteArgs} args - Arguments to delete one PublicForumRoleMember.
+     * @example
+     * // Delete one PublicForumRoleMember
+     * const PublicForumRoleMember = await prisma.publicForumRoleMember.delete({
+     *   where: {
+     *     // ... filter to delete one PublicForumRoleMember
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PublicForumRoleMemberDeleteArgs>(args: SelectSubset<T, PublicForumRoleMemberDeleteArgs<ExtArgs>>): Prisma__PublicForumRoleMemberClient<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PublicForumRoleMember.
+     * @param {PublicForumRoleMemberUpdateArgs} args - Arguments to update one PublicForumRoleMember.
+     * @example
+     * // Update one PublicForumRoleMember
+     * const publicForumRoleMember = await prisma.publicForumRoleMember.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PublicForumRoleMemberUpdateArgs>(args: SelectSubset<T, PublicForumRoleMemberUpdateArgs<ExtArgs>>): Prisma__PublicForumRoleMemberClient<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PublicForumRoleMembers.
+     * @param {PublicForumRoleMemberDeleteManyArgs} args - Arguments to filter PublicForumRoleMembers to delete.
+     * @example
+     * // Delete a few PublicForumRoleMembers
+     * const { count } = await prisma.publicForumRoleMember.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PublicForumRoleMemberDeleteManyArgs>(args?: SelectSubset<T, PublicForumRoleMemberDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PublicForumRoleMembers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumRoleMemberUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PublicForumRoleMembers
+     * const publicForumRoleMember = await prisma.publicForumRoleMember.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PublicForumRoleMemberUpdateManyArgs>(args: SelectSubset<T, PublicForumRoleMemberUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PublicForumRoleMembers and returns the data updated in the database.
+     * @param {PublicForumRoleMemberUpdateManyAndReturnArgs} args - Arguments to update many PublicForumRoleMembers.
+     * @example
+     * // Update many PublicForumRoleMembers
+     * const publicForumRoleMember = await prisma.publicForumRoleMember.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PublicForumRoleMembers and only return the `roleName`
+     * const publicForumRoleMemberWithRoleNameOnly = await prisma.publicForumRoleMember.updateManyAndReturn({
+     *   select: { roleName: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PublicForumRoleMemberUpdateManyAndReturnArgs>(args: SelectSubset<T, PublicForumRoleMemberUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PublicForumRoleMember.
+     * @param {PublicForumRoleMemberUpsertArgs} args - Arguments to update or create a PublicForumRoleMember.
+     * @example
+     * // Update or create a PublicForumRoleMember
+     * const publicForumRoleMember = await prisma.publicForumRoleMember.upsert({
+     *   create: {
+     *     // ... data to create a PublicForumRoleMember
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PublicForumRoleMember we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PublicForumRoleMemberUpsertArgs>(args: SelectSubset<T, PublicForumRoleMemberUpsertArgs<ExtArgs>>): Prisma__PublicForumRoleMemberClient<$Result.GetResult<Prisma.$PublicForumRoleMemberPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PublicForumRoleMembers.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumRoleMemberCountArgs} args - Arguments to filter PublicForumRoleMembers to count.
+     * @example
+     * // Count the number of PublicForumRoleMembers
+     * const count = await prisma.publicForumRoleMember.count({
+     *   where: {
+     *     // ... the filter for the PublicForumRoleMembers we want to count
+     *   }
+     * })
+    **/
+    count<T extends PublicForumRoleMemberCountArgs>(
+      args?: Subset<T, PublicForumRoleMemberCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PublicForumRoleMemberCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PublicForumRoleMember.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumRoleMemberAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PublicForumRoleMemberAggregateArgs>(args: Subset<T, PublicForumRoleMemberAggregateArgs>): Prisma.PrismaPromise<GetPublicForumRoleMemberAggregateType<T>>
+
+    /**
+     * Group by PublicForumRoleMember.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumRoleMemberGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PublicForumRoleMemberGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PublicForumRoleMemberGroupByArgs['orderBy'] }
+        : { orderBy?: PublicForumRoleMemberGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PublicForumRoleMemberGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPublicForumRoleMemberGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PublicForumRoleMember model
+   */
+  readonly fields: PublicForumRoleMemberFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PublicForumRoleMember.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PublicForumRoleMemberClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PublicForumRoleMember model
+   */
+  interface PublicForumRoleMemberFieldRefs {
+    readonly roleName: FieldRef<"PublicForumRoleMember", 'String'>
+    readonly memberId: FieldRef<"PublicForumRoleMember", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PublicForumRoleMember findUnique
+   */
+  export type PublicForumRoleMemberFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumRoleMember to fetch.
+     */
+    where: PublicForumRoleMemberWhereUniqueInput
+  }
+
+  /**
+   * PublicForumRoleMember findUniqueOrThrow
+   */
+  export type PublicForumRoleMemberFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumRoleMember to fetch.
+     */
+    where: PublicForumRoleMemberWhereUniqueInput
+  }
+
+  /**
+   * PublicForumRoleMember findFirst
+   */
+  export type PublicForumRoleMemberFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumRoleMember to fetch.
+     */
+    where?: PublicForumRoleMemberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumRoleMembers to fetch.
+     */
+    orderBy?: PublicForumRoleMemberOrderByWithRelationInput | PublicForumRoleMemberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PublicForumRoleMembers.
+     */
+    cursor?: PublicForumRoleMemberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumRoleMembers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumRoleMembers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PublicForumRoleMembers.
+     */
+    distinct?: PublicForumRoleMemberScalarFieldEnum | PublicForumRoleMemberScalarFieldEnum[]
+  }
+
+  /**
+   * PublicForumRoleMember findFirstOrThrow
+   */
+  export type PublicForumRoleMemberFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumRoleMember to fetch.
+     */
+    where?: PublicForumRoleMemberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumRoleMembers to fetch.
+     */
+    orderBy?: PublicForumRoleMemberOrderByWithRelationInput | PublicForumRoleMemberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PublicForumRoleMembers.
+     */
+    cursor?: PublicForumRoleMemberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumRoleMembers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumRoleMembers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PublicForumRoleMembers.
+     */
+    distinct?: PublicForumRoleMemberScalarFieldEnum | PublicForumRoleMemberScalarFieldEnum[]
+  }
+
+  /**
+   * PublicForumRoleMember findMany
+   */
+  export type PublicForumRoleMemberFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumRoleMembers to fetch.
+     */
+    where?: PublicForumRoleMemberWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumRoleMembers to fetch.
+     */
+    orderBy?: PublicForumRoleMemberOrderByWithRelationInput | PublicForumRoleMemberOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PublicForumRoleMembers.
+     */
+    cursor?: PublicForumRoleMemberWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumRoleMembers from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumRoleMembers.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PublicForumRoleMembers.
+     */
+    distinct?: PublicForumRoleMemberScalarFieldEnum | PublicForumRoleMemberScalarFieldEnum[]
+  }
+
+  /**
+   * PublicForumRoleMember create
+   */
+  export type PublicForumRoleMemberCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PublicForumRoleMember.
+     */
+    data: XOR<PublicForumRoleMemberCreateInput, PublicForumRoleMemberUncheckedCreateInput>
+  }
+
+  /**
+   * PublicForumRoleMember createMany
+   */
+  export type PublicForumRoleMemberCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PublicForumRoleMembers.
+     */
+    data: PublicForumRoleMemberCreateManyInput | PublicForumRoleMemberCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PublicForumRoleMember createManyAndReturn
+   */
+  export type PublicForumRoleMemberCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * The data used to create many PublicForumRoleMembers.
+     */
+    data: PublicForumRoleMemberCreateManyInput | PublicForumRoleMemberCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PublicForumRoleMember update
+   */
+  export type PublicForumRoleMemberUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PublicForumRoleMember.
+     */
+    data: XOR<PublicForumRoleMemberUpdateInput, PublicForumRoleMemberUncheckedUpdateInput>
+    /**
+     * Choose, which PublicForumRoleMember to update.
+     */
+    where: PublicForumRoleMemberWhereUniqueInput
+  }
+
+  /**
+   * PublicForumRoleMember updateMany
+   */
+  export type PublicForumRoleMemberUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PublicForumRoleMembers.
+     */
+    data: XOR<PublicForumRoleMemberUpdateManyMutationInput, PublicForumRoleMemberUncheckedUpdateManyInput>
+    /**
+     * Filter which PublicForumRoleMembers to update
+     */
+    where?: PublicForumRoleMemberWhereInput
+    /**
+     * Limit how many PublicForumRoleMembers to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PublicForumRoleMember updateManyAndReturn
+   */
+  export type PublicForumRoleMemberUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * The data used to update PublicForumRoleMembers.
+     */
+    data: XOR<PublicForumRoleMemberUpdateManyMutationInput, PublicForumRoleMemberUncheckedUpdateManyInput>
+    /**
+     * Filter which PublicForumRoleMembers to update
+     */
+    where?: PublicForumRoleMemberWhereInput
+    /**
+     * Limit how many PublicForumRoleMembers to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PublicForumRoleMember upsert
+   */
+  export type PublicForumRoleMemberUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PublicForumRoleMember to update in case it exists.
+     */
+    where: PublicForumRoleMemberWhereUniqueInput
+    /**
+     * In case the PublicForumRoleMember found by the `where` argument doesn't exist, create a new PublicForumRoleMember with this data.
+     */
+    create: XOR<PublicForumRoleMemberCreateInput, PublicForumRoleMemberUncheckedCreateInput>
+    /**
+     * In case the PublicForumRoleMember was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PublicForumRoleMemberUpdateInput, PublicForumRoleMemberUncheckedUpdateInput>
+  }
+
+  /**
+   * PublicForumRoleMember delete
+   */
+  export type PublicForumRoleMemberDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+    /**
+     * Filter which PublicForumRoleMember to delete.
+     */
+    where: PublicForumRoleMemberWhereUniqueInput
+  }
+
+  /**
+   * PublicForumRoleMember deleteMany
+   */
+  export type PublicForumRoleMemberDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PublicForumRoleMembers to delete
+     */
+    where?: PublicForumRoleMemberWhereInput
+    /**
+     * Limit how many PublicForumRoleMembers to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PublicForumRoleMember without action
+   */
+  export type PublicForumRoleMemberDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumRoleMember
+     */
+    select?: PublicForumRoleMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumRoleMember
+     */
+    omit?: PublicForumRoleMemberOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PublicForumImportRecord
+   */
+
+  export type AggregatePublicForumImportRecord = {
+    _count: PublicForumImportRecordCountAggregateOutputType | null
+    _min: PublicForumImportRecordMinAggregateOutputType | null
+    _max: PublicForumImportRecordMaxAggregateOutputType | null
+  }
+
+  export type PublicForumImportRecordMinAggregateOutputType = {
+    entityType: string | null
+    sourceId: string | null
+    targetId: string | null
+    sourceHash: string | null
+    targetHash: string | null
+    createdAt: Date | null
+  }
+
+  export type PublicForumImportRecordMaxAggregateOutputType = {
+    entityType: string | null
+    sourceId: string | null
+    targetId: string | null
+    sourceHash: string | null
+    targetHash: string | null
+    createdAt: Date | null
+  }
+
+  export type PublicForumImportRecordCountAggregateOutputType = {
+    entityType: number
+    sourceId: number
+    targetId: number
+    sourceHash: number
+    targetHash: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PublicForumImportRecordMinAggregateInputType = {
+    entityType?: true
+    sourceId?: true
+    targetId?: true
+    sourceHash?: true
+    targetHash?: true
+    createdAt?: true
+  }
+
+  export type PublicForumImportRecordMaxAggregateInputType = {
+    entityType?: true
+    sourceId?: true
+    targetId?: true
+    sourceHash?: true
+    targetHash?: true
+    createdAt?: true
+  }
+
+  export type PublicForumImportRecordCountAggregateInputType = {
+    entityType?: true
+    sourceId?: true
+    targetId?: true
+    sourceHash?: true
+    targetHash?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PublicForumImportRecordAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PublicForumImportRecord to aggregate.
+     */
+    where?: PublicForumImportRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumImportRecords to fetch.
+     */
+    orderBy?: PublicForumImportRecordOrderByWithRelationInput | PublicForumImportRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PublicForumImportRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumImportRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumImportRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PublicForumImportRecords
+    **/
+    _count?: true | PublicForumImportRecordCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PublicForumImportRecordMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PublicForumImportRecordMaxAggregateInputType
+  }
+
+  export type GetPublicForumImportRecordAggregateType<T extends PublicForumImportRecordAggregateArgs> = {
+        [P in keyof T & keyof AggregatePublicForumImportRecord]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePublicForumImportRecord[P]>
+      : GetScalarType<T[P], AggregatePublicForumImportRecord[P]>
+  }
+
+
+
+
+  export type PublicForumImportRecordGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PublicForumImportRecordWhereInput
+    orderBy?: PublicForumImportRecordOrderByWithAggregationInput | PublicForumImportRecordOrderByWithAggregationInput[]
+    by: PublicForumImportRecordScalarFieldEnum[] | PublicForumImportRecordScalarFieldEnum
+    having?: PublicForumImportRecordScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PublicForumImportRecordCountAggregateInputType | true
+    _min?: PublicForumImportRecordMinAggregateInputType
+    _max?: PublicForumImportRecordMaxAggregateInputType
+  }
+
+  export type PublicForumImportRecordGroupByOutputType = {
+    entityType: string
+    sourceId: string
+    targetId: string
+    sourceHash: string
+    targetHash: string
+    createdAt: Date
+    _count: PublicForumImportRecordCountAggregateOutputType | null
+    _min: PublicForumImportRecordMinAggregateOutputType | null
+    _max: PublicForumImportRecordMaxAggregateOutputType | null
+  }
+
+  type GetPublicForumImportRecordGroupByPayload<T extends PublicForumImportRecordGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PublicForumImportRecordGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PublicForumImportRecordGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PublicForumImportRecordGroupByOutputType[P]>
+            : GetScalarType<T[P], PublicForumImportRecordGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PublicForumImportRecordSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    entityType?: boolean
+    sourceId?: boolean
+    targetId?: boolean
+    sourceHash?: boolean
+    targetHash?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["publicForumImportRecord"]>
+
+  export type PublicForumImportRecordSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    entityType?: boolean
+    sourceId?: boolean
+    targetId?: boolean
+    sourceHash?: boolean
+    targetHash?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["publicForumImportRecord"]>
+
+  export type PublicForumImportRecordSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    entityType?: boolean
+    sourceId?: boolean
+    targetId?: boolean
+    sourceHash?: boolean
+    targetHash?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["publicForumImportRecord"]>
+
+  export type PublicForumImportRecordSelectScalar = {
+    entityType?: boolean
+    sourceId?: boolean
+    targetId?: boolean
+    sourceHash?: boolean
+    targetHash?: boolean
+    createdAt?: boolean
+  }
+
+  export type PublicForumImportRecordOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"entityType" | "sourceId" | "targetId" | "sourceHash" | "targetHash" | "createdAt", ExtArgs["result"]["publicForumImportRecord"]>
+
+  export type $PublicForumImportRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PublicForumImportRecord"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      entityType: string
+      sourceId: string
+      targetId: string
+      sourceHash: string
+      targetHash: string
+      createdAt: Date
+    }, ExtArgs["result"]["publicForumImportRecord"]>
+    composites: {}
+  }
+
+  type PublicForumImportRecordGetPayload<S extends boolean | null | undefined | PublicForumImportRecordDefaultArgs> = $Result.GetResult<Prisma.$PublicForumImportRecordPayload, S>
+
+  type PublicForumImportRecordCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PublicForumImportRecordFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PublicForumImportRecordCountAggregateInputType | true
+    }
+
+  export interface PublicForumImportRecordDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PublicForumImportRecord'], meta: { name: 'PublicForumImportRecord' } }
+    /**
+     * Find zero or one PublicForumImportRecord that matches the filter.
+     * @param {PublicForumImportRecordFindUniqueArgs} args - Arguments to find a PublicForumImportRecord
+     * @example
+     * // Get one PublicForumImportRecord
+     * const publicForumImportRecord = await prisma.publicForumImportRecord.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PublicForumImportRecordFindUniqueArgs>(args: SelectSubset<T, PublicForumImportRecordFindUniqueArgs<ExtArgs>>): Prisma__PublicForumImportRecordClient<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PublicForumImportRecord that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PublicForumImportRecordFindUniqueOrThrowArgs} args - Arguments to find a PublicForumImportRecord
+     * @example
+     * // Get one PublicForumImportRecord
+     * const publicForumImportRecord = await prisma.publicForumImportRecord.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PublicForumImportRecordFindUniqueOrThrowArgs>(args: SelectSubset<T, PublicForumImportRecordFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PublicForumImportRecordClient<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PublicForumImportRecord that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumImportRecordFindFirstArgs} args - Arguments to find a PublicForumImportRecord
+     * @example
+     * // Get one PublicForumImportRecord
+     * const publicForumImportRecord = await prisma.publicForumImportRecord.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PublicForumImportRecordFindFirstArgs>(args?: SelectSubset<T, PublicForumImportRecordFindFirstArgs<ExtArgs>>): Prisma__PublicForumImportRecordClient<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PublicForumImportRecord that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumImportRecordFindFirstOrThrowArgs} args - Arguments to find a PublicForumImportRecord
+     * @example
+     * // Get one PublicForumImportRecord
+     * const publicForumImportRecord = await prisma.publicForumImportRecord.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PublicForumImportRecordFindFirstOrThrowArgs>(args?: SelectSubset<T, PublicForumImportRecordFindFirstOrThrowArgs<ExtArgs>>): Prisma__PublicForumImportRecordClient<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PublicForumImportRecords that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumImportRecordFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PublicForumImportRecords
+     * const publicForumImportRecords = await prisma.publicForumImportRecord.findMany()
+     * 
+     * // Get first 10 PublicForumImportRecords
+     * const publicForumImportRecords = await prisma.publicForumImportRecord.findMany({ take: 10 })
+     * 
+     * // Only select the `entityType`
+     * const publicForumImportRecordWithEntityTypeOnly = await prisma.publicForumImportRecord.findMany({ select: { entityType: true } })
+     * 
+     */
+    findMany<T extends PublicForumImportRecordFindManyArgs>(args?: SelectSubset<T, PublicForumImportRecordFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PublicForumImportRecord.
+     * @param {PublicForumImportRecordCreateArgs} args - Arguments to create a PublicForumImportRecord.
+     * @example
+     * // Create one PublicForumImportRecord
+     * const PublicForumImportRecord = await prisma.publicForumImportRecord.create({
+     *   data: {
+     *     // ... data to create a PublicForumImportRecord
+     *   }
+     * })
+     * 
+     */
+    create<T extends PublicForumImportRecordCreateArgs>(args: SelectSubset<T, PublicForumImportRecordCreateArgs<ExtArgs>>): Prisma__PublicForumImportRecordClient<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PublicForumImportRecords.
+     * @param {PublicForumImportRecordCreateManyArgs} args - Arguments to create many PublicForumImportRecords.
+     * @example
+     * // Create many PublicForumImportRecords
+     * const publicForumImportRecord = await prisma.publicForumImportRecord.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PublicForumImportRecordCreateManyArgs>(args?: SelectSubset<T, PublicForumImportRecordCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PublicForumImportRecords and returns the data saved in the database.
+     * @param {PublicForumImportRecordCreateManyAndReturnArgs} args - Arguments to create many PublicForumImportRecords.
+     * @example
+     * // Create many PublicForumImportRecords
+     * const publicForumImportRecord = await prisma.publicForumImportRecord.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PublicForumImportRecords and only return the `entityType`
+     * const publicForumImportRecordWithEntityTypeOnly = await prisma.publicForumImportRecord.createManyAndReturn({
+     *   select: { entityType: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PublicForumImportRecordCreateManyAndReturnArgs>(args?: SelectSubset<T, PublicForumImportRecordCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PublicForumImportRecord.
+     * @param {PublicForumImportRecordDeleteArgs} args - Arguments to delete one PublicForumImportRecord.
+     * @example
+     * // Delete one PublicForumImportRecord
+     * const PublicForumImportRecord = await prisma.publicForumImportRecord.delete({
+     *   where: {
+     *     // ... filter to delete one PublicForumImportRecord
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PublicForumImportRecordDeleteArgs>(args: SelectSubset<T, PublicForumImportRecordDeleteArgs<ExtArgs>>): Prisma__PublicForumImportRecordClient<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PublicForumImportRecord.
+     * @param {PublicForumImportRecordUpdateArgs} args - Arguments to update one PublicForumImportRecord.
+     * @example
+     * // Update one PublicForumImportRecord
+     * const publicForumImportRecord = await prisma.publicForumImportRecord.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PublicForumImportRecordUpdateArgs>(args: SelectSubset<T, PublicForumImportRecordUpdateArgs<ExtArgs>>): Prisma__PublicForumImportRecordClient<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PublicForumImportRecords.
+     * @param {PublicForumImportRecordDeleteManyArgs} args - Arguments to filter PublicForumImportRecords to delete.
+     * @example
+     * // Delete a few PublicForumImportRecords
+     * const { count } = await prisma.publicForumImportRecord.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PublicForumImportRecordDeleteManyArgs>(args?: SelectSubset<T, PublicForumImportRecordDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PublicForumImportRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumImportRecordUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PublicForumImportRecords
+     * const publicForumImportRecord = await prisma.publicForumImportRecord.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PublicForumImportRecordUpdateManyArgs>(args: SelectSubset<T, PublicForumImportRecordUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PublicForumImportRecords and returns the data updated in the database.
+     * @param {PublicForumImportRecordUpdateManyAndReturnArgs} args - Arguments to update many PublicForumImportRecords.
+     * @example
+     * // Update many PublicForumImportRecords
+     * const publicForumImportRecord = await prisma.publicForumImportRecord.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PublicForumImportRecords and only return the `entityType`
+     * const publicForumImportRecordWithEntityTypeOnly = await prisma.publicForumImportRecord.updateManyAndReturn({
+     *   select: { entityType: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PublicForumImportRecordUpdateManyAndReturnArgs>(args: SelectSubset<T, PublicForumImportRecordUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PublicForumImportRecord.
+     * @param {PublicForumImportRecordUpsertArgs} args - Arguments to update or create a PublicForumImportRecord.
+     * @example
+     * // Update or create a PublicForumImportRecord
+     * const publicForumImportRecord = await prisma.publicForumImportRecord.upsert({
+     *   create: {
+     *     // ... data to create a PublicForumImportRecord
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PublicForumImportRecord we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PublicForumImportRecordUpsertArgs>(args: SelectSubset<T, PublicForumImportRecordUpsertArgs<ExtArgs>>): Prisma__PublicForumImportRecordClient<$Result.GetResult<Prisma.$PublicForumImportRecordPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PublicForumImportRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumImportRecordCountArgs} args - Arguments to filter PublicForumImportRecords to count.
+     * @example
+     * // Count the number of PublicForumImportRecords
+     * const count = await prisma.publicForumImportRecord.count({
+     *   where: {
+     *     // ... the filter for the PublicForumImportRecords we want to count
+     *   }
+     * })
+    **/
+    count<T extends PublicForumImportRecordCountArgs>(
+      args?: Subset<T, PublicForumImportRecordCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PublicForumImportRecordCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PublicForumImportRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumImportRecordAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PublicForumImportRecordAggregateArgs>(args: Subset<T, PublicForumImportRecordAggregateArgs>): Prisma.PrismaPromise<GetPublicForumImportRecordAggregateType<T>>
+
+    /**
+     * Group by PublicForumImportRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PublicForumImportRecordGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PublicForumImportRecordGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PublicForumImportRecordGroupByArgs['orderBy'] }
+        : { orderBy?: PublicForumImportRecordGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PublicForumImportRecordGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPublicForumImportRecordGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PublicForumImportRecord model
+   */
+  readonly fields: PublicForumImportRecordFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PublicForumImportRecord.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PublicForumImportRecordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PublicForumImportRecord model
+   */
+  interface PublicForumImportRecordFieldRefs {
+    readonly entityType: FieldRef<"PublicForumImportRecord", 'String'>
+    readonly sourceId: FieldRef<"PublicForumImportRecord", 'String'>
+    readonly targetId: FieldRef<"PublicForumImportRecord", 'String'>
+    readonly sourceHash: FieldRef<"PublicForumImportRecord", 'String'>
+    readonly targetHash: FieldRef<"PublicForumImportRecord", 'String'>
+    readonly createdAt: FieldRef<"PublicForumImportRecord", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PublicForumImportRecord findUnique
+   */
+  export type PublicForumImportRecordFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumImportRecord to fetch.
+     */
+    where: PublicForumImportRecordWhereUniqueInput
+  }
+
+  /**
+   * PublicForumImportRecord findUniqueOrThrow
+   */
+  export type PublicForumImportRecordFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumImportRecord to fetch.
+     */
+    where: PublicForumImportRecordWhereUniqueInput
+  }
+
+  /**
+   * PublicForumImportRecord findFirst
+   */
+  export type PublicForumImportRecordFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumImportRecord to fetch.
+     */
+    where?: PublicForumImportRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumImportRecords to fetch.
+     */
+    orderBy?: PublicForumImportRecordOrderByWithRelationInput | PublicForumImportRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PublicForumImportRecords.
+     */
+    cursor?: PublicForumImportRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumImportRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumImportRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PublicForumImportRecords.
+     */
+    distinct?: PublicForumImportRecordScalarFieldEnum | PublicForumImportRecordScalarFieldEnum[]
+  }
+
+  /**
+   * PublicForumImportRecord findFirstOrThrow
+   */
+  export type PublicForumImportRecordFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumImportRecord to fetch.
+     */
+    where?: PublicForumImportRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumImportRecords to fetch.
+     */
+    orderBy?: PublicForumImportRecordOrderByWithRelationInput | PublicForumImportRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PublicForumImportRecords.
+     */
+    cursor?: PublicForumImportRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumImportRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumImportRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PublicForumImportRecords.
+     */
+    distinct?: PublicForumImportRecordScalarFieldEnum | PublicForumImportRecordScalarFieldEnum[]
+  }
+
+  /**
+   * PublicForumImportRecord findMany
+   */
+  export type PublicForumImportRecordFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * Filter, which PublicForumImportRecords to fetch.
+     */
+    where?: PublicForumImportRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PublicForumImportRecords to fetch.
+     */
+    orderBy?: PublicForumImportRecordOrderByWithRelationInput | PublicForumImportRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PublicForumImportRecords.
+     */
+    cursor?: PublicForumImportRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PublicForumImportRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PublicForumImportRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PublicForumImportRecords.
+     */
+    distinct?: PublicForumImportRecordScalarFieldEnum | PublicForumImportRecordScalarFieldEnum[]
+  }
+
+  /**
+   * PublicForumImportRecord create
+   */
+  export type PublicForumImportRecordCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PublicForumImportRecord.
+     */
+    data: XOR<PublicForumImportRecordCreateInput, PublicForumImportRecordUncheckedCreateInput>
+  }
+
+  /**
+   * PublicForumImportRecord createMany
+   */
+  export type PublicForumImportRecordCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PublicForumImportRecords.
+     */
+    data: PublicForumImportRecordCreateManyInput | PublicForumImportRecordCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PublicForumImportRecord createManyAndReturn
+   */
+  export type PublicForumImportRecordCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * The data used to create many PublicForumImportRecords.
+     */
+    data: PublicForumImportRecordCreateManyInput | PublicForumImportRecordCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PublicForumImportRecord update
+   */
+  export type PublicForumImportRecordUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PublicForumImportRecord.
+     */
+    data: XOR<PublicForumImportRecordUpdateInput, PublicForumImportRecordUncheckedUpdateInput>
+    /**
+     * Choose, which PublicForumImportRecord to update.
+     */
+    where: PublicForumImportRecordWhereUniqueInput
+  }
+
+  /**
+   * PublicForumImportRecord updateMany
+   */
+  export type PublicForumImportRecordUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PublicForumImportRecords.
+     */
+    data: XOR<PublicForumImportRecordUpdateManyMutationInput, PublicForumImportRecordUncheckedUpdateManyInput>
+    /**
+     * Filter which PublicForumImportRecords to update
+     */
+    where?: PublicForumImportRecordWhereInput
+    /**
+     * Limit how many PublicForumImportRecords to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PublicForumImportRecord updateManyAndReturn
+   */
+  export type PublicForumImportRecordUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * The data used to update PublicForumImportRecords.
+     */
+    data: XOR<PublicForumImportRecordUpdateManyMutationInput, PublicForumImportRecordUncheckedUpdateManyInput>
+    /**
+     * Filter which PublicForumImportRecords to update
+     */
+    where?: PublicForumImportRecordWhereInput
+    /**
+     * Limit how many PublicForumImportRecords to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PublicForumImportRecord upsert
+   */
+  export type PublicForumImportRecordUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PublicForumImportRecord to update in case it exists.
+     */
+    where: PublicForumImportRecordWhereUniqueInput
+    /**
+     * In case the PublicForumImportRecord found by the `where` argument doesn't exist, create a new PublicForumImportRecord with this data.
+     */
+    create: XOR<PublicForumImportRecordCreateInput, PublicForumImportRecordUncheckedCreateInput>
+    /**
+     * In case the PublicForumImportRecord was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PublicForumImportRecordUpdateInput, PublicForumImportRecordUncheckedUpdateInput>
+  }
+
+  /**
+   * PublicForumImportRecord delete
+   */
+  export type PublicForumImportRecordDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+    /**
+     * Filter which PublicForumImportRecord to delete.
+     */
+    where: PublicForumImportRecordWhereUniqueInput
+  }
+
+  /**
+   * PublicForumImportRecord deleteMany
+   */
+  export type PublicForumImportRecordDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PublicForumImportRecords to delete
+     */
+    where?: PublicForumImportRecordWhereInput
+    /**
+     * Limit how many PublicForumImportRecords to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PublicForumImportRecord without action
+   */
+  export type PublicForumImportRecordDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PublicForumImportRecord
+     */
+    select?: PublicForumImportRecordSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PublicForumImportRecord
+     */
+    omit?: PublicForumImportRecordOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -10577,12 +13911,55 @@ export namespace Prisma {
   export type TopicReadStateScalarFieldEnum = (typeof TopicReadStateScalarFieldEnum)[keyof typeof TopicReadStateScalarFieldEnum]
 
 
+  export const PublicForumCategoryScalarFieldEnum: {
+    topicId: 'topicId',
+    description: 'description',
+    displayAs: 'displayAs',
+    sortOrder: 'sortOrder',
+    readRoles: 'readRoles',
+    createRoles: 'createRoles',
+    replyRoles: 'replyRoles',
+    legacyId: 'legacyId',
+    legacySlug: 'legacySlug',
+    source: 'source'
+  };
+
+  export type PublicForumCategoryScalarFieldEnum = (typeof PublicForumCategoryScalarFieldEnum)[keyof typeof PublicForumCategoryScalarFieldEnum]
+
+
+  export const PublicForumRoleMemberScalarFieldEnum: {
+    roleName: 'roleName',
+    memberId: 'memberId'
+  };
+
+  export type PublicForumRoleMemberScalarFieldEnum = (typeof PublicForumRoleMemberScalarFieldEnum)[keyof typeof PublicForumRoleMemberScalarFieldEnum]
+
+
+  export const PublicForumImportRecordScalarFieldEnum: {
+    entityType: 'entityType',
+    sourceId: 'sourceId',
+    targetId: 'targetId',
+    sourceHash: 'sourceHash',
+    targetHash: 'targetHash',
+    createdAt: 'createdAt'
+  };
+
+  export type PublicForumImportRecordScalarFieldEnum = (typeof PublicForumImportRecordScalarFieldEnum)[keyof typeof PublicForumImportRecordScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const QueryMode: {
@@ -10599,6 +13976,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   /**
@@ -10645,14 +14031,14 @@ export namespace Prisma {
    * Reference to a field of type 'PostReactionType'
    */
   export type EnumPostReactionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PostReactionType'>
-
+    
 
 
   /**
    * Reference to a field of type 'PostReactionType[]'
    */
   export type ListEnumPostReactionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PostReactionType[]'>
-
+    
 
 
   /**
@@ -10666,6 +14052,20 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -11213,6 +14613,182 @@ export namespace Prisma {
     memberId?: StringWithAggregatesFilter<"TopicReadState"> | string
     lastReadAt?: DateTimeWithAggregatesFilter<"TopicReadState"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"TopicReadState"> | Date | string
+  }
+
+  export type PublicForumCategoryWhereInput = {
+    AND?: PublicForumCategoryWhereInput | PublicForumCategoryWhereInput[]
+    OR?: PublicForumCategoryWhereInput[]
+    NOT?: PublicForumCategoryWhereInput | PublicForumCategoryWhereInput[]
+    topicId?: StringFilter<"PublicForumCategory"> | string
+    description?: StringFilter<"PublicForumCategory"> | string
+    displayAs?: StringFilter<"PublicForumCategory"> | string
+    sortOrder?: IntFilter<"PublicForumCategory"> | number
+    readRoles?: StringNullableListFilter<"PublicForumCategory">
+    createRoles?: StringNullableListFilter<"PublicForumCategory">
+    replyRoles?: StringNullableListFilter<"PublicForumCategory">
+    legacyId?: IntFilter<"PublicForumCategory"> | number
+    legacySlug?: StringFilter<"PublicForumCategory"> | string
+    source?: JsonFilter<"PublicForumCategory">
+  }
+
+  export type PublicForumCategoryOrderByWithRelationInput = {
+    topicId?: SortOrder
+    description?: SortOrder
+    displayAs?: SortOrder
+    sortOrder?: SortOrder
+    readRoles?: SortOrder
+    createRoles?: SortOrder
+    replyRoles?: SortOrder
+    legacyId?: SortOrder
+    legacySlug?: SortOrder
+    source?: SortOrder
+  }
+
+  export type PublicForumCategoryWhereUniqueInput = Prisma.AtLeast<{
+    topicId?: string
+    legacyId?: number
+    AND?: PublicForumCategoryWhereInput | PublicForumCategoryWhereInput[]
+    OR?: PublicForumCategoryWhereInput[]
+    NOT?: PublicForumCategoryWhereInput | PublicForumCategoryWhereInput[]
+    description?: StringFilter<"PublicForumCategory"> | string
+    displayAs?: StringFilter<"PublicForumCategory"> | string
+    sortOrder?: IntFilter<"PublicForumCategory"> | number
+    readRoles?: StringNullableListFilter<"PublicForumCategory">
+    createRoles?: StringNullableListFilter<"PublicForumCategory">
+    replyRoles?: StringNullableListFilter<"PublicForumCategory">
+    legacySlug?: StringFilter<"PublicForumCategory"> | string
+    source?: JsonFilter<"PublicForumCategory">
+  }, "topicId" | "legacyId">
+
+  export type PublicForumCategoryOrderByWithAggregationInput = {
+    topicId?: SortOrder
+    description?: SortOrder
+    displayAs?: SortOrder
+    sortOrder?: SortOrder
+    readRoles?: SortOrder
+    createRoles?: SortOrder
+    replyRoles?: SortOrder
+    legacyId?: SortOrder
+    legacySlug?: SortOrder
+    source?: SortOrder
+    _count?: PublicForumCategoryCountOrderByAggregateInput
+    _avg?: PublicForumCategoryAvgOrderByAggregateInput
+    _max?: PublicForumCategoryMaxOrderByAggregateInput
+    _min?: PublicForumCategoryMinOrderByAggregateInput
+    _sum?: PublicForumCategorySumOrderByAggregateInput
+  }
+
+  export type PublicForumCategoryScalarWhereWithAggregatesInput = {
+    AND?: PublicForumCategoryScalarWhereWithAggregatesInput | PublicForumCategoryScalarWhereWithAggregatesInput[]
+    OR?: PublicForumCategoryScalarWhereWithAggregatesInput[]
+    NOT?: PublicForumCategoryScalarWhereWithAggregatesInput | PublicForumCategoryScalarWhereWithAggregatesInput[]
+    topicId?: StringWithAggregatesFilter<"PublicForumCategory"> | string
+    description?: StringWithAggregatesFilter<"PublicForumCategory"> | string
+    displayAs?: StringWithAggregatesFilter<"PublicForumCategory"> | string
+    sortOrder?: IntWithAggregatesFilter<"PublicForumCategory"> | number
+    readRoles?: StringNullableListFilter<"PublicForumCategory">
+    createRoles?: StringNullableListFilter<"PublicForumCategory">
+    replyRoles?: StringNullableListFilter<"PublicForumCategory">
+    legacyId?: IntWithAggregatesFilter<"PublicForumCategory"> | number
+    legacySlug?: StringWithAggregatesFilter<"PublicForumCategory"> | string
+    source?: JsonWithAggregatesFilter<"PublicForumCategory">
+  }
+
+  export type PublicForumRoleMemberWhereInput = {
+    AND?: PublicForumRoleMemberWhereInput | PublicForumRoleMemberWhereInput[]
+    OR?: PublicForumRoleMemberWhereInput[]
+    NOT?: PublicForumRoleMemberWhereInput | PublicForumRoleMemberWhereInput[]
+    roleName?: StringFilter<"PublicForumRoleMember"> | string
+    memberId?: StringFilter<"PublicForumRoleMember"> | string
+  }
+
+  export type PublicForumRoleMemberOrderByWithRelationInput = {
+    roleName?: SortOrder
+    memberId?: SortOrder
+  }
+
+  export type PublicForumRoleMemberWhereUniqueInput = Prisma.AtLeast<{
+    roleName_memberId?: PublicForumRoleMemberRoleNameMemberIdCompoundUniqueInput
+    AND?: PublicForumRoleMemberWhereInput | PublicForumRoleMemberWhereInput[]
+    OR?: PublicForumRoleMemberWhereInput[]
+    NOT?: PublicForumRoleMemberWhereInput | PublicForumRoleMemberWhereInput[]
+    roleName?: StringFilter<"PublicForumRoleMember"> | string
+    memberId?: StringFilter<"PublicForumRoleMember"> | string
+  }, "roleName_memberId">
+
+  export type PublicForumRoleMemberOrderByWithAggregationInput = {
+    roleName?: SortOrder
+    memberId?: SortOrder
+    _count?: PublicForumRoleMemberCountOrderByAggregateInput
+    _max?: PublicForumRoleMemberMaxOrderByAggregateInput
+    _min?: PublicForumRoleMemberMinOrderByAggregateInput
+  }
+
+  export type PublicForumRoleMemberScalarWhereWithAggregatesInput = {
+    AND?: PublicForumRoleMemberScalarWhereWithAggregatesInput | PublicForumRoleMemberScalarWhereWithAggregatesInput[]
+    OR?: PublicForumRoleMemberScalarWhereWithAggregatesInput[]
+    NOT?: PublicForumRoleMemberScalarWhereWithAggregatesInput | PublicForumRoleMemberScalarWhereWithAggregatesInput[]
+    roleName?: StringWithAggregatesFilter<"PublicForumRoleMember"> | string
+    memberId?: StringWithAggregatesFilter<"PublicForumRoleMember"> | string
+  }
+
+  export type PublicForumImportRecordWhereInput = {
+    AND?: PublicForumImportRecordWhereInput | PublicForumImportRecordWhereInput[]
+    OR?: PublicForumImportRecordWhereInput[]
+    NOT?: PublicForumImportRecordWhereInput | PublicForumImportRecordWhereInput[]
+    entityType?: StringFilter<"PublicForumImportRecord"> | string
+    sourceId?: StringFilter<"PublicForumImportRecord"> | string
+    targetId?: StringFilter<"PublicForumImportRecord"> | string
+    sourceHash?: StringFilter<"PublicForumImportRecord"> | string
+    targetHash?: StringFilter<"PublicForumImportRecord"> | string
+    createdAt?: DateTimeFilter<"PublicForumImportRecord"> | Date | string
+  }
+
+  export type PublicForumImportRecordOrderByWithRelationInput = {
+    entityType?: SortOrder
+    sourceId?: SortOrder
+    targetId?: SortOrder
+    sourceHash?: SortOrder
+    targetHash?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PublicForumImportRecordWhereUniqueInput = Prisma.AtLeast<{
+    entityType_targetId?: PublicForumImportRecordEntityTypeTargetIdCompoundUniqueInput
+    entityType_sourceId?: PublicForumImportRecordEntityTypeSourceIdCompoundUniqueInput
+    AND?: PublicForumImportRecordWhereInput | PublicForumImportRecordWhereInput[]
+    OR?: PublicForumImportRecordWhereInput[]
+    NOT?: PublicForumImportRecordWhereInput | PublicForumImportRecordWhereInput[]
+    entityType?: StringFilter<"PublicForumImportRecord"> | string
+    sourceId?: StringFilter<"PublicForumImportRecord"> | string
+    targetId?: StringFilter<"PublicForumImportRecord"> | string
+    sourceHash?: StringFilter<"PublicForumImportRecord"> | string
+    targetHash?: StringFilter<"PublicForumImportRecord"> | string
+    createdAt?: DateTimeFilter<"PublicForumImportRecord"> | Date | string
+  }, "entityType_sourceId" | "entityType_targetId">
+
+  export type PublicForumImportRecordOrderByWithAggregationInput = {
+    entityType?: SortOrder
+    sourceId?: SortOrder
+    targetId?: SortOrder
+    sourceHash?: SortOrder
+    targetHash?: SortOrder
+    createdAt?: SortOrder
+    _count?: PublicForumImportRecordCountOrderByAggregateInput
+    _max?: PublicForumImportRecordMaxOrderByAggregateInput
+    _min?: PublicForumImportRecordMinOrderByAggregateInput
+  }
+
+  export type PublicForumImportRecordScalarWhereWithAggregatesInput = {
+    AND?: PublicForumImportRecordScalarWhereWithAggregatesInput | PublicForumImportRecordScalarWhereWithAggregatesInput[]
+    OR?: PublicForumImportRecordScalarWhereWithAggregatesInput[]
+    NOT?: PublicForumImportRecordScalarWhereWithAggregatesInput | PublicForumImportRecordScalarWhereWithAggregatesInput[]
+    entityType?: StringWithAggregatesFilter<"PublicForumImportRecord"> | string
+    sourceId?: StringWithAggregatesFilter<"PublicForumImportRecord"> | string
+    targetId?: StringWithAggregatesFilter<"PublicForumImportRecord"> | string
+    sourceHash?: StringWithAggregatesFilter<"PublicForumImportRecord"> | string
+    targetHash?: StringWithAggregatesFilter<"PublicForumImportRecord"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"PublicForumImportRecord"> | Date | string
   }
 
   export type TopicCreateInput = {
@@ -11775,6 +15351,195 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PublicForumCategoryCreateInput = {
+    topicId: string
+    description?: string
+    displayAs: string
+    sortOrder: number
+    readRoles?: PublicForumCategoryCreatereadRolesInput | string[]
+    createRoles?: PublicForumCategoryCreatecreateRolesInput | string[]
+    replyRoles?: PublicForumCategoryCreatereplyRolesInput | string[]
+    legacyId: number
+    legacySlug: string
+    source: JsonNullValueInput | InputJsonValue
+  }
+
+  export type PublicForumCategoryUncheckedCreateInput = {
+    topicId: string
+    description?: string
+    displayAs: string
+    sortOrder: number
+    readRoles?: PublicForumCategoryCreatereadRolesInput | string[]
+    createRoles?: PublicForumCategoryCreatecreateRolesInput | string[]
+    replyRoles?: PublicForumCategoryCreatereplyRolesInput | string[]
+    legacyId: number
+    legacySlug: string
+    source: JsonNullValueInput | InputJsonValue
+  }
+
+  export type PublicForumCategoryUpdateInput = {
+    topicId?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    displayAs?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    readRoles?: PublicForumCategoryUpdatereadRolesInput | string[]
+    createRoles?: PublicForumCategoryUpdatecreateRolesInput | string[]
+    replyRoles?: PublicForumCategoryUpdatereplyRolesInput | string[]
+    legacyId?: IntFieldUpdateOperationsInput | number
+    legacySlug?: StringFieldUpdateOperationsInput | string
+    source?: JsonNullValueInput | InputJsonValue
+  }
+
+  export type PublicForumCategoryUncheckedUpdateInput = {
+    topicId?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    displayAs?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    readRoles?: PublicForumCategoryUpdatereadRolesInput | string[]
+    createRoles?: PublicForumCategoryUpdatecreateRolesInput | string[]
+    replyRoles?: PublicForumCategoryUpdatereplyRolesInput | string[]
+    legacyId?: IntFieldUpdateOperationsInput | number
+    legacySlug?: StringFieldUpdateOperationsInput | string
+    source?: JsonNullValueInput | InputJsonValue
+  }
+
+  export type PublicForumCategoryCreateManyInput = {
+    topicId: string
+    description?: string
+    displayAs: string
+    sortOrder: number
+    readRoles?: PublicForumCategoryCreatereadRolesInput | string[]
+    createRoles?: PublicForumCategoryCreatecreateRolesInput | string[]
+    replyRoles?: PublicForumCategoryCreatereplyRolesInput | string[]
+    legacyId: number
+    legacySlug: string
+    source: JsonNullValueInput | InputJsonValue
+  }
+
+  export type PublicForumCategoryUpdateManyMutationInput = {
+    topicId?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    displayAs?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    readRoles?: PublicForumCategoryUpdatereadRolesInput | string[]
+    createRoles?: PublicForumCategoryUpdatecreateRolesInput | string[]
+    replyRoles?: PublicForumCategoryUpdatereplyRolesInput | string[]
+    legacyId?: IntFieldUpdateOperationsInput | number
+    legacySlug?: StringFieldUpdateOperationsInput | string
+    source?: JsonNullValueInput | InputJsonValue
+  }
+
+  export type PublicForumCategoryUncheckedUpdateManyInput = {
+    topicId?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    displayAs?: StringFieldUpdateOperationsInput | string
+    sortOrder?: IntFieldUpdateOperationsInput | number
+    readRoles?: PublicForumCategoryUpdatereadRolesInput | string[]
+    createRoles?: PublicForumCategoryUpdatecreateRolesInput | string[]
+    replyRoles?: PublicForumCategoryUpdatereplyRolesInput | string[]
+    legacyId?: IntFieldUpdateOperationsInput | number
+    legacySlug?: StringFieldUpdateOperationsInput | string
+    source?: JsonNullValueInput | InputJsonValue
+  }
+
+  export type PublicForumRoleMemberCreateInput = {
+    roleName: string
+    memberId: string
+  }
+
+  export type PublicForumRoleMemberUncheckedCreateInput = {
+    roleName: string
+    memberId: string
+  }
+
+  export type PublicForumRoleMemberUpdateInput = {
+    roleName?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PublicForumRoleMemberUncheckedUpdateInput = {
+    roleName?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PublicForumRoleMemberCreateManyInput = {
+    roleName: string
+    memberId: string
+  }
+
+  export type PublicForumRoleMemberUpdateManyMutationInput = {
+    roleName?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PublicForumRoleMemberUncheckedUpdateManyInput = {
+    roleName?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PublicForumImportRecordCreateInput = {
+    entityType: string
+    sourceId: string
+    targetId: string
+    sourceHash: string
+    targetHash: string
+    createdAt?: Date | string
+  }
+
+  export type PublicForumImportRecordUncheckedCreateInput = {
+    entityType: string
+    sourceId: string
+    targetId: string
+    sourceHash: string
+    targetHash: string
+    createdAt?: Date | string
+  }
+
+  export type PublicForumImportRecordUpdateInput = {
+    entityType?: StringFieldUpdateOperationsInput | string
+    sourceId?: StringFieldUpdateOperationsInput | string
+    targetId?: StringFieldUpdateOperationsInput | string
+    sourceHash?: StringFieldUpdateOperationsInput | string
+    targetHash?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PublicForumImportRecordUncheckedUpdateInput = {
+    entityType?: StringFieldUpdateOperationsInput | string
+    sourceId?: StringFieldUpdateOperationsInput | string
+    targetId?: StringFieldUpdateOperationsInput | string
+    sourceHash?: StringFieldUpdateOperationsInput | string
+    targetHash?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PublicForumImportRecordCreateManyInput = {
+    entityType: string
+    sourceId: string
+    targetId: string
+    sourceHash: string
+    targetHash: string
+    createdAt?: Date | string
+  }
+
+  export type PublicForumImportRecordUpdateManyMutationInput = {
+    entityType?: StringFieldUpdateOperationsInput | string
+    sourceId?: StringFieldUpdateOperationsInput | string
+    targetId?: StringFieldUpdateOperationsInput | string
+    sourceHash?: StringFieldUpdateOperationsInput | string
+    targetHash?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PublicForumImportRecordUncheckedUpdateManyInput = {
+    entityType?: StringFieldUpdateOperationsInput | string
+    sourceId?: StringFieldUpdateOperationsInput | string
+    targetId?: StringFieldUpdateOperationsInput | string
+    sourceHash?: StringFieldUpdateOperationsInput | string
+    targetHash?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -12287,6 +16052,161 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type PublicForumCategoryCountOrderByAggregateInput = {
+    topicId?: SortOrder
+    description?: SortOrder
+    displayAs?: SortOrder
+    sortOrder?: SortOrder
+    readRoles?: SortOrder
+    createRoles?: SortOrder
+    replyRoles?: SortOrder
+    legacyId?: SortOrder
+    legacySlug?: SortOrder
+    source?: SortOrder
+  }
+
+  export type PublicForumCategoryAvgOrderByAggregateInput = {
+    sortOrder?: SortOrder
+    legacyId?: SortOrder
+  }
+
+  export type PublicForumCategoryMaxOrderByAggregateInput = {
+    topicId?: SortOrder
+    description?: SortOrder
+    displayAs?: SortOrder
+    sortOrder?: SortOrder
+    legacyId?: SortOrder
+    legacySlug?: SortOrder
+  }
+
+  export type PublicForumCategoryMinOrderByAggregateInput = {
+    topicId?: SortOrder
+    description?: SortOrder
+    displayAs?: SortOrder
+    sortOrder?: SortOrder
+    legacyId?: SortOrder
+    legacySlug?: SortOrder
+  }
+
+  export type PublicForumCategorySumOrderByAggregateInput = {
+    sortOrder?: SortOrder
+    legacyId?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+
+  export type PublicForumRoleMemberRoleNameMemberIdCompoundUniqueInput = {
+    roleName: string
+    memberId: string
+  }
+
+  export type PublicForumRoleMemberCountOrderByAggregateInput = {
+    roleName?: SortOrder
+    memberId?: SortOrder
+  }
+
+  export type PublicForumRoleMemberMaxOrderByAggregateInput = {
+    roleName?: SortOrder
+    memberId?: SortOrder
+  }
+
+  export type PublicForumRoleMemberMinOrderByAggregateInput = {
+    roleName?: SortOrder
+    memberId?: SortOrder
+  }
+
+  export type PublicForumImportRecordEntityTypeTargetIdCompoundUniqueInput = {
+    entityType: string
+    targetId: string
+  }
+
+  export type PublicForumImportRecordEntityTypeSourceIdCompoundUniqueInput = {
+    entityType: string
+    sourceId: string
+  }
+
+  export type PublicForumImportRecordCountOrderByAggregateInput = {
+    entityType?: SortOrder
+    sourceId?: SortOrder
+    targetId?: SortOrder
+    sourceHash?: SortOrder
+    targetHash?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PublicForumImportRecordMaxOrderByAggregateInput = {
+    entityType?: SortOrder
+    sourceId?: SortOrder
+    targetId?: SortOrder
+    sourceHash?: SortOrder
+    targetHash?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PublicForumImportRecordMinOrderByAggregateInput = {
+    entityType?: SortOrder
+    sourceId?: SortOrder
+    targetId?: SortOrder
+    sourceHash?: SortOrder
+    targetHash?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type TopicCreateNestedOneWithoutChildTopicsInput = {
     create?: XOR<TopicCreateWithoutChildTopicsInput, TopicUncheckedCreateWithoutChildTopicsInput>
     connectOrCreate?: TopicCreateOrConnectWithoutChildTopicsInput
@@ -12713,6 +16633,33 @@ export namespace Prisma {
     update?: XOR<XOR<TopicUpdateToOneWithWhereWithoutReadStatesInput, TopicUpdateWithoutReadStatesInput>, TopicUncheckedUpdateWithoutReadStatesInput>
   }
 
+  export type PublicForumCategoryCreatereadRolesInput = {
+    set: string[]
+  }
+
+  export type PublicForumCategoryCreatecreateRolesInput = {
+    set: string[]
+  }
+
+  export type PublicForumCategoryCreatereplyRolesInput = {
+    set: string[]
+  }
+
+  export type PublicForumCategoryUpdatereadRolesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type PublicForumCategoryUpdatecreateRolesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type PublicForumCategoryUpdatereplyRolesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -12902,6 +16849,29 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type TopicCreateWithoutChildTopicsInput = {
