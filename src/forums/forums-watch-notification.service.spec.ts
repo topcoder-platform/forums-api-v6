@@ -110,6 +110,9 @@ function createService(templateId: string | null = 'template-id') {
         : undefined,
     ),
   };
+  const challengeWatchService = {
+    getWatcherMemberIds: jest.fn().mockResolvedValue([]),
+  };
   const service = new ForumsWatchNotificationService(
     db as any,
     memberDirectoryService as any,
@@ -119,9 +122,11 @@ function createService(templateId: string | null = 'template-id') {
     eventBusService as any,
     configService as any,
     challengeApiService as any,
+    challengeWatchService as any,
   );
 
   return {
+    challengeWatchService,
     accessPolicyService,
     challengeApiService,
     configService,
@@ -139,8 +144,99 @@ describe('ForumsWatchNotificationService', () => {
     jest.restoreAllMocks();
   });
 
+  it('notifies challenge-wide watchers of a new root topic, excluding its author and duplicates', async () => {
+    const {
+      challengeWatchService,
+      db,
+      memberDirectoryService,
+      eventBusService,
+      service,
+    } = createService();
+    db.topicWatch.findMany.mockResolvedValue([{ memberId: '2' }]);
+    challengeWatchService.getWatcherMemberIds.mockResolvedValue([
+      '1',
+      '2',
+      '3',
+    ]);
+    memberDirectoryService.getMembersByIds.mockResolvedValue([
+      { memberId: '2', email: 'two@example.com', handle: 'two' },
+      { memberId: '3', email: 'three@example.com', handle: 'three' },
+    ]);
+    await service.publishPostNotification({
+      topic: makeTopic({ challengeId: 'challenge-1' }),
+      post: makePost(),
+      restrictions: {
+        challengeId: 'challenge-1',
+        roleName: null,
+        hasRestrictionConflict: false,
+      },
+      operationName: 'createTopic',
+    });
+    expect(challengeWatchService.getWatcherMemberIds).toHaveBeenCalledWith(
+      'challenge-1',
+    );
+    expect(memberDirectoryService.getMembersByIds).toHaveBeenCalledWith([
+      '2',
+      '3',
+    ]);
+    expect(eventBusService.postEvent).toHaveBeenCalledWith(
+      'external.action.email',
+      expect.objectContaining({
+        recipients: ['two@example.com', 'three@example.com'],
+      }),
+    );
+  });
+
+  it('applies visibility and bans to challenge-wide watchers without topic watches', async () => {
+    const {
+      challengeWatchService,
+      db,
+      memberDirectoryService,
+      accessPolicyService,
+      moderationService,
+      eventBusService,
+      service,
+    } = createService();
+    db.topicWatch.findMany.mockResolvedValue([]);
+    challengeWatchService.getWatcherMemberIds.mockResolvedValue([
+      '2',
+      '3',
+      '4',
+    ]);
+    memberDirectoryService.getMembersByIds.mockResolvedValue(
+      ['2', '3', '4'].map((memberId) => ({
+        memberId,
+        email: `${memberId}@example.com`,
+        handle: memberId,
+      })),
+    );
+    moderationService.decideForTargetMemberBan.mockImplementation((memberId) =>
+      Promise.resolve({ allowed: memberId !== '3' }),
+    );
+    accessPolicyService.decideForRestrictionVisibility.mockImplementation(
+      (principal) => Promise.resolve({ allowed: principal.memberId !== '4' }),
+    );
+    await service.publishPostNotification({
+      topic: makeTopic({ challengeId: 'challenge-1', roleName: 'reviewer' }),
+      post: makePost(),
+      restrictions: {
+        challengeId: 'challenge-1',
+        roleName: 'reviewer',
+        hasRestrictionConflict: false,
+      },
+      operationName: 'createPost',
+    });
+    expect(eventBusService.postEvent).toHaveBeenCalledWith(
+      'external.action.email',
+      expect.objectContaining({
+        recipients: ['2@example.com'],
+      }),
+    );
+  });
+
   it('dedupes topic and ancestor watches into one recipient email event', async () => {
-    const { challengeApiService, db, eventBusService, service } = createService();
+    const { challengeApiService, db, eventBusService, service } =
+      createService();
     db.topicWatch.findMany.mockResolvedValue([
       { memberId: '2' },
       { memberId: '2' },
@@ -206,8 +302,12 @@ describe('ForumsWatchNotificationService', () => {
   });
 
   it('filters watched members who cannot view a restricted child topic', async () => {
-    const { accessPolicyService, challengeApiService, eventBusService, service } =
-      createService();
+    const {
+      accessPolicyService,
+      challengeApiService,
+      eventBusService,
+      service,
+    } = createService();
     accessPolicyService.decideForRestrictionVisibility.mockResolvedValue({
       allowed: false,
       reason: 'Required forum role is missing.',
@@ -439,7 +539,9 @@ describe('ForumsWatchNotificationService', () => {
     });
 
     expect(missingTemplate.db.topicClosure.findMany).not.toHaveBeenCalled();
-    expect(missingTemplate.challengeApiService.getChallengeTitle).not.toHaveBeenCalled();
+    expect(
+      missingTemplate.challengeApiService.getChallengeTitle,
+    ).not.toHaveBeenCalled();
     expect(missingTemplate.eventBusService.postEvent).not.toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining(

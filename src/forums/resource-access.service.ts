@@ -120,6 +120,39 @@ export class ResourceAccessService implements OnModuleDestroy {
   }
 
   /**
+   * Finds registrants and copilots who watch a challenge forum by default.
+   * Resource assignments are read at delivery time, so registration and copilot
+   * assignment take effect without requiring a forum visit or event consumer.
+   *
+   * @param challengeId Challenge whose default watchers are requested.
+   * @param memberId Optional member filter for the current-member watch endpoint.
+   * @returns Deduplicated member ids with a Submitter or Copilot resource role.
+   * @throws Prisma errors when a configured resource database lookup fails.
+   */
+  async getChallengeDefaultWatcherMemberIds(
+    challengeId: string,
+    memberId?: string,
+  ): Promise<string[]> {
+    const client = this.resolveClient();
+    if (!client) return [];
+
+    const resources = await client.resource.findMany({
+      where: {
+        challengeId,
+        ...(memberId ? { memberId } : {}),
+        resourceRole: {
+          OR: [
+            { nameLower: 'submitter' },
+            { nameLower: { contains: 'copilot' } },
+          ],
+        },
+      },
+      select: { memberId: true },
+    });
+    return Array.from(new Set(resources.map((resource) => resource.memberId)));
+  }
+
+  /**
    * Disconnects the resource Prisma client during Nest module shutdown.
    *
    * @returns A promise that resolves after the client disconnects or no-ops.

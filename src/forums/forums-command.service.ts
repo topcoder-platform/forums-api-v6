@@ -164,7 +164,7 @@ export class ForumsCommandService {
    * @param dto Topic metadata and starter-post content.
    * @param user Authenticated token payload for the acting member.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
-   * @returns The created topic command response and starter post after any child-topic notification attempt settles.
+   * @returns The created topic command response and starter post after any child-topic or challenge-topic notification attempt settles.
    * @throws UnauthorizedException when no authenticated command caller is present.
    * @throws BadRequestException when topic fields or parent linkage are invalid.
    * @throws ForbiddenException when shared policy, moderation bans, or parent lock state deny topic creation.
@@ -306,7 +306,7 @@ export class ForumsCommandService {
       },
     );
 
-    if (parentTopicId) {
+    if (parentTopicId || restrictions.effectiveChallengeId) {
       await this.publishPostNotificationBestEffort(
         'createTopic',
         result.topic,

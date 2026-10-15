@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { DbModule } from '../db/db.module';
 import { ChallengeAccessService } from './challenge-access.service';
+import { ChallengeForumWatchController } from './challenge-forum-watch.controller';
+import { ChallengeForumWatchService } from './challenge-forum-watch.service';
 import { ChallengeApiService } from './challenge-api.service';
 import { EventBusService } from './event-bus.service';
 import { ForumsAccessPolicyService } from './forums-access-policy.service';
@@ -34,12 +36,14 @@ import { TopicsController } from './topics.controller';
 @Module({
   imports: [DbModule],
   controllers: [
+    ChallengeForumWatchController,
     TopicsController,
     PostsController,
     ModerationController,
     PublicForumsController,
   ],
   providers: [
+    ChallengeForumWatchService,
     ChallengeAccessService,
     ChallengeApiService,
     EventBusService,

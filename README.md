@@ -18,6 +18,9 @@ and post-commit watch notifications.
 - `PATCH /v6/forums/topics/:topicId`
 - `DELETE /v6/forums/topics/:topicId`
 - `POST /v6/forums/topics/:topicId/posts`
+- `GET /v6/forums/challenges/:challengeId/watch`
+- `PUT /v6/forums/challenges/:challengeId/watch`
+- `DELETE /v6/forums/challenges/:challengeId/watch`
 - `PUT /v6/forums/topics/:topicId/watch`
 - `DELETE /v6/forums/topics/:topicId/watch`
 - `PUT /v6/forums/topics/:topicId/read-state`
@@ -32,7 +35,7 @@ and post-commit watch notifications.
 - `PUT /v6/forums/moderation/ip-bans/:ipAddress`
 - `DELETE /v6/forums/moderation/ip-bans/:ipAddress`
 
-This service includes the forums schema, Prisma client export, topic read workflows, transactional command-side workflows, per-member post reactions, centralized forums authorization and runtime moderation for topics, posts, watches, and explicit read-state updates, plus best-effort watch notification publishing for new posts and successful allowed child-topic starter posts. The policy resolves inherited topic restrictions, challenge access, resource-role/copilot elevation, role matching, ownership, scoped M2M write access, and M2M on-behalf target-member visibility before writes, reads, or notification delivery. Runtime moderation enforces active member bans, trusted exact-IP bans for human request traffic, and locked-topic mutation rules.
+This service includes the forums schema, Prisma client export, topic read workflows, transactional command-side workflows, per-member post reactions, centralized forums authorization and runtime moderation for topics, posts, watches, and explicit read-state updates, plus best-effort watch notification publishing for new posts and successful allowed child-topic and top-level challenge starter posts. The policy resolves inherited topic restrictions, challenge access, resource-role/copilot elevation, role matching, ownership, scoped M2M write access, and M2M on-behalf target-member visibility before writes, reads, or notification delivery. Runtime moderation enforces active member bans, trusted exact-IP bans for human request traffic, and locked-topic mutation rules.
 
 Topic reads are exposed under `read:forums-topics`. `GET /v6/forums/topics` returns visible non-challenge root topics; `GET /v6/forums/topics/challenges/:challengeId` checks base challenge visibility before returning visible challenge roots; `GET /v6/forums/topics/:topicId/children` requires parent visibility before filtering direct children; and `GET /v6/forums/topics/:topicId` returns topic detail with an embedded post tree. Active member bans and trusted exact-IP bans return 403 before read policy or query work. Topic summaries include `locked`, `lockedBy`, and `lockedAt`; `lockedBy` and `lockedAt` may be null for imported legacy locked topics. Locked topics remain readable for callers that otherwise pass moderation and visibility checks. Detail embeds posts under `read:forums-topics`, orders every top-level and nested sibling list chronologically from oldest to newest, keeps deleted post placeholders with null content, counts only non-deleted posts, derives unread state from `TopicReadState.lastReadAt`, and includes each post's current challenge-resource `authorIsCopilot` projection, shared `thumbsUpCount`/`thumbsDownCount`, and the authenticated member's nullable `viewerReaction`. `read:forums-posts` remains reserved for future post-specific read APIs in v1.
 
@@ -46,9 +49,22 @@ Moderation management is exposed under `/v6/forums/moderation`. Human callers mu
 
 Successful `POST /v6/forums/topics/:topicId/posts` commands publish a
 best-effort watch notification after the post transaction commits. Successful
-allowed child-topic `POST /v6/forums/topics` commands publish the same
-notification for the created starter post. Top-level topic creation, updates,
-deletes, watch mutations, and mark-read commands do not publish notifications.
+allowed child-topic and top-level challenge `POST /v6/forums/topics` commands
+publish the same notification for the created starter post. General top-level
+topic creation, updates, deletes, watch mutations, and mark-read commands do not
+publish notifications.
+
+Challenge forums are watched by default for members with a Submitter or Copilot
+resource assignment. Defaults are resolved from current Resources data, so new
+registrations and copilot assignments take effect without visiting the forum,
+including before its first topic exists. The challenge watch routes return
+`{ challengeId, memberId, watching }` for the authenticated human member; PUT and
+DELETE persist explicit preferences. DELETE stores an opt-out so later reads or
+resource changes cannot silently resubscribe the member. Explicit topic watches
+remain independent. Challenge-wide watchers receive new topic and post emails,
+subject to the same topic visibility, ban, author exclusion, and deduplication
+rules as topic watchers. Deploy the `20261016000000_challenge_forum_watch` database
+migration before the API and the Opportunities watch control.
 
 Recipient resolution expands watches from the created content topic through all
 ancestor topics using `TopicClosure`, dedupes by member id, excludes the
