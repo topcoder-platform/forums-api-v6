@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Post, Topic } from '../../prisma/generated/client';
 import { DbService } from '../db/db.service';
+import { ChallengeForumWatchService } from './challenge-forum-watch.service';
 import { ChallengeApiService } from './challenge-api.service';
 import { EventBusService } from './event-bus.service';
 import { ForumsAccessPolicyService } from './forums-access-policy.service';
@@ -71,7 +72,8 @@ export class ForumsNotificationPublishError extends Error {
  * Publishes post-commit forum watch notifications.
  *
  * The service resolves explicit watches on the created post's topic and all
- * ancestors, dedupes by member id, excludes the persisted author member id,
+ * ancestors plus effective challenge-wide watches, dedupes by member id,
+ * excludes the persisted author member id,
  * filters active member bans and remaining recipients through the shared forums
  * access policy, resolves the challenge title when applicable, and publishes one
  * SendGrid email event for the final recipient list. IP-ban checks are intentionally
@@ -92,6 +94,7 @@ export class ForumsWatchNotificationService {
    * @param eventBusService Local event-bus adapter.
    * @param configService Nest configuration service containing notification settings.
    * @param challengeApiService M2M-authenticated lookup for challenge titles.
+   * @param challengeWatchService Resource-based defaults and explicit forum preferences.
    * @throws Does not throw directly; dependencies are resolved by Nest.
    */
   constructor(
@@ -103,6 +106,7 @@ export class ForumsWatchNotificationService {
     private readonly eventBusService: EventBusService,
     private readonly configService: ConfigService,
     private readonly challengeApiService: ChallengeApiService,
+    private readonly challengeWatchService: ChallengeForumWatchService,
   ) {}
 
   /**
@@ -129,6 +133,7 @@ export class ForumsWatchNotificationService {
     const watcherMemberIds = await this.resolveWatcherMemberIds(
       params.topic.id,
       params.post.authorMemberId,
+      params.restrictions.challengeId,
     );
 
     if (watcherMemberIds.length === 0) {
@@ -188,16 +193,18 @@ export class ForumsWatchNotificationService {
   }
 
   /**
-   * Resolves watched members from topic and ancestor watch rows.
+   * Resolves topic, ancestor, and challenge-wide watch candidates.
    *
    * @param topicId Topic id receiving the newly created post.
    * @param authorMemberId Persisted author member id to exclude.
+   * @param challengeId Effective challenge scope, or null for general forums.
    * @returns Deduped watcher member ids, excluding the author.
-   * @throws Prisma errors when closure or watch rows cannot be loaded.
+   * @throws Database errors when topic, resource, or challenge watch rows cannot be loaded.
    */
   private async resolveWatcherMemberIds(
     topicId: string,
     authorMemberId: string,
+    challengeId: string | null,
   ): Promise<string[]> {
     const closureRows = await this.db.topicClosure.findMany({
       where: { descendantTopicId: topicId },
@@ -217,7 +224,15 @@ export class ForumsWatchNotificationService {
       select: { memberId: true },
     });
 
-    return Array.from(new Set(watchRows.map((watch) => watch.memberId)));
+    const challengeWatchers = challengeId
+      ? await this.challengeWatchService.getWatcherMemberIds(challengeId)
+      : [];
+    return Array.from(
+      new Set([
+        ...watchRows.map((watch) => watch.memberId),
+        ...challengeWatchers,
+      ]),
+    ).filter((memberId) => memberId !== authorMemberId);
   }
 
   /**

@@ -688,10 +688,17 @@ describe('forums notification/read integration', () => {
     ['6', 'six@example.com'],
     ['7', 'seven@example.com'],
   ]);
+  const defaultWatchers = new Set<string>();
+  const forumPreferences = new Map<
+    string,
+    { challengeId: string; memberId: string; watching: boolean }
+  >();
   const publishedEvents: { topic: string; payload: any }[] = [];
 
   beforeEach(async () => {
     publishedEvents.length = 0;
+    defaultWatchers.clear();
+    forumPreferences.clear();
 
     seedData = {
       topics: [
@@ -734,7 +741,27 @@ describe('forums notification/read integration', () => {
       memberBans: [],
       ipBans: [],
     };
-    const db = createSeededForumsDb(seedData);
+    const db = {
+      ...createSeededForumsDb(seedData),
+      challengeForumWatch: {
+        findMany: jest.fn(({ where }: any) =>
+          [...forumPreferences.values()].filter(
+            (preference) => preference.challengeId === where.challengeId,
+          ),
+        ),
+        findUnique: jest.fn(
+          ({ where: { challengeId_memberId: key } }: any) =>
+            forumPreferences.get(`${key.challengeId}:${key.memberId}`) ?? null,
+        ),
+        upsert: jest.fn(({ create }: any) => {
+          forumPreferences.set(
+            `${create.challengeId}:${create.memberId}`,
+            create,
+          );
+          return create;
+        }),
+      },
+    };
     const moduleRef = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
@@ -768,6 +795,14 @@ describe('forums notification/read integration', () => {
       })
       .overrideProvider(ResourceAccessService)
       .useValue({
+        getChallengeDefaultWatcherMemberIds: jest.fn(
+          (challengeId: string, memberId?: string) =>
+            challengeId === 'challenge-1'
+              ? [...defaultWatchers].filter(
+                  (id) => !memberId || memberId === id,
+                )
+              : [],
+        ),
         getChallengeCopilotMemberIds: jest.fn(
           (challengeId: string, memberIds: readonly string[]) =>
             new Set(
@@ -842,6 +877,78 @@ describe('forums notification/read integration', () => {
 
   afterEach(async () => {
     await app?.close();
+  });
+
+  it('defaults registrants and copilots to watching new topics and persists forum opt-out/re-watch', async () => {
+    // No topic in this challenge exists yet, and neither recipient has a topic watch.
+    defaultWatchers.add('2');
+    defaultWatchers.add('6');
+    seedData.topicWatches = [];
+    for (const memberId of ['2', '6']) {
+      const response = await request(app.getHttpServer())
+        .get('/challenges/challenge-1/watch')
+        .set('x-member-id', memberId)
+        .expect(200);
+      expect(response.body).toEqual({
+        challengeId: 'challenge-1',
+        memberId,
+        watching: true,
+      });
+    }
+    await request(app.getHttpServer())
+      .delete('/challenges/challenge-1/watch')
+      .set('x-member-id', '2')
+      .expect(200);
+    const preference = await request(app.getHttpServer())
+      .get('/challenges/challenge-1/watch')
+      .set('x-member-id', '2')
+      .expect(200);
+    expect(preference.body.watching).toBe(false);
+    await request(app.getHttpServer())
+      .post('/topics')
+      .set('x-member-id', '1')
+      .send({
+        challengeId: 'challenge-1',
+        title: 'First challenge topic',
+        content: 'First post',
+      })
+      .expect(201);
+    expect(publishedEvents).toHaveLength(1);
+    expect(publishedEvents[0].payload.recipients).toEqual(['six@example.com']);
+
+    await request(app.getHttpServer())
+      .put('/challenges/challenge-1/watch')
+      .set('x-member-id', '2')
+      .send({ memberId: '3' })
+      .expect(200);
+    expect(forumPreferences.has('challenge-1:3')).toBe(false);
+    await request(app.getHttpServer())
+      .post('/topics')
+      .set('x-member-id', '1')
+      .send({
+        challengeId: 'challenge-1',
+        title: 'Another challenge topic',
+        content: 'Another post',
+      })
+      .expect(201);
+    expect(publishedEvents).toHaveLength(2);
+    expect(publishedEvents[1].payload.recipients).toEqual([
+      'two@example.com',
+      'six@example.com',
+    ]);
+  });
+
+  it('rejects inaccessible challenge watch reads and mutations', async () => {
+    await request(app.getHttpServer())
+      .get('/challenges/challenge-1/watch')
+      .set('x-member-id', '4')
+      .expect(403);
+    await request(app.getHttpServer())
+      .put('/challenges/challenge-1/watch')
+      .set('x-member-id', '4')
+      .send({})
+      .expect(403);
+    expect(forumPreferences.size).toBe(0);
   });
 
   it('notifies a member who watches through the API while excluding the posting author', async () => {

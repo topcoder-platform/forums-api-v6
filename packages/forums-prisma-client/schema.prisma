@@ -143,6 +143,19 @@ model TopicWatch {
   @@schema("forums")
 }
 
+// Explicit challenge-wide preferences override resource-based default watches.
+model ChallengeForumWatch {
+  challengeId String   @db.VarChar(64)
+  memberId    String   @db.VarChar(64)
+  watching    Boolean
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  @@id([challengeId, memberId])
+  @@index([memberId])
+  @@schema("forums")
+}
+
 model TopicReadState {
   topicId    String   @db.VarChar(14)
   memberId   String   @db.VarChar(64)
