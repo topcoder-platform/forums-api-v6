@@ -5,7 +5,7 @@ import { auth } from 'tc-core-library-js';
 const CHALLENGE_REQUEST_TIMEOUT_MS = 5_000;
 
 /**
- * Looks up challenge titles for forum notifications through the Challenge API.
+ * Resolves challenge titles and public links for forum notifications.
  * The shared M2M library reuses cached tokens for the bus publisher's credentials;
  * client initialization is lazy so missing outbound configuration does not block startup.
  */
@@ -89,6 +89,58 @@ export class ChallengeApiService {
     }
 
     return challenge.name;
+  }
+
+  /**
+   * Builds the public Opportunities URL for a challenge notification.
+   *
+   * `TOPCODER_URL` is authoritative when configured. Existing deployments can
+   * fall back to `TOPCODER_API_URL_BASE`; its conventional `api.` host prefix
+   * is changed to `www.` while preserving the environment domain.
+   *
+   * @param challengeId Effective challenge id inherited by the notified topic.
+   * @returns Absolute public challenge-details URL.
+   * @throws Error when neither web nor API base configuration is usable.
+   */
+  getChallengeUrl(challengeId: string): string {
+    const configuredWebBase = this.configService
+      .get<string>('notifications.topcoderUrl')
+      ?.trim();
+    const configuredApiBase = this.configService
+      .get<string>('notifications.topcoderApiUrlBase')
+      ?.trim();
+    const configuredBase = configuredWebBase || configuredApiBase;
+
+    if (!configuredBase) {
+      throw new Error(
+        'TOPCODER_URL or TOPCODER_API_URL_BASE must configure public challenge links.',
+      );
+    }
+
+    let publicUrl: URL;
+
+    try {
+      publicUrl = new URL(configuredBase);
+    } catch {
+      throw new Error(
+        `${configuredWebBase ? 'TOPCODER_URL' : 'TOPCODER_API_URL_BASE'} must be an absolute HTTP(S) URL.`,
+      );
+    }
+
+    if (!['http:', 'https:'].includes(publicUrl.protocol)) {
+      throw new Error(
+        `${configuredWebBase ? 'TOPCODER_URL' : 'TOPCODER_API_URL_BASE'} must be an absolute HTTP(S) URL.`,
+      );
+    }
+
+    if (!configuredWebBase && publicUrl.hostname.startsWith('api.')) {
+      publicUrl.hostname = `www.${publicUrl.hostname.slice('api.'.length)}`;
+    }
+
+    publicUrl.pathname = `/opportunities/challenge/${encodeURIComponent(challengeId)}`;
+    publicUrl.search = '';
+    publicUrl.hash = '';
+    return publicUrl.toString();
   }
 
   /**
