@@ -60,11 +60,20 @@ registrations and copilot assignments take effect without visiting the forum,
 including before its first topic exists. The challenge watch routes return
 `{ challengeId, memberId, watching }` for the authenticated human member; PUT and
 DELETE persist explicit preferences. DELETE stores an opt-out so later reads or
-resource changes cannot silently resubscribe the member. Explicit topic watches
-remain independent. Challenge-wide watchers receive new topic and post emails,
+resource changes cannot silently resubscribe the member. Topic list/detail reads
+inherit this preference when there is no explicit topic choice. Topic PUT stores
+`watching: true`; challenge-topic DELETE stores `watching: false` so a later forum
+re-watch cannot resubscribe that topic. Explicit topic watches survive forum
+opt-out, and explicit topic opt-outs suppress emails even while the forum is
+watched. Announcements follow the same rules. New challenge topics, including
+those created by the member, inherit the current forum preference. Challenge-wide watchers receive new topic and post emails,
 subject to the same topic visibility, ban, author exclusion, and deduplication
 rules as topic watchers. Deploy the `20261016000000_challenge_forum_watch` database
-migration before the API and the Opportunities watch control.
+migration and `20261020000000_topic_watch_preferences` before the API and the
+Opportunities watch control. The latter preserves existing topic watch rows as
+opt-ins; historical rows have no provenance distinguishing manual from author
+watches. New challenge-topic creation no longer seeds an author watch. General
+forum author watches and unwatch behavior are unchanged.
 
 Recipient resolution expands watches from the created content topic through all
 ancestor topics using `TopicClosure`, dedupes by member id, excludes the
@@ -307,4 +316,4 @@ The forums Prisma schema defines `Topic`, `Post`, `PostReaction`, `TopicClosure`
 
 The production image includes the Prisma schema, migration history, configuration, and CLI. Its startup script runs `prisma migrate deploy` before starting NestJS, so a deployment cannot begin serving requests against an older forums schema. Migration failure stops the container instead of leaving feature-dependent reads or writes partially available.
 
-Topic creation is transactional: it creates the topic, starter post, closure rows, and, for human authors, author watch and read-state rows together. M2M topic creation uses the system author and skips member watch/read-state side effects. Topic deletion is soft deletion, and post deletion preserves the post row while setting content to null for placeholder reads. Topic summary reads use side-effect-free raw queries for topic lock state, visible-post counts, nullable latest visible activity, and unread derivation, then apply centralized forums policy filtering before pagination.
+Topic creation is transactional: it creates the topic, starter post, closure rows, and, for human authors, read-state rows together. General topics also seed an author watch; challenge topics inherit the forum preference. M2M topic creation uses the system author and skips member watch/read-state side effects. Topic deletion is soft deletion, and post deletion preserves the post row while setting content to null for placeholder reads. Topic summary reads use side-effect-free raw queries for topic lock state, visible-post counts, nullable latest visible activity, and unread derivation, then apply centralized forums policy filtering before pagination.

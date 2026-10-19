@@ -187,6 +187,7 @@ exports.Prisma.TopicClosureScalarFieldEnum = {
 exports.Prisma.TopicWatchScalarFieldEnum = {
   topicId: 'topicId',
   memberId: 'memberId',
+  watching: 'watching',
   createdAt: 'createdAt'
 };
 

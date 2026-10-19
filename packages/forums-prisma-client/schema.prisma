@@ -131,9 +131,11 @@ model TopicClosure {
   @@schema("forums")
 }
 
+// Explicit topic choices override challenge-wide notification preferences.
 model TopicWatch {
   topicId   String   @db.VarChar(14)
   memberId  String   @db.VarChar(64)
+  watching  Boolean  @default(true)
   createdAt DateTime @default(now())
 
   topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)

@@ -82,19 +82,31 @@ export class ChallengeForumWatchService {
         update: { watching },
       });
     } else {
-      const preference = await this.db.challengeForumWatch.findUnique({
-        where,
-      });
-      watching =
-        preference?.watching ??
-        (
-          await this.resourceAccessService.getChallengeDefaultWatcherMemberIds(
-            challengeId,
-            memberId,
-          )
-        ).includes(memberId);
+      watching = await this.isWatching(challengeId, memberId);
     }
     return { challengeId, memberId, watching };
+  }
+
+  /**
+   * Resolves a member's forum preference for already-authorized topic reads.
+   * @param challengeId Effective challenge scope of the visible topics.
+   * @param memberId Authenticated member whose inherited preference is needed.
+   * @returns Saved forum preference, or the current resource-based default.
+   * @throws Propagates preference database and resource lookup errors.
+   */
+  async isWatching(challengeId: string, memberId: string): Promise<boolean> {
+    const preference = await this.db.challengeForumWatch.findUnique({
+      where: { challengeId_memberId: { challengeId, memberId } },
+    });
+    return (
+      preference?.watching ??
+      (
+        await this.resourceAccessService.getChallengeDefaultWatcherMemberIds(
+          challengeId,
+          memberId,
+        )
+      ).includes(memberId)
+    );
   }
 
   /**

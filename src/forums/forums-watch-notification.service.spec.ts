@@ -74,7 +74,9 @@ function createService(templateId: string | null = 'template-id') {
         ]),
     },
     topicWatch: {
-      findMany: jest.fn().mockResolvedValue([{ memberId: '2' }]),
+      findMany: jest
+        .fn()
+        .mockResolvedValue([{ memberId: '2', watching: true }]),
     },
   };
   const memberDirectoryService = {
@@ -157,7 +159,9 @@ describe('ForumsWatchNotificationService', () => {
       eventBusService,
       service,
     } = createService();
-    db.topicWatch.findMany.mockResolvedValue([{ memberId: '2' }]);
+    db.topicWatch.findMany.mockResolvedValue([
+      { memberId: '2', watching: true },
+    ]);
     challengeWatchService.getWatcherMemberIds.mockResolvedValue([
       '1',
       '2',
@@ -239,12 +243,34 @@ describe('ForumsWatchNotificationService', () => {
     );
   });
 
+  it('excludes an explicit topic opt-out even when forum and ancestor watches are enabled', async () => {
+    const { service, db, challengeWatchService, eventBusService } =
+      createService();
+    challengeWatchService.getWatcherMemberIds.mockResolvedValue(['2']);
+    db.topicWatch.findMany.mockResolvedValue([
+      { topicId: 'root-1', memberId: '2', watching: true },
+      { topicId: 'topic-1', memberId: '2', watching: false },
+    ]);
+    const result = await service.publishPostNotification({
+      topic: makeTopic({ challengeId: 'challenge-1' }),
+      post: makePost(),
+      restrictions: {
+        challengeId: 'challenge-1',
+        roleName: null,
+        hasRestrictionConflict: false,
+      },
+      operationName: 'createPost',
+    });
+    expect(result.published).toBe(false);
+    expect(eventBusService.postEvent).not.toHaveBeenCalled();
+  });
+
   it('dedupes topic and ancestor watches into one recipient email event', async () => {
     const { challengeApiService, db, eventBusService, service } =
       createService();
     db.topicWatch.findMany.mockResolvedValue([
-      { memberId: '2' },
-      { memberId: '2' },
+      { memberId: '2', watching: true },
+      { memberId: '2', watching: true },
     ]);
 
     const result = await service.publishPostNotification({
@@ -264,7 +290,7 @@ describe('ForumsWatchNotificationService', () => {
         topicId: { in: ['topic-1', 'root-1'] },
         memberId: { not: '1' },
       },
-      select: { memberId: true },
+      select: { topicId: true, memberId: true, watching: true },
     });
     expect(eventBusService.postEvent).toHaveBeenCalledTimes(1);
     expect(challengeApiService.getChallengeTitle).not.toHaveBeenCalled();
@@ -284,7 +310,9 @@ describe('ForumsWatchNotificationService', () => {
 
   it('excludes the persisted author even when the author watches the topic', async () => {
     const { db, eventBusService, service } = createService();
-    db.topicWatch.findMany.mockResolvedValue([{ memberId: '2' }]);
+    db.topicWatch.findMany.mockResolvedValue([
+      { memberId: '2', watching: true },
+    ]);
 
     await service.publishPostNotification({
       topic: makeTopic(),
@@ -356,8 +384,8 @@ describe('ForumsWatchNotificationService', () => {
       service,
     } = createService();
     db.topicWatch.findMany.mockResolvedValue([
-      { memberId: '2' },
-      { memberId: '3' },
+      { memberId: '2', watching: true },
+      { memberId: '3', watching: true },
     ]);
     memberDirectoryService.getMembersByIds.mockResolvedValue([
       { memberId: '2', email: 'two@example.com', handle: 'two' },
@@ -408,9 +436,9 @@ describe('ForumsWatchNotificationService', () => {
       service,
     } = createService();
     db.topicWatch.findMany.mockResolvedValue([
-      { memberId: '2' },
-      { memberId: '3' },
-      { memberId: '4' },
+      { memberId: '2', watching: true },
+      { memberId: '3', watching: true },
+      { memberId: '4', watching: true },
     ]);
     memberDirectoryService.getMembersByIds.mockResolvedValue([
       { memberId: '2', email: 'two@example.com', handle: 'two' },
@@ -464,9 +492,9 @@ describe('ForumsWatchNotificationService', () => {
     });
 
     db.topicWatch.findMany.mockResolvedValue([
-      { memberId: '2' },
-      { memberId: '3' },
-      { memberId: '4' },
+      { memberId: '2', watching: true },
+      { memberId: '3', watching: true },
+      { memberId: '4', watching: true },
     ]);
     memberDirectoryService.getMembersByIds.mockResolvedValue([
       { memberId: '2', email: 'two@example.com', handle: 'two' },
@@ -599,8 +627,8 @@ describe('ForumsWatchNotificationService', () => {
         service,
       } = createService();
       db.topicWatch.findMany.mockResolvedValue([
-        { memberId: '2' },
-        { memberId: '3' },
+        { memberId: '2', watching: true },
+        { memberId: '3', watching: true },
       ]);
       memberDirectoryService.getMembersByIds.mockResolvedValue([
         { memberId: '2', email: 'two@example.com', handle: 'two' },

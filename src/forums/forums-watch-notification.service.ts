@@ -198,7 +198,8 @@ export class ForumsWatchNotificationService {
   }
 
   /**
-   * Resolves topic, ancestor, and challenge-wide watch candidates.
+   * Resolves topic, ancestor, and challenge-wide watches, excluding explicit
+   * opt-outs on the receiving topic even when the member watches the forum.
    *
    * @param topicId Topic id receiving the newly created post.
    * @param authorMemberId Persisted author member id to exclude.
@@ -226,18 +227,27 @@ export class ForumsWatchNotificationService {
         topicId: { in: watchedTopicIds },
         memberId: { not: authorMemberId },
       },
-      select: { memberId: true },
+      select: { topicId: true, memberId: true, watching: true },
     });
 
     const challengeWatchers = challengeId
       ? await this.challengeWatchService.getWatcherMemberIds(challengeId)
       : [];
+    const topicOptOuts = new Set(
+      watchRows
+        .filter((watch) => watch.topicId === topicId && !watch.watching)
+        .map((watch) => watch.memberId),
+    );
     return Array.from(
       new Set([
-        ...watchRows.map((watch) => watch.memberId),
+        ...watchRows
+          .filter((watch) => watch.watching)
+          .map((watch) => watch.memberId),
         ...challengeWatchers,
       ]),
-    ).filter((memberId) => memberId !== authorMemberId);
+    ).filter(
+      (memberId) => memberId !== authorMemberId && !topicOptOuts.has(memberId),
+    );
   }
 
   /**
@@ -412,9 +422,8 @@ export class ForumsWatchNotificationService {
     const context: ForumsNotificationChallengeContext = {};
 
     try {
-      context.title = await this.challengeApiService.getChallengeTitle(
-        challengeId,
-      );
+      context.title =
+        await this.challengeApiService.getChallengeTitle(challengeId);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
       this.logger.warn(

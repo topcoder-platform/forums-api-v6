@@ -6,7 +6,8 @@ import { DbService } from '../db/db.service';
  * Database row returned by forum topic summary read queries.
  *
  * Lock fields are direct Topic projections. `lockedBy` and `lockedAt` may be
- * null even when `locked` is true for imported legacy topics.
+ * null even when `locked` is true for imported legacy topics. `watching` is the
+ * explicit topic preference, or null when it inherits the challenge preference.
  */
 export interface ForumsTopicSummaryRow {
   id: string;
@@ -24,7 +25,7 @@ export interface ForumsTopicSummaryRow {
   updatedAt: Date;
   postsCount: number;
   viewsCount: number;
-  watching: boolean;
+  watching: boolean | null;
   starterPostExcerpt: string | null;
   participantsCount: number;
   participants: ForumsTopicParticipantRow[];
@@ -363,7 +364,7 @@ export class ForumsReadQueryService {
         t."updatedAt",
         post_stats."postsCount",
         view_stats."viewsCount",
-        watch_state."topicId" IS NOT NULL AS watching,
+        watch_state.watching AS watching,
         starter."starterPostExcerpt",
         participant_stats."participantsCount",
         participant_snapshots.participants,
