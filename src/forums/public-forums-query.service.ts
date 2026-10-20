@@ -159,7 +159,7 @@ export class PublicForumsQueryService {
       ? Prisma.sql`((${this.visibleThreads(principal, categoryIds)}) OR t.id IN (${Prisma.join(categoryIds)}))`
       : this.visibleThreads(principal, categoryIds);
     const watchFilter = watching
-      ? Prisma.sql`AND EXISTS (SELECT 1 FROM "TopicWatch" w WHERE w."topicId" = t.id AND w."memberId" = ${principal.memberId})`
+      ? Prisma.sql`AND EXISTS (SELECT 1 FROM "TopicWatch" w WHERE w."topicId" = t.id AND w."memberId" = ${principal.memberId} AND w.watching = true)`
       : Prisma.empty;
     const searchFilter = search
       ? Prisma.sql`AND (STRPOS(LOWER(t.title), ${search}) > 0 OR EXISTS (

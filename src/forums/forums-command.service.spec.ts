@@ -730,6 +730,27 @@ describe('ForumsCommandService post reactions', () => {
 });
 
 describe('ForumsCommandService member-targeted state commands', () => {
+  it('persists a challenge-topic opt-out instead of deleting its preference', async () => {
+    const { service, topicContextService, tx } = createCommandService();
+    topicContextService.loadTopicContext.mockResolvedValue({
+      ...(await topicContextService.loadTopicContext()),
+      effectiveChallengeId: 'challenge-1',
+    });
+    await expect(
+      service.removeTopicWatch('topic-1', undefined, user),
+    ).resolves.toEqual({
+      topicId: 'topic-1',
+      memberId: '1',
+      watching: false,
+    });
+    expect(tx.topicWatch.upsert).toHaveBeenCalledWith({
+      where: { topicId_memberId: { topicId: 'topic-1', memberId: '1' } },
+      create: { topicId: 'topic-1', memberId: '1', watching: false },
+      update: { watching: false },
+    });
+    expect(tx.topicWatch.deleteMany).not.toHaveBeenCalled();
+  });
+
   const commandCases = [
     {
       name: 'addTopicWatch',
@@ -746,8 +767,9 @@ describe('ForumsCommandService member-targeted state commands', () => {
           create: {
             topicId: 'topic-1',
             memberId: '2',
+            watching: true,
           },
-          update: {},
+          update: { watching: true },
         });
       },
     },

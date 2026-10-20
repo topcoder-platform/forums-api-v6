@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtUser } from '../auth/jwt.service';
+import { ChallengeForumWatchService } from './challenge-forum-watch.service';
 import { PostReactionType } from '../../prisma/generated/client';
 import {
   ForumsPostTreeNodeDto,
@@ -79,6 +80,7 @@ export class ForumsReadService {
    * @param readQueryService Side-effect-free raw-query reader.
    * @param moderationService Shared runtime ban and lock gate.
    * @param resourceAccessService Adapter for challenge copilot assignments.
+   * @param challengeWatchService Effective forum preferences for inherited topic watches.
    * @throws Does not throw directly; dependencies are resolved by Nest.
    */
   constructor(
@@ -87,6 +89,7 @@ export class ForumsReadService {
     private readonly readQueryService: ForumsReadQueryService,
     private readonly moderationService: ForumsModerationService,
     private readonly resourceAccessService: ResourceAccessService,
+    private readonly challengeWatchService: ChallengeForumWatchService,
   ) {}
 
   /**
@@ -139,6 +142,11 @@ export class ForumsReadService {
       this.resolveRootRowRestrictions(row),
     );
 
+    await this.applyChallengeWatch(
+      visibleRows,
+      normalizedChallengeId,
+      principal,
+    );
     return this.paginateRows(visibleRows, query);
   }
 
@@ -231,6 +239,11 @@ export class ForumsReadService {
       (row) => this.resolveChildRowRestrictions(parentContext, row),
     );
 
+    await this.applyChallengeWatch(
+      visibleRows,
+      parentContext.effectiveChallengeId,
+      principal,
+    );
     return visibleRows.map((row) => this.mapTopicSummary(row));
   }
 
@@ -282,13 +295,24 @@ export class ForumsReadService {
       throw new NotFoundException('Topic not found.');
     }
 
+    await this.applyChallengeWatch(
+      [detailSnapshot.summaryRow],
+      context.effectiveChallengeId,
+      principal,
+    );
     const copilotMemberIds = await this.resolvePostAuthorCopilots(
       context.effectiveChallengeId,
       detailSnapshot.postRows,
     );
 
     return {
-      permissions: { createPost: topicDecisions.canCreatePost.allowed, createTopic: topicDecisions.canCreateChildTopic.allowed, watch: topicDecisions.canAddWatch.allowed, update: topicDecisions.canUpdateTopic.allowed, delete: topicDecisions.canDeleteTopic.allowed },
+      permissions: {
+        createPost: topicDecisions.canCreatePost.allowed,
+        createTopic: topicDecisions.canCreateChildTopic.allowed,
+        watch: topicDecisions.canAddWatch.allowed,
+        update: topicDecisions.canUpdateTopic.allowed,
+        delete: topicDecisions.canDeleteTopic.allowed,
+      },
       topic: this.mapTopicSummary(detailSnapshot.summaryRow),
       posts: this.buildPostTree(
         topicId,
@@ -299,6 +323,29 @@ export class ForumsReadService {
   }
 
   /**
+   * Applies forum inheritance only to visible topics without an explicit choice.
+   * @param rows Authorized summary rows updated in place before DTO mapping.
+   * @param challengeId Effective challenge scope, or null for general forums.
+   * @param principal Current reader; guests and machines do not inherit watches.
+   * @returns Nothing after resolving at most one forum preference for the batch.
+   * @throws Propagates preference database and resource lookup errors.
+   */
+  private async applyChallengeWatch(
+    rows: ForumsTopicSummaryRow[],
+    challengeId: string | null,
+    principal: ForumsPrincipal,
+  ): Promise<void> {
+    if (!challengeId || !principal.memberId || principal.isMachine) return;
+    const inheritedRows = rows.filter((row) => row.watching === null);
+    if (!inheritedRows.length) return;
+    const watching = await this.challengeWatchService.isWatching(
+      challengeId,
+      principal.memberId,
+    );
+    for (const row of inheritedRows) row.watching = watching;
+  }
+
+  /**
    * Builds a validated reader or a non-elevated anonymous principal.
    *
    * @param user Authenticated token payload from request middleware.
@@ -306,7 +353,15 @@ export class ForumsReadService {
    * @throws Does not throw.
    */
   private readPrincipal(user: JwtUser | undefined): ForumsPrincipal {
-    return buildForumsPrincipal(user) ?? { memberId: null, roles: [], scopes: [], isAdmin: false, isMachine: false };
+    return (
+      buildForumsPrincipal(user) ?? {
+        memberId: null,
+        roles: [],
+        scopes: [],
+        isAdmin: false,
+        isMachine: false,
+      }
+    );
   }
 
   /** Requires a validated identity for challenge-specific listing.

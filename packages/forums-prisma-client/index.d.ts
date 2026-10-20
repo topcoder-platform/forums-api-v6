@@ -8752,18 +8752,21 @@ export namespace Prisma {
   export type TopicWatchMinAggregateOutputType = {
     topicId: string | null
     memberId: string | null
+    watching: boolean | null
     createdAt: Date | null
   }
 
   export type TopicWatchMaxAggregateOutputType = {
     topicId: string | null
     memberId: string | null
+    watching: boolean | null
     createdAt: Date | null
   }
 
   export type TopicWatchCountAggregateOutputType = {
     topicId: number
     memberId: number
+    watching: number
     createdAt: number
     _all: number
   }
@@ -8772,18 +8775,21 @@ export namespace Prisma {
   export type TopicWatchMinAggregateInputType = {
     topicId?: true
     memberId?: true
+    watching?: true
     createdAt?: true
   }
 
   export type TopicWatchMaxAggregateInputType = {
     topicId?: true
     memberId?: true
+    watching?: true
     createdAt?: true
   }
 
   export type TopicWatchCountAggregateInputType = {
     topicId?: true
     memberId?: true
+    watching?: true
     createdAt?: true
     _all?: true
   }
@@ -8863,6 +8869,7 @@ export namespace Prisma {
   export type TopicWatchGroupByOutputType = {
     topicId: string
     memberId: string
+    watching: boolean
     createdAt: Date
     _count: TopicWatchCountAggregateOutputType | null
     _min: TopicWatchMinAggregateOutputType | null
@@ -8886,6 +8893,7 @@ export namespace Prisma {
   export type TopicWatchSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     topicId?: boolean
     memberId?: boolean
+    watching?: boolean
     createdAt?: boolean
     topic?: boolean | TopicDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["topicWatch"]>
@@ -8893,6 +8901,7 @@ export namespace Prisma {
   export type TopicWatchSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     topicId?: boolean
     memberId?: boolean
+    watching?: boolean
     createdAt?: boolean
     topic?: boolean | TopicDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["topicWatch"]>
@@ -8900,6 +8909,7 @@ export namespace Prisma {
   export type TopicWatchSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     topicId?: boolean
     memberId?: boolean
+    watching?: boolean
     createdAt?: boolean
     topic?: boolean | TopicDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["topicWatch"]>
@@ -8907,10 +8917,11 @@ export namespace Prisma {
   export type TopicWatchSelectScalar = {
     topicId?: boolean
     memberId?: boolean
+    watching?: boolean
     createdAt?: boolean
   }
 
-  export type TopicWatchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"topicId" | "memberId" | "createdAt", ExtArgs["result"]["topicWatch"]>
+  export type TopicWatchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"topicId" | "memberId" | "watching" | "createdAt", ExtArgs["result"]["topicWatch"]>
   export type TopicWatchInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     topic?: boolean | TopicDefaultArgs<ExtArgs>
   }
@@ -8929,6 +8940,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       topicId: string
       memberId: string
+      watching: boolean
       createdAt: Date
     }, ExtArgs["result"]["topicWatch"]>
     composites: {}
@@ -9356,6 +9368,7 @@ export namespace Prisma {
   interface TopicWatchFieldRefs {
     readonly topicId: FieldRef<"TopicWatch", 'String'>
     readonly memberId: FieldRef<"TopicWatch", 'String'>
+    readonly watching: FieldRef<"TopicWatch", 'Boolean'>
     readonly createdAt: FieldRef<"TopicWatch", 'DateTime'>
   }
     
@@ -14986,6 +14999,7 @@ export namespace Prisma {
   export const TopicWatchScalarFieldEnum: {
     topicId: 'topicId',
     memberId: 'memberId',
+    watching: 'watching',
     createdAt: 'createdAt'
   };
 
@@ -15626,6 +15640,7 @@ export namespace Prisma {
     NOT?: TopicWatchWhereInput | TopicWatchWhereInput[]
     topicId?: StringFilter<"TopicWatch"> | string
     memberId?: StringFilter<"TopicWatch"> | string
+    watching?: BoolFilter<"TopicWatch"> | boolean
     createdAt?: DateTimeFilter<"TopicWatch"> | Date | string
     topic?: XOR<TopicScalarRelationFilter, TopicWhereInput>
   }
@@ -15633,6 +15648,7 @@ export namespace Prisma {
   export type TopicWatchOrderByWithRelationInput = {
     topicId?: SortOrder
     memberId?: SortOrder
+    watching?: SortOrder
     createdAt?: SortOrder
     topic?: TopicOrderByWithRelationInput
   }
@@ -15644,6 +15660,7 @@ export namespace Prisma {
     NOT?: TopicWatchWhereInput | TopicWatchWhereInput[]
     topicId?: StringFilter<"TopicWatch"> | string
     memberId?: StringFilter<"TopicWatch"> | string
+    watching?: BoolFilter<"TopicWatch"> | boolean
     createdAt?: DateTimeFilter<"TopicWatch"> | Date | string
     topic?: XOR<TopicScalarRelationFilter, TopicWhereInput>
   }, "topicId_memberId">
@@ -15651,6 +15668,7 @@ export namespace Prisma {
   export type TopicWatchOrderByWithAggregationInput = {
     topicId?: SortOrder
     memberId?: SortOrder
+    watching?: SortOrder
     createdAt?: SortOrder
     _count?: TopicWatchCountOrderByAggregateInput
     _max?: TopicWatchMaxOrderByAggregateInput
@@ -15663,6 +15681,7 @@ export namespace Prisma {
     NOT?: TopicWatchScalarWhereWithAggregatesInput | TopicWatchScalarWhereWithAggregatesInput[]
     topicId?: StringWithAggregatesFilter<"TopicWatch"> | string
     memberId?: StringWithAggregatesFilter<"TopicWatch"> | string
+    watching?: BoolWithAggregatesFilter<"TopicWatch"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"TopicWatch"> | Date | string
   }
 
@@ -16419,6 +16438,7 @@ export namespace Prisma {
 
   export type TopicWatchCreateInput = {
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
     topic: TopicCreateNestedOneWithoutWatchesInput
   }
@@ -16426,11 +16446,13 @@ export namespace Prisma {
   export type TopicWatchUncheckedCreateInput = {
     topicId: string
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
   }
 
   export type TopicWatchUpdateInput = {
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     topic?: TopicUpdateOneRequiredWithoutWatchesNestedInput
   }
@@ -16438,23 +16460,27 @@ export namespace Prisma {
   export type TopicWatchUncheckedUpdateInput = {
     topicId?: StringFieldUpdateOperationsInput | string
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TopicWatchCreateManyInput = {
     topicId: string
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
   }
 
   export type TopicWatchUpdateManyMutationInput = {
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TopicWatchUncheckedUpdateManyInput = {
     topicId?: StringFieldUpdateOperationsInput | string
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -17222,18 +17248,21 @@ export namespace Prisma {
   export type TopicWatchCountOrderByAggregateInput = {
     topicId?: SortOrder
     memberId?: SortOrder
+    watching?: SortOrder
     createdAt?: SortOrder
   }
 
   export type TopicWatchMaxOrderByAggregateInput = {
     topicId?: SortOrder
     memberId?: SortOrder
+    watching?: SortOrder
     createdAt?: SortOrder
   }
 
   export type TopicWatchMinOrderByAggregateInput = {
     topicId?: SortOrder
     memberId?: SortOrder
+    watching?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -18301,11 +18330,13 @@ export namespace Prisma {
 
   export type TopicWatchCreateWithoutTopicInput = {
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
   }
 
   export type TopicWatchUncheckedCreateWithoutTopicInput = {
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
   }
 
@@ -18531,6 +18562,7 @@ export namespace Prisma {
     NOT?: TopicWatchScalarWhereInput | TopicWatchScalarWhereInput[]
     topicId?: StringFilter<"TopicWatch"> | string
     memberId?: StringFilter<"TopicWatch"> | string
+    watching?: BoolFilter<"TopicWatch"> | boolean
     createdAt?: DateTimeFilter<"TopicWatch"> | Date | string
   }
 
@@ -19265,6 +19297,7 @@ export namespace Prisma {
 
   export type TopicWatchCreateManyTopicInput = {
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
   }
 
@@ -19410,16 +19443,19 @@ export namespace Prisma {
 
   export type TopicWatchUpdateWithoutTopicInput = {
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TopicWatchUncheckedUpdateWithoutTopicInput = {
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TopicWatchUncheckedUpdateManyWithoutTopicInput = {
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

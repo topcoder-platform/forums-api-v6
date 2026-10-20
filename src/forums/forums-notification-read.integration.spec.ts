@@ -21,6 +21,7 @@ interface TopicClosureSeed {
 }
 
 interface TopicWatchSeed {
+  watching?: boolean;
   topicId: string;
   memberId: string;
 }
@@ -192,6 +193,27 @@ function createSeededForumsDb(seed: SeededForumsData) {
         return [{ active: Boolean(topicId && isTopicActive(seed, topicId)) }];
       }
 
+      if (
+        queryText.includes('t."parentTopicId" IS NULL') &&
+        queryText.includes('t."challengeId" =')
+      ) {
+        const challengeId = values
+          .map(queryValueToString)
+          .find((value) =>
+            seed.topics.some((topic) => topic.challengeId === value),
+          );
+        return seed.topics
+          .filter(
+            (topic) =>
+              topic.challengeId === challengeId &&
+              !topic.parentTopicId &&
+              isTopicActive(seed, topic.id),
+          )
+          .map((topic) =>
+            buildTopicSummaryRow(seed, topic, queryValueToString(values[0])),
+          );
+      }
+
       if (queryText.includes('FROM "Topic" t') && topicId) {
         const topic = topicById().get(topicId);
 
@@ -268,8 +290,8 @@ function createSeededForumsDb(seed: SeededForumsData) {
           authorMemberId: args.data.authorMemberId,
           authorHandle: args.data.authorHandle,
           content: args.data.content,
-          createdAt: new Date(`2026-06-04T00:1${nextPostId}:00.000Z`),
-          updatedAt: new Date(`2026-06-04T00:1${nextPostId}:00.000Z`),
+          createdAt: new Date(createdAt.getTime() + (10 + nextPostId) * 60_000),
+          updatedAt: new Date(createdAt.getTime() + (10 + nextPostId) * 60_000),
         });
 
         nextPostId += 1;
@@ -403,10 +425,11 @@ function createSeededForumsDb(seed: SeededForumsData) {
               args.where.topicId.in.includes(watch.topicId) &&
               watch.memberId !== args.where.memberId.not,
           )
-          .map((watch) => ({ memberId: watch.memberId })),
+          .map((watch) => ({ ...watch, watching: watch.watching ?? true })),
       upsert: (args: {
         where: { topicId_memberId: TopicWatchSeed };
         create: TopicWatchSeed;
+        update: Partial<TopicWatchSeed>;
       }) => {
         const existing = seed.topicWatches.find(
           (watch) =>
@@ -415,6 +438,7 @@ function createSeededForumsDb(seed: SeededForumsData) {
         );
 
         if (existing) {
+          Object.assign(existing, args.update);
           return existing;
         }
 
@@ -606,9 +630,15 @@ function buildTopicSummaryRow(
     viewsCount: seed.topicReadStates.filter(
       (state) => state.topicId === topic.id,
     ).length,
-    watching: seed.topicWatches.some(
-      (watch) => watch.topicId === topic.id && watch.memberId === memberId,
-    ),
+    watching:
+      seed.topicWatches.find(
+        (watch) => watch.topicId === topic.id && watch.memberId === memberId,
+      )?.watching ??
+      (seed.topicWatches.some(
+        (watch) => watch.topicId === topic.id && watch.memberId === memberId,
+      )
+        ? true
+        : null),
     starterPostExcerpt: posts[0]?.content?.slice(0, 280) ?? null,
     participantsCount: participants.length,
     participants: participants.slice(0, 5),
@@ -938,6 +968,108 @@ describe('forums notification/read integration', () => {
     ]);
   });
 
+  it.each(['2', '6'])(
+    'preserves topic overrides across forum toggles for member %s',
+    async (memberId) => {
+      defaultWatchers.add(memberId);
+      const topicIds: string[] = [];
+      for (const title of [
+        'Inherited discussion',
+        'Explicit watch',
+        'Explicit opt-out',
+        'Inherited announcement',
+      ]) {
+        const created = await request(app.getHttpServer())
+          .post('/topics')
+          .set('x-member-id', '6')
+          .send({
+            challengeId: 'challenge-1',
+            title,
+            content: title,
+            isAnnouncement: title.includes('announcement'),
+          })
+          .expect(201);
+        topicIds.push(created.body.topic.id);
+      }
+      expect(
+        seedData.topicWatches.filter((watch) =>
+          topicIds.includes(watch.topicId),
+        ),
+      ).toEqual([]);
+      await request(app.getHttpServer())
+        .put(`/topics/${topicIds[1]}/watch`)
+        .set('x-member-id', memberId)
+        .send({})
+        .expect(200);
+      await request(app.getHttpServer())
+        .delete(`/topics/${topicIds[2]}/watch`)
+        .set('x-member-id', memberId)
+        .expect(200);
+
+      // List, detail and email recipients must agree throughout the full QA sequence.
+      for (const forumWatching of [true, false, true]) {
+        if (forumWatching) {
+          await request(app.getHttpServer())
+            .put('/challenges/challenge-1/watch')
+            .set('x-member-id', memberId)
+            .send({})
+            .expect(200);
+        } else {
+          await request(app.getHttpServer())
+            .delete('/challenges/challenge-1/watch')
+            .set('x-member-id', memberId)
+            .expect(200);
+          const created = await request(app.getHttpServer())
+            .post('/topics')
+            .set('x-member-id', memberId)
+            .send({
+              challengeId: 'challenge-1',
+              title: 'Created while unwatched',
+              content: 'New topic',
+            })
+            .expect(201);
+          topicIds.push(created.body.topic.id);
+        }
+        const list = await request(app.getHttpServer())
+          .get('/topics/challenges/challenge-1')
+          .set('x-member-id', memberId)
+          .expect(200);
+        for (const [index, topicId] of topicIds.entries()) {
+          const expectedWatching =
+            index === 1 || (index !== 2 && forumWatching);
+          expect(
+            list.body.data.find((topic: { id: string }) => topic.id === topicId)
+              .watching,
+          ).toBe(expectedWatching);
+          const detail = await request(app.getHttpServer())
+            .get(`/topics/${topicId}`)
+            .set('x-member-id', memberId)
+            .expect(200);
+          expect(detail.body.topic.watching).toBe(expectedWatching);
+          publishedEvents.length = 0;
+          await request(app.getHttpServer())
+            .post(`/topics/${topicId}/posts`)
+            .set('x-member-id', '1')
+            .send({ content: 'Notification check' })
+            .expect(201);
+          expect(
+            publishedEvents.flatMap((event) => event.payload.recipients),
+          ).toEqual(expectedWatching ? [emailsByMemberId.get(memberId)] : []);
+        }
+      }
+      await request(app.getHttpServer())
+        .put(`/topics/${topicIds[2]}/watch`)
+        .set('x-member-id', memberId)
+        .send({})
+        .expect(200);
+      const rewatched = await request(app.getHttpServer())
+        .get(`/topics/${topicIds[2]}`)
+        .set('x-member-id', memberId)
+        .expect(200);
+      expect(rewatched.body.topic.watching).toBe(true);
+    },
+  );
+
   it('rejects inaccessible challenge watch reads and mutations', async () => {
     await request(app.getHttpServer())
       .get('/challenges/challenge-1/watch')
@@ -968,7 +1100,7 @@ describe('forums notification/read integration', () => {
 
     expect(seedData.topicWatches).toEqual([
       { topicId: 'parent-1', memberId: '1' },
-      { topicId: 'parent-1', memberId: '2' },
+      { topicId: 'parent-1', memberId: '2', watching: true },
     ]);
     expect(publishedEvents).toHaveLength(1);
     expect(publishedEvents[0]).toEqual({
