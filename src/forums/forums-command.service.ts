@@ -155,7 +155,9 @@ export class ForumsCommandService {
   ) {}
 
   /**
-   * Creates a topic and starter post in one transaction.
+   * Creates a topic and starter post in one transaction. Human authors receive
+   * read state; only general topics seed a separate author watch. Challenge
+   * topics inherit the forum preference until explicitly watched or unwatched.
    *
    * Child topics are allowed only when the resolved effective restrictions
    * remain non-challenge. Challenge-scoped child candidates are rejected by the
@@ -164,7 +166,7 @@ export class ForumsCommandService {
    * @param dto Topic metadata and starter-post content.
    * @param user Authenticated token payload for the acting member.
    * @param trustedClientIp Optional trusted client IP resolved at the HTTP boundary.
-   * @returns The created topic command response and starter post after any child-topic notification attempt settles.
+   * @returns The created topic command response and starter post after any child-topic or challenge-topic notification attempt settles.
    * @throws UnauthorizedException when no authenticated command caller is present.
    * @throws BadRequestException when topic fields or parent linkage are invalid.
    * @throws ForbiddenException when shared policy, moderation bans, or parent lock state deny topic creation.
@@ -270,19 +272,21 @@ export class ForumsCommandService {
         });
 
         if (author.seedMemberState) {
-          await tx.topicWatch.upsert({
-            where: {
-              topicId_memberId: {
+          if (!restrictions.effectiveChallengeId) {
+            await tx.topicWatch.upsert({
+              where: {
+                topicId_memberId: {
+                  topicId: topic.id,
+                  memberId: author.memberId,
+                },
+              },
+              create: {
                 topicId: topic.id,
                 memberId: author.memberId,
               },
-            },
-            create: {
-              topicId: topic.id,
-              memberId: author.memberId,
-            },
-            update: {},
-          });
+              update: {},
+            });
+          }
 
           await tx.topicReadState.upsert({
             where: {
@@ -306,7 +310,7 @@ export class ForumsCommandService {
       },
     );
 
-    if (parentTopicId) {
+    if (parentTopicId || restrictions.effectiveChallengeId) {
       await this.publishPostNotificationBestEffort(
         'createTopic',
         result.topic,
@@ -767,7 +771,7 @@ export class ForumsCommandService {
   }
 
   /**
-   * Adds an explicit watch for a member on a topic.
+   * Enables an explicit topic watch, replacing any saved topic opt-out.
    *
    * @param topicId Topic id to watch.
    * @param dto Optional target member body; required for scoped M2M callers.
@@ -823,14 +827,15 @@ export class ForumsCommandService {
         create: {
           topicId,
           memberId: target.memberId,
+          watching: true,
         },
-        update: {},
+        update: { watching: true },
       });
     });
   }
 
   /**
-   * Removes an explicit watch for a member from a topic.
+   * Persists a challenge-topic opt-out; removes general-topic watches as before.
    *
    * @param topicId Topic id to unwatch.
    * @param dto Optional target member body; required for scoped M2M callers.
@@ -876,12 +881,17 @@ export class ForumsCommandService {
     return this.db.$transaction(async (tx) => {
       await this.ensureActiveTopic(tx, topicId);
 
-      await tx.topicWatch.deleteMany({
-        where: {
-          topicId,
-          memberId: target.memberId,
-        },
-      });
+      if (context.effectiveChallengeId) {
+        await tx.topicWatch.upsert({
+          where: { topicId_memberId: { topicId, memberId: target.memberId } },
+          create: { topicId, memberId: target.memberId, watching: false },
+          update: { watching: false },
+        });
+      } else {
+        await tx.topicWatch.deleteMany({
+          where: { topicId, memberId: target.memberId },
+        });
+      }
 
       return {
         topicId,

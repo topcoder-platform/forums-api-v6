@@ -49,6 +49,11 @@ export type TopicClosure = $Result.DefaultSelection<Prisma.$TopicClosurePayload>
  */
 export type TopicWatch = $Result.DefaultSelection<Prisma.$TopicWatchPayload>
 /**
+ * Model ChallengeForumWatch
+ * 
+ */
+export type ChallengeForumWatch = $Result.DefaultSelection<Prisma.$ChallengeForumWatchPayload>
+/**
  * Model TopicReadState
  * 
  */
@@ -276,6 +281,16 @@ export class PrismaClient<
     * ```
     */
   get topicWatch(): Prisma.TopicWatchDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.challengeForumWatch`: Exposes CRUD operations for the **ChallengeForumWatch** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ChallengeForumWatches
+    * const challengeForumWatches = await prisma.challengeForumWatch.findMany()
+    * ```
+    */
+  get challengeForumWatch(): Prisma.ChallengeForumWatchDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.topicReadState`: Exposes CRUD operations for the **TopicReadState** model.
@@ -770,6 +785,7 @@ export namespace Prisma {
     PostReaction: 'PostReaction',
     TopicClosure: 'TopicClosure',
     TopicWatch: 'TopicWatch',
+    ChallengeForumWatch: 'ChallengeForumWatch',
     TopicReadState: 'TopicReadState',
     PublicForumCategory: 'PublicForumCategory',
     PublicForumRoleMember: 'PublicForumRoleMember',
@@ -789,7 +805,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "topic" | "memberBan" | "ipBan" | "post" | "postReaction" | "topicClosure" | "topicWatch" | "topicReadState" | "publicForumCategory" | "publicForumRoleMember" | "publicForumImportRecord"
+      modelProps: "topic" | "memberBan" | "ipBan" | "post" | "postReaction" | "topicClosure" | "topicWatch" | "challengeForumWatch" | "topicReadState" | "publicForumCategory" | "publicForumRoleMember" | "publicForumImportRecord"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1311,6 +1327,80 @@ export namespace Prisma {
           }
         }
       }
+      ChallengeForumWatch: {
+        payload: Prisma.$ChallengeForumWatchPayload<ExtArgs>
+        fields: Prisma.ChallengeForumWatchFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ChallengeForumWatchFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ChallengeForumWatchFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload>
+          }
+          findFirst: {
+            args: Prisma.ChallengeForumWatchFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ChallengeForumWatchFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload>
+          }
+          findMany: {
+            args: Prisma.ChallengeForumWatchFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload>[]
+          }
+          create: {
+            args: Prisma.ChallengeForumWatchCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload>
+          }
+          createMany: {
+            args: Prisma.ChallengeForumWatchCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ChallengeForumWatchCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload>[]
+          }
+          delete: {
+            args: Prisma.ChallengeForumWatchDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload>
+          }
+          update: {
+            args: Prisma.ChallengeForumWatchUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload>
+          }
+          deleteMany: {
+            args: Prisma.ChallengeForumWatchDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ChallengeForumWatchUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ChallengeForumWatchUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload>[]
+          }
+          upsert: {
+            args: Prisma.ChallengeForumWatchUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChallengeForumWatchPayload>
+          }
+          aggregate: {
+            args: Prisma.ChallengeForumWatchAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateChallengeForumWatch>
+          }
+          groupBy: {
+            args: Prisma.ChallengeForumWatchGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ChallengeForumWatchGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ChallengeForumWatchCountArgs<ExtArgs>
+            result: $Utils.Optional<ChallengeForumWatchCountAggregateOutputType> | number
+          }
+        }
+      }
       TopicReadState: {
         payload: Prisma.$TopicReadStatePayload<ExtArgs>
         fields: Prisma.TopicReadStateFieldRefs
@@ -1737,6 +1827,7 @@ export namespace Prisma {
     postReaction?: PostReactionOmit
     topicClosure?: TopicClosureOmit
     topicWatch?: TopicWatchOmit
+    challengeForumWatch?: ChallengeForumWatchOmit
     topicReadState?: TopicReadStateOmit
     publicForumCategory?: PublicForumCategoryOmit
     publicForumRoleMember?: PublicForumRoleMemberOmit
@@ -8661,18 +8752,21 @@ export namespace Prisma {
   export type TopicWatchMinAggregateOutputType = {
     topicId: string | null
     memberId: string | null
+    watching: boolean | null
     createdAt: Date | null
   }
 
   export type TopicWatchMaxAggregateOutputType = {
     topicId: string | null
     memberId: string | null
+    watching: boolean | null
     createdAt: Date | null
   }
 
   export type TopicWatchCountAggregateOutputType = {
     topicId: number
     memberId: number
+    watching: number
     createdAt: number
     _all: number
   }
@@ -8681,18 +8775,21 @@ export namespace Prisma {
   export type TopicWatchMinAggregateInputType = {
     topicId?: true
     memberId?: true
+    watching?: true
     createdAt?: true
   }
 
   export type TopicWatchMaxAggregateInputType = {
     topicId?: true
     memberId?: true
+    watching?: true
     createdAt?: true
   }
 
   export type TopicWatchCountAggregateInputType = {
     topicId?: true
     memberId?: true
+    watching?: true
     createdAt?: true
     _all?: true
   }
@@ -8772,6 +8869,7 @@ export namespace Prisma {
   export type TopicWatchGroupByOutputType = {
     topicId: string
     memberId: string
+    watching: boolean
     createdAt: Date
     _count: TopicWatchCountAggregateOutputType | null
     _min: TopicWatchMinAggregateOutputType | null
@@ -8795,6 +8893,7 @@ export namespace Prisma {
   export type TopicWatchSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     topicId?: boolean
     memberId?: boolean
+    watching?: boolean
     createdAt?: boolean
     topic?: boolean | TopicDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["topicWatch"]>
@@ -8802,6 +8901,7 @@ export namespace Prisma {
   export type TopicWatchSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     topicId?: boolean
     memberId?: boolean
+    watching?: boolean
     createdAt?: boolean
     topic?: boolean | TopicDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["topicWatch"]>
@@ -8809,6 +8909,7 @@ export namespace Prisma {
   export type TopicWatchSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     topicId?: boolean
     memberId?: boolean
+    watching?: boolean
     createdAt?: boolean
     topic?: boolean | TopicDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["topicWatch"]>
@@ -8816,10 +8917,11 @@ export namespace Prisma {
   export type TopicWatchSelectScalar = {
     topicId?: boolean
     memberId?: boolean
+    watching?: boolean
     createdAt?: boolean
   }
 
-  export type TopicWatchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"topicId" | "memberId" | "createdAt", ExtArgs["result"]["topicWatch"]>
+  export type TopicWatchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"topicId" | "memberId" | "watching" | "createdAt", ExtArgs["result"]["topicWatch"]>
   export type TopicWatchInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     topic?: boolean | TopicDefaultArgs<ExtArgs>
   }
@@ -8838,6 +8940,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       topicId: string
       memberId: string
+      watching: boolean
       createdAt: Date
     }, ExtArgs["result"]["topicWatch"]>
     composites: {}
@@ -9265,6 +9368,7 @@ export namespace Prisma {
   interface TopicWatchFieldRefs {
     readonly topicId: FieldRef<"TopicWatch", 'String'>
     readonly memberId: FieldRef<"TopicWatch", 'String'>
+    readonly watching: FieldRef<"TopicWatch", 'Boolean'>
     readonly createdAt: FieldRef<"TopicWatch", 'DateTime'>
   }
     
@@ -9682,6 +9786,1006 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: TopicWatchInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ChallengeForumWatch
+   */
+
+  export type AggregateChallengeForumWatch = {
+    _count: ChallengeForumWatchCountAggregateOutputType | null
+    _min: ChallengeForumWatchMinAggregateOutputType | null
+    _max: ChallengeForumWatchMaxAggregateOutputType | null
+  }
+
+  export type ChallengeForumWatchMinAggregateOutputType = {
+    challengeId: string | null
+    memberId: string | null
+    watching: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ChallengeForumWatchMaxAggregateOutputType = {
+    challengeId: string | null
+    memberId: string | null
+    watching: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ChallengeForumWatchCountAggregateOutputType = {
+    challengeId: number
+    memberId: number
+    watching: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ChallengeForumWatchMinAggregateInputType = {
+    challengeId?: true
+    memberId?: true
+    watching?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ChallengeForumWatchMaxAggregateInputType = {
+    challengeId?: true
+    memberId?: true
+    watching?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ChallengeForumWatchCountAggregateInputType = {
+    challengeId?: true
+    memberId?: true
+    watching?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ChallengeForumWatchAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChallengeForumWatch to aggregate.
+     */
+    where?: ChallengeForumWatchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChallengeForumWatches to fetch.
+     */
+    orderBy?: ChallengeForumWatchOrderByWithRelationInput | ChallengeForumWatchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ChallengeForumWatchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChallengeForumWatches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChallengeForumWatches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ChallengeForumWatches
+    **/
+    _count?: true | ChallengeForumWatchCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ChallengeForumWatchMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ChallengeForumWatchMaxAggregateInputType
+  }
+
+  export type GetChallengeForumWatchAggregateType<T extends ChallengeForumWatchAggregateArgs> = {
+        [P in keyof T & keyof AggregateChallengeForumWatch]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateChallengeForumWatch[P]>
+      : GetScalarType<T[P], AggregateChallengeForumWatch[P]>
+  }
+
+
+
+
+  export type ChallengeForumWatchGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChallengeForumWatchWhereInput
+    orderBy?: ChallengeForumWatchOrderByWithAggregationInput | ChallengeForumWatchOrderByWithAggregationInput[]
+    by: ChallengeForumWatchScalarFieldEnum[] | ChallengeForumWatchScalarFieldEnum
+    having?: ChallengeForumWatchScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ChallengeForumWatchCountAggregateInputType | true
+    _min?: ChallengeForumWatchMinAggregateInputType
+    _max?: ChallengeForumWatchMaxAggregateInputType
+  }
+
+  export type ChallengeForumWatchGroupByOutputType = {
+    challengeId: string
+    memberId: string
+    watching: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: ChallengeForumWatchCountAggregateOutputType | null
+    _min: ChallengeForumWatchMinAggregateOutputType | null
+    _max: ChallengeForumWatchMaxAggregateOutputType | null
+  }
+
+  type GetChallengeForumWatchGroupByPayload<T extends ChallengeForumWatchGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ChallengeForumWatchGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ChallengeForumWatchGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ChallengeForumWatchGroupByOutputType[P]>
+            : GetScalarType<T[P], ChallengeForumWatchGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ChallengeForumWatchSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    challengeId?: boolean
+    memberId?: boolean
+    watching?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["challengeForumWatch"]>
+
+  export type ChallengeForumWatchSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    challengeId?: boolean
+    memberId?: boolean
+    watching?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["challengeForumWatch"]>
+
+  export type ChallengeForumWatchSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    challengeId?: boolean
+    memberId?: boolean
+    watching?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["challengeForumWatch"]>
+
+  export type ChallengeForumWatchSelectScalar = {
+    challengeId?: boolean
+    memberId?: boolean
+    watching?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ChallengeForumWatchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"challengeId" | "memberId" | "watching" | "createdAt" | "updatedAt", ExtArgs["result"]["challengeForumWatch"]>
+
+  export type $ChallengeForumWatchPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ChallengeForumWatch"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      challengeId: string
+      memberId: string
+      watching: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["challengeForumWatch"]>
+    composites: {}
+  }
+
+  type ChallengeForumWatchGetPayload<S extends boolean | null | undefined | ChallengeForumWatchDefaultArgs> = $Result.GetResult<Prisma.$ChallengeForumWatchPayload, S>
+
+  type ChallengeForumWatchCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ChallengeForumWatchFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ChallengeForumWatchCountAggregateInputType | true
+    }
+
+  export interface ChallengeForumWatchDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ChallengeForumWatch'], meta: { name: 'ChallengeForumWatch' } }
+    /**
+     * Find zero or one ChallengeForumWatch that matches the filter.
+     * @param {ChallengeForumWatchFindUniqueArgs} args - Arguments to find a ChallengeForumWatch
+     * @example
+     * // Get one ChallengeForumWatch
+     * const challengeForumWatch = await prisma.challengeForumWatch.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ChallengeForumWatchFindUniqueArgs>(args: SelectSubset<T, ChallengeForumWatchFindUniqueArgs<ExtArgs>>): Prisma__ChallengeForumWatchClient<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ChallengeForumWatch that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ChallengeForumWatchFindUniqueOrThrowArgs} args - Arguments to find a ChallengeForumWatch
+     * @example
+     * // Get one ChallengeForumWatch
+     * const challengeForumWatch = await prisma.challengeForumWatch.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ChallengeForumWatchFindUniqueOrThrowArgs>(args: SelectSubset<T, ChallengeForumWatchFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ChallengeForumWatchClient<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChallengeForumWatch that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChallengeForumWatchFindFirstArgs} args - Arguments to find a ChallengeForumWatch
+     * @example
+     * // Get one ChallengeForumWatch
+     * const challengeForumWatch = await prisma.challengeForumWatch.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ChallengeForumWatchFindFirstArgs>(args?: SelectSubset<T, ChallengeForumWatchFindFirstArgs<ExtArgs>>): Prisma__ChallengeForumWatchClient<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChallengeForumWatch that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChallengeForumWatchFindFirstOrThrowArgs} args - Arguments to find a ChallengeForumWatch
+     * @example
+     * // Get one ChallengeForumWatch
+     * const challengeForumWatch = await prisma.challengeForumWatch.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ChallengeForumWatchFindFirstOrThrowArgs>(args?: SelectSubset<T, ChallengeForumWatchFindFirstOrThrowArgs<ExtArgs>>): Prisma__ChallengeForumWatchClient<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ChallengeForumWatches that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChallengeForumWatchFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ChallengeForumWatches
+     * const challengeForumWatches = await prisma.challengeForumWatch.findMany()
+     * 
+     * // Get first 10 ChallengeForumWatches
+     * const challengeForumWatches = await prisma.challengeForumWatch.findMany({ take: 10 })
+     * 
+     * // Only select the `challengeId`
+     * const challengeForumWatchWithChallengeIdOnly = await prisma.challengeForumWatch.findMany({ select: { challengeId: true } })
+     * 
+     */
+    findMany<T extends ChallengeForumWatchFindManyArgs>(args?: SelectSubset<T, ChallengeForumWatchFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ChallengeForumWatch.
+     * @param {ChallengeForumWatchCreateArgs} args - Arguments to create a ChallengeForumWatch.
+     * @example
+     * // Create one ChallengeForumWatch
+     * const ChallengeForumWatch = await prisma.challengeForumWatch.create({
+     *   data: {
+     *     // ... data to create a ChallengeForumWatch
+     *   }
+     * })
+     * 
+     */
+    create<T extends ChallengeForumWatchCreateArgs>(args: SelectSubset<T, ChallengeForumWatchCreateArgs<ExtArgs>>): Prisma__ChallengeForumWatchClient<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ChallengeForumWatches.
+     * @param {ChallengeForumWatchCreateManyArgs} args - Arguments to create many ChallengeForumWatches.
+     * @example
+     * // Create many ChallengeForumWatches
+     * const challengeForumWatch = await prisma.challengeForumWatch.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ChallengeForumWatchCreateManyArgs>(args?: SelectSubset<T, ChallengeForumWatchCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ChallengeForumWatches and returns the data saved in the database.
+     * @param {ChallengeForumWatchCreateManyAndReturnArgs} args - Arguments to create many ChallengeForumWatches.
+     * @example
+     * // Create many ChallengeForumWatches
+     * const challengeForumWatch = await prisma.challengeForumWatch.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ChallengeForumWatches and only return the `challengeId`
+     * const challengeForumWatchWithChallengeIdOnly = await prisma.challengeForumWatch.createManyAndReturn({
+     *   select: { challengeId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ChallengeForumWatchCreateManyAndReturnArgs>(args?: SelectSubset<T, ChallengeForumWatchCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ChallengeForumWatch.
+     * @param {ChallengeForumWatchDeleteArgs} args - Arguments to delete one ChallengeForumWatch.
+     * @example
+     * // Delete one ChallengeForumWatch
+     * const ChallengeForumWatch = await prisma.challengeForumWatch.delete({
+     *   where: {
+     *     // ... filter to delete one ChallengeForumWatch
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ChallengeForumWatchDeleteArgs>(args: SelectSubset<T, ChallengeForumWatchDeleteArgs<ExtArgs>>): Prisma__ChallengeForumWatchClient<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ChallengeForumWatch.
+     * @param {ChallengeForumWatchUpdateArgs} args - Arguments to update one ChallengeForumWatch.
+     * @example
+     * // Update one ChallengeForumWatch
+     * const challengeForumWatch = await prisma.challengeForumWatch.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ChallengeForumWatchUpdateArgs>(args: SelectSubset<T, ChallengeForumWatchUpdateArgs<ExtArgs>>): Prisma__ChallengeForumWatchClient<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ChallengeForumWatches.
+     * @param {ChallengeForumWatchDeleteManyArgs} args - Arguments to filter ChallengeForumWatches to delete.
+     * @example
+     * // Delete a few ChallengeForumWatches
+     * const { count } = await prisma.challengeForumWatch.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ChallengeForumWatchDeleteManyArgs>(args?: SelectSubset<T, ChallengeForumWatchDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChallengeForumWatches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChallengeForumWatchUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ChallengeForumWatches
+     * const challengeForumWatch = await prisma.challengeForumWatch.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ChallengeForumWatchUpdateManyArgs>(args: SelectSubset<T, ChallengeForumWatchUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChallengeForumWatches and returns the data updated in the database.
+     * @param {ChallengeForumWatchUpdateManyAndReturnArgs} args - Arguments to update many ChallengeForumWatches.
+     * @example
+     * // Update many ChallengeForumWatches
+     * const challengeForumWatch = await prisma.challengeForumWatch.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ChallengeForumWatches and only return the `challengeId`
+     * const challengeForumWatchWithChallengeIdOnly = await prisma.challengeForumWatch.updateManyAndReturn({
+     *   select: { challengeId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ChallengeForumWatchUpdateManyAndReturnArgs>(args: SelectSubset<T, ChallengeForumWatchUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ChallengeForumWatch.
+     * @param {ChallengeForumWatchUpsertArgs} args - Arguments to update or create a ChallengeForumWatch.
+     * @example
+     * // Update or create a ChallengeForumWatch
+     * const challengeForumWatch = await prisma.challengeForumWatch.upsert({
+     *   create: {
+     *     // ... data to create a ChallengeForumWatch
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ChallengeForumWatch we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ChallengeForumWatchUpsertArgs>(args: SelectSubset<T, ChallengeForumWatchUpsertArgs<ExtArgs>>): Prisma__ChallengeForumWatchClient<$Result.GetResult<Prisma.$ChallengeForumWatchPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ChallengeForumWatches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChallengeForumWatchCountArgs} args - Arguments to filter ChallengeForumWatches to count.
+     * @example
+     * // Count the number of ChallengeForumWatches
+     * const count = await prisma.challengeForumWatch.count({
+     *   where: {
+     *     // ... the filter for the ChallengeForumWatches we want to count
+     *   }
+     * })
+    **/
+    count<T extends ChallengeForumWatchCountArgs>(
+      args?: Subset<T, ChallengeForumWatchCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ChallengeForumWatchCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ChallengeForumWatch.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChallengeForumWatchAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ChallengeForumWatchAggregateArgs>(args: Subset<T, ChallengeForumWatchAggregateArgs>): Prisma.PrismaPromise<GetChallengeForumWatchAggregateType<T>>
+
+    /**
+     * Group by ChallengeForumWatch.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChallengeForumWatchGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ChallengeForumWatchGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ChallengeForumWatchGroupByArgs['orderBy'] }
+        : { orderBy?: ChallengeForumWatchGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ChallengeForumWatchGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetChallengeForumWatchGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ChallengeForumWatch model
+   */
+  readonly fields: ChallengeForumWatchFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ChallengeForumWatch.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ChallengeForumWatchClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ChallengeForumWatch model
+   */
+  interface ChallengeForumWatchFieldRefs {
+    readonly challengeId: FieldRef<"ChallengeForumWatch", 'String'>
+    readonly memberId: FieldRef<"ChallengeForumWatch", 'String'>
+    readonly watching: FieldRef<"ChallengeForumWatch", 'Boolean'>
+    readonly createdAt: FieldRef<"ChallengeForumWatch", 'DateTime'>
+    readonly updatedAt: FieldRef<"ChallengeForumWatch", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ChallengeForumWatch findUnique
+   */
+  export type ChallengeForumWatchFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * Filter, which ChallengeForumWatch to fetch.
+     */
+    where: ChallengeForumWatchWhereUniqueInput
+  }
+
+  /**
+   * ChallengeForumWatch findUniqueOrThrow
+   */
+  export type ChallengeForumWatchFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * Filter, which ChallengeForumWatch to fetch.
+     */
+    where: ChallengeForumWatchWhereUniqueInput
+  }
+
+  /**
+   * ChallengeForumWatch findFirst
+   */
+  export type ChallengeForumWatchFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * Filter, which ChallengeForumWatch to fetch.
+     */
+    where?: ChallengeForumWatchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChallengeForumWatches to fetch.
+     */
+    orderBy?: ChallengeForumWatchOrderByWithRelationInput | ChallengeForumWatchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChallengeForumWatches.
+     */
+    cursor?: ChallengeForumWatchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChallengeForumWatches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChallengeForumWatches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChallengeForumWatches.
+     */
+    distinct?: ChallengeForumWatchScalarFieldEnum | ChallengeForumWatchScalarFieldEnum[]
+  }
+
+  /**
+   * ChallengeForumWatch findFirstOrThrow
+   */
+  export type ChallengeForumWatchFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * Filter, which ChallengeForumWatch to fetch.
+     */
+    where?: ChallengeForumWatchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChallengeForumWatches to fetch.
+     */
+    orderBy?: ChallengeForumWatchOrderByWithRelationInput | ChallengeForumWatchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChallengeForumWatches.
+     */
+    cursor?: ChallengeForumWatchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChallengeForumWatches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChallengeForumWatches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChallengeForumWatches.
+     */
+    distinct?: ChallengeForumWatchScalarFieldEnum | ChallengeForumWatchScalarFieldEnum[]
+  }
+
+  /**
+   * ChallengeForumWatch findMany
+   */
+  export type ChallengeForumWatchFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * Filter, which ChallengeForumWatches to fetch.
+     */
+    where?: ChallengeForumWatchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChallengeForumWatches to fetch.
+     */
+    orderBy?: ChallengeForumWatchOrderByWithRelationInput | ChallengeForumWatchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ChallengeForumWatches.
+     */
+    cursor?: ChallengeForumWatchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChallengeForumWatches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChallengeForumWatches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChallengeForumWatches.
+     */
+    distinct?: ChallengeForumWatchScalarFieldEnum | ChallengeForumWatchScalarFieldEnum[]
+  }
+
+  /**
+   * ChallengeForumWatch create
+   */
+  export type ChallengeForumWatchCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ChallengeForumWatch.
+     */
+    data: XOR<ChallengeForumWatchCreateInput, ChallengeForumWatchUncheckedCreateInput>
+  }
+
+  /**
+   * ChallengeForumWatch createMany
+   */
+  export type ChallengeForumWatchCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ChallengeForumWatches.
+     */
+    data: ChallengeForumWatchCreateManyInput | ChallengeForumWatchCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChallengeForumWatch createManyAndReturn
+   */
+  export type ChallengeForumWatchCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * The data used to create many ChallengeForumWatches.
+     */
+    data: ChallengeForumWatchCreateManyInput | ChallengeForumWatchCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChallengeForumWatch update
+   */
+  export type ChallengeForumWatchUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ChallengeForumWatch.
+     */
+    data: XOR<ChallengeForumWatchUpdateInput, ChallengeForumWatchUncheckedUpdateInput>
+    /**
+     * Choose, which ChallengeForumWatch to update.
+     */
+    where: ChallengeForumWatchWhereUniqueInput
+  }
+
+  /**
+   * ChallengeForumWatch updateMany
+   */
+  export type ChallengeForumWatchUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ChallengeForumWatches.
+     */
+    data: XOR<ChallengeForumWatchUpdateManyMutationInput, ChallengeForumWatchUncheckedUpdateManyInput>
+    /**
+     * Filter which ChallengeForumWatches to update
+     */
+    where?: ChallengeForumWatchWhereInput
+    /**
+     * Limit how many ChallengeForumWatches to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChallengeForumWatch updateManyAndReturn
+   */
+  export type ChallengeForumWatchUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * The data used to update ChallengeForumWatches.
+     */
+    data: XOR<ChallengeForumWatchUpdateManyMutationInput, ChallengeForumWatchUncheckedUpdateManyInput>
+    /**
+     * Filter which ChallengeForumWatches to update
+     */
+    where?: ChallengeForumWatchWhereInput
+    /**
+     * Limit how many ChallengeForumWatches to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChallengeForumWatch upsert
+   */
+  export type ChallengeForumWatchUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ChallengeForumWatch to update in case it exists.
+     */
+    where: ChallengeForumWatchWhereUniqueInput
+    /**
+     * In case the ChallengeForumWatch found by the `where` argument doesn't exist, create a new ChallengeForumWatch with this data.
+     */
+    create: XOR<ChallengeForumWatchCreateInput, ChallengeForumWatchUncheckedCreateInput>
+    /**
+     * In case the ChallengeForumWatch was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ChallengeForumWatchUpdateInput, ChallengeForumWatchUncheckedUpdateInput>
+  }
+
+  /**
+   * ChallengeForumWatch delete
+   */
+  export type ChallengeForumWatchDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
+    /**
+     * Filter which ChallengeForumWatch to delete.
+     */
+    where: ChallengeForumWatchWhereUniqueInput
+  }
+
+  /**
+   * ChallengeForumWatch deleteMany
+   */
+  export type ChallengeForumWatchDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChallengeForumWatches to delete
+     */
+    where?: ChallengeForumWatchWhereInput
+    /**
+     * Limit how many ChallengeForumWatches to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChallengeForumWatch without action
+   */
+  export type ChallengeForumWatchDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChallengeForumWatch
+     */
+    select?: ChallengeForumWatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChallengeForumWatch
+     */
+    omit?: ChallengeForumWatchOmit<ExtArgs> | null
   }
 
 
@@ -13895,10 +14999,22 @@ export namespace Prisma {
   export const TopicWatchScalarFieldEnum: {
     topicId: 'topicId',
     memberId: 'memberId',
+    watching: 'watching',
     createdAt: 'createdAt'
   };
 
   export type TopicWatchScalarFieldEnum = (typeof TopicWatchScalarFieldEnum)[keyof typeof TopicWatchScalarFieldEnum]
+
+
+  export const ChallengeForumWatchScalarFieldEnum: {
+    challengeId: 'challengeId',
+    memberId: 'memberId',
+    watching: 'watching',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ChallengeForumWatchScalarFieldEnum = (typeof ChallengeForumWatchScalarFieldEnum)[keyof typeof ChallengeForumWatchScalarFieldEnum]
 
 
   export const TopicReadStateScalarFieldEnum: {
@@ -14524,6 +15640,7 @@ export namespace Prisma {
     NOT?: TopicWatchWhereInput | TopicWatchWhereInput[]
     topicId?: StringFilter<"TopicWatch"> | string
     memberId?: StringFilter<"TopicWatch"> | string
+    watching?: BoolFilter<"TopicWatch"> | boolean
     createdAt?: DateTimeFilter<"TopicWatch"> | Date | string
     topic?: XOR<TopicScalarRelationFilter, TopicWhereInput>
   }
@@ -14531,6 +15648,7 @@ export namespace Prisma {
   export type TopicWatchOrderByWithRelationInput = {
     topicId?: SortOrder
     memberId?: SortOrder
+    watching?: SortOrder
     createdAt?: SortOrder
     topic?: TopicOrderByWithRelationInput
   }
@@ -14542,6 +15660,7 @@ export namespace Prisma {
     NOT?: TopicWatchWhereInput | TopicWatchWhereInput[]
     topicId?: StringFilter<"TopicWatch"> | string
     memberId?: StringFilter<"TopicWatch"> | string
+    watching?: BoolFilter<"TopicWatch"> | boolean
     createdAt?: DateTimeFilter<"TopicWatch"> | Date | string
     topic?: XOR<TopicScalarRelationFilter, TopicWhereInput>
   }, "topicId_memberId">
@@ -14549,6 +15668,7 @@ export namespace Prisma {
   export type TopicWatchOrderByWithAggregationInput = {
     topicId?: SortOrder
     memberId?: SortOrder
+    watching?: SortOrder
     createdAt?: SortOrder
     _count?: TopicWatchCountOrderByAggregateInput
     _max?: TopicWatchMaxOrderByAggregateInput
@@ -14561,7 +15681,61 @@ export namespace Prisma {
     NOT?: TopicWatchScalarWhereWithAggregatesInput | TopicWatchScalarWhereWithAggregatesInput[]
     topicId?: StringWithAggregatesFilter<"TopicWatch"> | string
     memberId?: StringWithAggregatesFilter<"TopicWatch"> | string
+    watching?: BoolWithAggregatesFilter<"TopicWatch"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"TopicWatch"> | Date | string
+  }
+
+  export type ChallengeForumWatchWhereInput = {
+    AND?: ChallengeForumWatchWhereInput | ChallengeForumWatchWhereInput[]
+    OR?: ChallengeForumWatchWhereInput[]
+    NOT?: ChallengeForumWatchWhereInput | ChallengeForumWatchWhereInput[]
+    challengeId?: StringFilter<"ChallengeForumWatch"> | string
+    memberId?: StringFilter<"ChallengeForumWatch"> | string
+    watching?: BoolFilter<"ChallengeForumWatch"> | boolean
+    createdAt?: DateTimeFilter<"ChallengeForumWatch"> | Date | string
+    updatedAt?: DateTimeFilter<"ChallengeForumWatch"> | Date | string
+  }
+
+  export type ChallengeForumWatchOrderByWithRelationInput = {
+    challengeId?: SortOrder
+    memberId?: SortOrder
+    watching?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChallengeForumWatchWhereUniqueInput = Prisma.AtLeast<{
+    challengeId_memberId?: ChallengeForumWatchChallengeIdMemberIdCompoundUniqueInput
+    AND?: ChallengeForumWatchWhereInput | ChallengeForumWatchWhereInput[]
+    OR?: ChallengeForumWatchWhereInput[]
+    NOT?: ChallengeForumWatchWhereInput | ChallengeForumWatchWhereInput[]
+    challengeId?: StringFilter<"ChallengeForumWatch"> | string
+    memberId?: StringFilter<"ChallengeForumWatch"> | string
+    watching?: BoolFilter<"ChallengeForumWatch"> | boolean
+    createdAt?: DateTimeFilter<"ChallengeForumWatch"> | Date | string
+    updatedAt?: DateTimeFilter<"ChallengeForumWatch"> | Date | string
+  }, "challengeId_memberId">
+
+  export type ChallengeForumWatchOrderByWithAggregationInput = {
+    challengeId?: SortOrder
+    memberId?: SortOrder
+    watching?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ChallengeForumWatchCountOrderByAggregateInput
+    _max?: ChallengeForumWatchMaxOrderByAggregateInput
+    _min?: ChallengeForumWatchMinOrderByAggregateInput
+  }
+
+  export type ChallengeForumWatchScalarWhereWithAggregatesInput = {
+    AND?: ChallengeForumWatchScalarWhereWithAggregatesInput | ChallengeForumWatchScalarWhereWithAggregatesInput[]
+    OR?: ChallengeForumWatchScalarWhereWithAggregatesInput[]
+    NOT?: ChallengeForumWatchScalarWhereWithAggregatesInput | ChallengeForumWatchScalarWhereWithAggregatesInput[]
+    challengeId?: StringWithAggregatesFilter<"ChallengeForumWatch"> | string
+    memberId?: StringWithAggregatesFilter<"ChallengeForumWatch"> | string
+    watching?: BoolWithAggregatesFilter<"ChallengeForumWatch"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"ChallengeForumWatch"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ChallengeForumWatch"> | Date | string
   }
 
   export type TopicReadStateWhereInput = {
@@ -15264,6 +16438,7 @@ export namespace Prisma {
 
   export type TopicWatchCreateInput = {
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
     topic: TopicCreateNestedOneWithoutWatchesInput
   }
@@ -15271,11 +16446,13 @@ export namespace Prisma {
   export type TopicWatchUncheckedCreateInput = {
     topicId: string
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
   }
 
   export type TopicWatchUpdateInput = {
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     topic?: TopicUpdateOneRequiredWithoutWatchesNestedInput
   }
@@ -15283,24 +16460,84 @@ export namespace Prisma {
   export type TopicWatchUncheckedUpdateInput = {
     topicId?: StringFieldUpdateOperationsInput | string
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TopicWatchCreateManyInput = {
     topicId: string
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
   }
 
   export type TopicWatchUpdateManyMutationInput = {
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TopicWatchUncheckedUpdateManyInput = {
     topicId?: StringFieldUpdateOperationsInput | string
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChallengeForumWatchCreateInput = {
+    challengeId: string
+    memberId: string
+    watching: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChallengeForumWatchUncheckedCreateInput = {
+    challengeId: string
+    memberId: string
+    watching: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChallengeForumWatchUpdateInput = {
+    challengeId?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChallengeForumWatchUncheckedUpdateInput = {
+    challengeId?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChallengeForumWatchCreateManyInput = {
+    challengeId: string
+    memberId: string
+    watching: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChallengeForumWatchUpdateManyMutationInput = {
+    challengeId?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChallengeForumWatchUncheckedUpdateManyInput = {
+    challengeId?: StringFieldUpdateOperationsInput | string
+    memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TopicReadStateCreateInput = {
@@ -16011,19 +17248,51 @@ export namespace Prisma {
   export type TopicWatchCountOrderByAggregateInput = {
     topicId?: SortOrder
     memberId?: SortOrder
+    watching?: SortOrder
     createdAt?: SortOrder
   }
 
   export type TopicWatchMaxOrderByAggregateInput = {
     topicId?: SortOrder
     memberId?: SortOrder
+    watching?: SortOrder
     createdAt?: SortOrder
   }
 
   export type TopicWatchMinOrderByAggregateInput = {
     topicId?: SortOrder
     memberId?: SortOrder
+    watching?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type ChallengeForumWatchChallengeIdMemberIdCompoundUniqueInput = {
+    challengeId: string
+    memberId: string
+  }
+
+  export type ChallengeForumWatchCountOrderByAggregateInput = {
+    challengeId?: SortOrder
+    memberId?: SortOrder
+    watching?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChallengeForumWatchMaxOrderByAggregateInput = {
+    challengeId?: SortOrder
+    memberId?: SortOrder
+    watching?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChallengeForumWatchMinOrderByAggregateInput = {
+    challengeId?: SortOrder
+    memberId?: SortOrder
+    watching?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TopicReadStateTopicIdMemberIdCompoundUniqueInput = {
@@ -17061,11 +18330,13 @@ export namespace Prisma {
 
   export type TopicWatchCreateWithoutTopicInput = {
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
   }
 
   export type TopicWatchUncheckedCreateWithoutTopicInput = {
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
   }
 
@@ -17291,6 +18562,7 @@ export namespace Prisma {
     NOT?: TopicWatchScalarWhereInput | TopicWatchScalarWhereInput[]
     topicId?: StringFilter<"TopicWatch"> | string
     memberId?: StringFilter<"TopicWatch"> | string
+    watching?: BoolFilter<"TopicWatch"> | boolean
     createdAt?: DateTimeFilter<"TopicWatch"> | Date | string
   }
 
@@ -18025,6 +19297,7 @@ export namespace Prisma {
 
   export type TopicWatchCreateManyTopicInput = {
     memberId: string
+    watching?: boolean
     createdAt?: Date | string
   }
 
@@ -18170,16 +19443,19 @@ export namespace Prisma {
 
   export type TopicWatchUpdateWithoutTopicInput = {
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TopicWatchUncheckedUpdateWithoutTopicInput = {
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TopicWatchUncheckedUpdateManyWithoutTopicInput = {
     memberId?: StringFieldUpdateOperationsInput | string
+    watching?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

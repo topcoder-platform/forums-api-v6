@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Post, Topic } from '../../prisma/generated/client';
 import { DbService } from '../db/db.service';
+import { ChallengeForumWatchService } from './challenge-forum-watch.service';
 import { ChallengeApiService } from './challenge-api.service';
 import { EventBusService } from './event-bus.service';
 import { ForumsAccessPolicyService } from './forums-access-policy.service';
@@ -24,6 +25,11 @@ interface ForumsWatchNotificationEmailPayload {
   recipients: string[];
   sendgrid_template_id: string;
   version: 'v3';
+}
+
+interface ForumsNotificationChallengeContext {
+  title?: string;
+  url?: string;
 }
 
 /**
@@ -71,7 +77,8 @@ export class ForumsNotificationPublishError extends Error {
  * Publishes post-commit forum watch notifications.
  *
  * The service resolves explicit watches on the created post's topic and all
- * ancestors, dedupes by member id, excludes the persisted author member id,
+ * ancestors plus effective challenge-wide watches, dedupes by member id,
+ * excludes the persisted author member id,
  * filters active member bans and remaining recipients through the shared forums
  * access policy, resolves the challenge title when applicable, and publishes one
  * SendGrid email event for the final recipient list. IP-ban checks are intentionally
@@ -92,6 +99,7 @@ export class ForumsWatchNotificationService {
    * @param eventBusService Local event-bus adapter.
    * @param configService Nest configuration service containing notification settings.
    * @param challengeApiService M2M-authenticated lookup for challenge titles.
+   * @param challengeWatchService Resource-based defaults and explicit forum preferences.
    * @throws Does not throw directly; dependencies are resolved by Nest.
    */
   constructor(
@@ -103,6 +111,7 @@ export class ForumsWatchNotificationService {
     private readonly eventBusService: EventBusService,
     private readonly configService: ConfigService,
     private readonly challengeApiService: ChallengeApiService,
+    private readonly challengeWatchService: ChallengeForumWatchService,
   ) {}
 
   /**
@@ -129,6 +138,7 @@ export class ForumsWatchNotificationService {
     const watcherMemberIds = await this.resolveWatcherMemberIds(
       params.topic.id,
       params.post.authorMemberId,
+      params.restrictions.challengeId,
     );
 
     if (watcherMemberIds.length === 0) {
@@ -160,12 +170,12 @@ export class ForumsWatchNotificationService {
       return { attemptedRecipientCount: 0, published: false };
     }
 
-    const challengeTitle = await this.resolveChallengeTitle(params);
+    const challengeContext = await this.resolveChallengeContext(params);
     const payload = this.buildEmailPayload(
       params,
       templateId,
       recipientEmails,
-      challengeTitle,
+      challengeContext,
     );
 
     try {
@@ -188,16 +198,19 @@ export class ForumsWatchNotificationService {
   }
 
   /**
-   * Resolves watched members from topic and ancestor watch rows.
+   * Resolves topic, ancestor, and challenge-wide watches, excluding explicit
+   * opt-outs on the receiving topic even when the member watches the forum.
    *
    * @param topicId Topic id receiving the newly created post.
    * @param authorMemberId Persisted author member id to exclude.
+   * @param challengeId Effective challenge scope, or null for general forums.
    * @returns Deduped watcher member ids, excluding the author.
-   * @throws Prisma errors when closure or watch rows cannot be loaded.
+   * @throws Database errors when topic, resource, or challenge watch rows cannot be loaded.
    */
   private async resolveWatcherMemberIds(
     topicId: string,
     authorMemberId: string,
+    challengeId: string | null,
   ): Promise<string[]> {
     const closureRows = await this.db.topicClosure.findMany({
       where: { descendantTopicId: topicId },
@@ -214,10 +227,27 @@ export class ForumsWatchNotificationService {
         topicId: { in: watchedTopicIds },
         memberId: { not: authorMemberId },
       },
-      select: { memberId: true },
+      select: { topicId: true, memberId: true, watching: true },
     });
 
-    return Array.from(new Set(watchRows.map((watch) => watch.memberId)));
+    const challengeWatchers = challengeId
+      ? await this.challengeWatchService.getWatcherMemberIds(challengeId)
+      : [];
+    const topicOptOuts = new Set(
+      watchRows
+        .filter((watch) => watch.topicId === topicId && !watch.watching)
+        .map((watch) => watch.memberId),
+    );
+    return Array.from(
+      new Set([
+        ...watchRows
+          .filter((watch) => watch.watching)
+          .map((watch) => watch.memberId),
+        ...challengeWatchers,
+      ]),
+    ).filter(
+      (memberId) => memberId !== authorMemberId && !topicOptOuts.has(memberId),
+    );
   }
 
   /**
@@ -374,30 +404,43 @@ export class ForumsWatchNotificationService {
   }
 
   /**
-   * Looks up the effective challenge title once per outgoing notification.
+   * Resolves the effective challenge name and public URL once per outgoing notification.
    *
    * @param params Current notification parameters with inherited challenge context.
-   * @returns Challenge title, or `undefined` for non-challenge topics or lookup failures.
-   * @throws Does not throw; lookup failures are logged so email delivery continues.
+   * @returns Available challenge template fields, or an empty object for non-challenge topics.
+   * @throws Does not throw; title and URL failures are logged independently so email delivery continues.
    */
-  private async resolveChallengeTitle(
+  private async resolveChallengeContext(
     params: PublishForumsPostNotificationParams,
-  ): Promise<string | undefined> {
+  ): Promise<ForumsNotificationChallengeContext> {
     const challengeId = params.restrictions.challengeId;
 
     if (!challengeId) {
-      return undefined;
+      return {};
     }
 
+    const context: ForumsNotificationChallengeContext = {};
+
     try {
-      return await this.challengeApiService.getChallengeTitle(challengeId);
+      context.title =
+        await this.challengeApiService.getChallengeTitle(challengeId);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
       this.logger.warn(
         `${params.operationName} notification for topic ${params.topic.id}, post ${params.post.id}: challenge ${challengeId} title lookup failed: ${message}`,
       );
-      return undefined;
     }
+
+    try {
+      context.url = this.challengeApiService.getChallengeUrl(challengeId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown error';
+      this.logger.warn(
+        `${params.operationName} notification for topic ${params.topic.id}, post ${params.post.id}: challenge ${challengeId} URL resolution failed: ${message}`,
+      );
+    }
+
+    return context;
   }
 
   /**
@@ -406,7 +449,7 @@ export class ForumsWatchNotificationService {
    * @param params Current notification publish parameters.
    * @param templateId Configured SendGrid template id.
    * @param recipients Final recipient email list.
-   * @param challengeTitle Challenge API name when the effective challenge resolves.
+   * @param challengeContext Challenge API name and public Opportunities URL when available.
    * @returns Event-bus email payload.
    * @throws Does not throw.
    */
@@ -414,14 +457,25 @@ export class ForumsWatchNotificationService {
     params: PublishForumsPostNotificationParams,
     templateId: string,
     recipients: string[],
-    challengeTitle: string | undefined,
+    challengeContext: ForumsNotificationChallengeContext,
   ): ForumsWatchNotificationEmailPayload {
     return {
       data: {
         ...(params.restrictions.challengeId
           ? { challengeId: params.restrictions.challengeId }
           : {}),
-        ...(challengeTitle ? { challengeTitle } : {}),
+        ...(challengeContext.title
+          ? {
+              challengeName: challengeContext.title,
+              challengeTitle: challengeContext.title,
+            }
+          : {}),
+        ...(challengeContext.url
+          ? {
+              challengeURL: challengeContext.url,
+              challengeUrl: challengeContext.url,
+            }
+          : {}),
         topicId: params.topic.id,
         topicTitle: params.topic.title,
         postContent: params.post.content ?? '',

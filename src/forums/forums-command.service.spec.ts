@@ -94,10 +94,12 @@ function createCommandService(order: string[] = []) {
         updatedAt: createdAt,
       }),
       deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
-      count: jest.fn().mockImplementation(
-        (args: { where: { reaction: PostReactionType } }) =>
-          args.where.reaction === PostReactionType.THUMBS_UP ? 2 : 1,
-      ),
+      count: jest
+        .fn()
+        .mockImplementation(
+          (args: { where: { reaction: PostReactionType } }) =>
+            args.where.reaction === PostReactionType.THUMBS_UP ? 2 : 1,
+        ),
     },
     topicClosure: {
       findFirst: jest.fn().mockResolvedValue(null),
@@ -368,6 +370,33 @@ describe('ForumsCommandService notification boundary', () => {
     );
     expect(db.$transaction).not.toHaveBeenCalled();
     expect(notificationService.publishPostNotification).not.toHaveBeenCalled();
+  });
+
+  it('publishes a challenge root starter notification only after commit', async () => {
+    const order: string[] = [];
+    const { notificationService, service, tx } = createCommandService(order);
+    tx.topic.create.mockResolvedValue(
+      makeTopic({ challengeId: 'challenge-1' }),
+    );
+    await service.createTopic(
+      {
+        title: 'New challenge topic',
+        content: 'Starter content',
+        challengeId: 'challenge-1',
+      },
+      user,
+    );
+    expect(order).toEqual(['post.create', 'commit', 'notify']);
+    expect(notificationService.publishPostNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        operationName: 'createTopic',
+        restrictions: {
+          challengeId: 'challenge-1',
+          roleName: null,
+          hasRestrictionConflict: false,
+        },
+      }),
+    );
   });
 
   it('does not publish notifications for top-level createTopic commands', async () => {
@@ -652,7 +681,9 @@ describe('ForumsCommandService post reactions', () => {
       update: { reaction: PostReactionType.THUMBS_DOWN },
     });
     expect(tx.postReaction.count).toHaveBeenCalledTimes(2);
-    expect(moderationService.decideForLockedTopicMutation).not.toHaveBeenCalled();
+    expect(
+      moderationService.decideForLockedTopicMutation,
+    ).not.toHaveBeenCalled();
   });
 
   it('removes a member reaction idempotently and returns a null viewer state', async () => {
@@ -660,9 +691,7 @@ describe('ForumsCommandService post reactions', () => {
     tx.postReaction.deleteMany.mockResolvedValue({ count: 0 });
     tx.postReaction.count.mockResolvedValue(0);
 
-    await expect(
-      service.removePostReaction('post-1', user),
-    ).resolves.toEqual({
+    await expect(service.removePostReaction('post-1', user)).resolves.toEqual({
       postId: 'post-1',
       viewerReaction: null,
       thumbsUpCount: 0,
@@ -701,6 +730,27 @@ describe('ForumsCommandService post reactions', () => {
 });
 
 describe('ForumsCommandService member-targeted state commands', () => {
+  it('persists a challenge-topic opt-out instead of deleting its preference', async () => {
+    const { service, topicContextService, tx } = createCommandService();
+    topicContextService.loadTopicContext.mockResolvedValue({
+      ...(await topicContextService.loadTopicContext()),
+      effectiveChallengeId: 'challenge-1',
+    });
+    await expect(
+      service.removeTopicWatch('topic-1', undefined, user),
+    ).resolves.toEqual({
+      topicId: 'topic-1',
+      memberId: '1',
+      watching: false,
+    });
+    expect(tx.topicWatch.upsert).toHaveBeenCalledWith({
+      where: { topicId_memberId: { topicId: 'topic-1', memberId: '1' } },
+      create: { topicId: 'topic-1', memberId: '1', watching: false },
+      update: { watching: false },
+    });
+    expect(tx.topicWatch.deleteMany).not.toHaveBeenCalled();
+  });
+
   const commandCases = [
     {
       name: 'addTopicWatch',
@@ -717,8 +767,9 @@ describe('ForumsCommandService member-targeted state commands', () => {
           create: {
             topicId: 'topic-1',
             memberId: '2',
+            watching: true,
           },
-          update: {},
+          update: { watching: true },
         });
       },
     },

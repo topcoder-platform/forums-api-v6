@@ -18,6 +18,9 @@ and post-commit watch notifications.
 - `PATCH /v6/forums/topics/:topicId`
 - `DELETE /v6/forums/topics/:topicId`
 - `POST /v6/forums/topics/:topicId/posts`
+- `GET /v6/forums/challenges/:challengeId/watch`
+- `PUT /v6/forums/challenges/:challengeId/watch`
+- `DELETE /v6/forums/challenges/:challengeId/watch`
 - `PUT /v6/forums/topics/:topicId/watch`
 - `DELETE /v6/forums/topics/:topicId/watch`
 - `PUT /v6/forums/topics/:topicId/read-state`
@@ -32,7 +35,7 @@ and post-commit watch notifications.
 - `PUT /v6/forums/moderation/ip-bans/:ipAddress`
 - `DELETE /v6/forums/moderation/ip-bans/:ipAddress`
 
-This service includes the forums schema, Prisma client export, topic read workflows, transactional command-side workflows, per-member post reactions, centralized forums authorization and runtime moderation for topics, posts, watches, and explicit read-state updates, plus best-effort watch notification publishing for new posts and successful allowed child-topic starter posts. The policy resolves inherited topic restrictions, challenge access, resource-role/copilot elevation, role matching, ownership, scoped M2M write access, and M2M on-behalf target-member visibility before writes, reads, or notification delivery. Runtime moderation enforces active member bans, trusted exact-IP bans for human request traffic, and locked-topic mutation rules.
+This service includes the forums schema, Prisma client export, topic read workflows, transactional command-side workflows, per-member post reactions, centralized forums authorization and runtime moderation for topics, posts, watches, and explicit read-state updates, plus best-effort watch notification publishing for new posts and successful allowed child-topic and top-level challenge starter posts. The policy resolves inherited topic restrictions, challenge access, resource-role/copilot elevation, role matching, ownership, scoped M2M write access, and M2M on-behalf target-member visibility before writes, reads, or notification delivery. Runtime moderation enforces active member bans, trusted exact-IP bans for human request traffic, and locked-topic mutation rules.
 
 Topic reads are exposed under `read:forums-topics`. `GET /v6/forums/topics` returns visible non-challenge root topics; `GET /v6/forums/topics/challenges/:challengeId` checks base challenge visibility before returning visible challenge roots; `GET /v6/forums/topics/:topicId/children` requires parent visibility before filtering direct children; and `GET /v6/forums/topics/:topicId` returns topic detail with an embedded post tree. Active member bans and trusted exact-IP bans return 403 before read policy or query work. Topic summaries include `locked`, `lockedBy`, and `lockedAt`; `lockedBy` and `lockedAt` may be null for imported legacy locked topics. Locked topics remain readable for callers that otherwise pass moderation and visibility checks. Detail embeds posts under `read:forums-topics`, orders every top-level and nested sibling list chronologically from oldest to newest, keeps deleted post placeholders with null content, counts only non-deleted posts, derives unread state from `TopicReadState.lastReadAt`, and includes each post's current challenge-resource `authorIsCopilot` projection, shared `thumbsUpCount`/`thumbsDownCount`, and the authenticated member's nullable `viewerReaction`. `read:forums-posts` remains reserved for future post-specific read APIs in v1.
 
@@ -46,9 +49,31 @@ Moderation management is exposed under `/v6/forums/moderation`. Human callers mu
 
 Successful `POST /v6/forums/topics/:topicId/posts` commands publish a
 best-effort watch notification after the post transaction commits. Successful
-allowed child-topic `POST /v6/forums/topics` commands publish the same
-notification for the created starter post. Top-level topic creation, updates,
-deletes, watch mutations, and mark-read commands do not publish notifications.
+allowed child-topic and top-level challenge `POST /v6/forums/topics` commands
+publish the same notification for the created starter post. General top-level
+topic creation, updates, deletes, watch mutations, and mark-read commands do not
+publish notifications.
+
+Challenge forums are watched by default for members with a Submitter or Copilot
+resource assignment. Defaults are resolved from current Resources data, so new
+registrations and copilot assignments take effect without visiting the forum,
+including before its first topic exists. The challenge watch routes return
+`{ challengeId, memberId, watching }` for the authenticated human member; PUT and
+DELETE persist explicit preferences. DELETE stores an opt-out so later reads or
+resource changes cannot silently resubscribe the member. Topic list/detail reads
+inherit this preference when there is no explicit topic choice. Topic PUT stores
+`watching: true`; challenge-topic DELETE stores `watching: false` so a later forum
+re-watch cannot resubscribe that topic. Explicit topic watches survive forum
+opt-out, and explicit topic opt-outs suppress emails even while the forum is
+watched. Announcements follow the same rules. New challenge topics, including
+those created by the member, inherit the current forum preference. Challenge-wide watchers receive new topic and post emails,
+subject to the same topic visibility, ban, author exclusion, and deduplication
+rules as topic watchers. Deploy the `20261016000000_challenge_forum_watch` database
+migration and `20261020000000_topic_watch_preferences` before the API and the
+Opportunities watch control. The latter preserves existing topic watch rows as
+opt-ins; historical rows have no provenance distinguishing manual from author
+watches. New challenge-topic creation no longer seeds an author watch. General
+forum author watches and unwatch behavior are unchanged.
 
 Recipient resolution expands watches from the created content topic through all
 ancestor topics using `TopicClosure`, dedupes by member id, excludes the
@@ -64,10 +89,12 @@ the content write.
 
 For challenge-scoped notifications, the publisher fetches the effective challenge
 from `GET /v6/challenges/:challengeId` using the configured M2M credentials and
-includes its `name` as `data.challengeTitle`. This lookup runs once per outgoing
-notification, after recipient authorization, and uses a five-second HTTP timeout.
-Lookup failures are logged and the email still publishes with `challengeId` but
-without `challengeTitle`.
+includes its name and environment-correct Opportunities link. The established
+`challengeName` / `challengeURL` SendGrid keys and the `challengeTitle` /
+`challengeUrl` compatibility aliases carry identical values. This lookup runs
+once per outgoing notification, after recipient authorization, and uses a
+five-second HTTP timeout. Name and URL failures are logged independently, and
+the email still publishes with every field that could be resolved.
 
 The [forum notification HTML template](docs/email-templates/forum-notification.html)
 adapts the Topcoder support email design for these notifications. Use the subject
@@ -81,7 +108,10 @@ Template variables come from the event payload's `data` object:
 | Field | Value |
 | --- | --- |
 | `challengeId` | Effective challenge ID; omitted when absent. The template hides this row when absent. |
-| `challengeTitle` | Challenge API `name`; omitted for non-challenge topics or failed lookups. The template hides this row when absent. |
+| `challengeName` | Challenge API `name`; omitted for non-challenge topics or failed lookups. The template hides this row when absent. |
+| `challengeURL` | Public `/opportunities/challenge/:challengeId` URL. |
+| `challengeTitle` | Compatibility alias of `challengeName`. |
+| `challengeUrl` | Compatibility alias of `challengeURL`. |
 | `topicId` | Created content's topic ID. |
 | `topicTitle` | Topic title. |
 | `postContent` | Persisted post content, or an empty string when null. |
@@ -90,13 +120,14 @@ Template variables come from the event payload's `data` object:
 
 Use the [sample template data](docs/email-templates/forum-notification.sample.json)
 in SendGrid's preview editor; it contains only the `data` fields, without the
-event envelope. Remove `challengeId` and `challengeTitle` to preview a non-challenge notification.
+event envelope. Remove all challenge fields to preview a non-challenge notification.
 User content uses escaped double-brace substitutions and is displayed as text,
 with line breaks preserved where the email client supports `white-space: pre-wrap`;
 Markdown and HTML are not rendered. See SendGrid's
 [Handlebars documentation](https://www.twilio.com/docs/sendgrid/for-developers/sending-email/using-handlebars)
-for substitution and conditional syntax. The current payload has no discussion
-URL, so the template currently displays the topic ID without a discussion link.
+for substitution and conditional syntax. The challenge name links to the new
+Opportunities challenge-details route; the topic ID remains unlinked because the
+page does not yet expose a stable topic-detail URL.
 
 ## Environment
 
@@ -116,6 +147,7 @@ SENDGRID_NOTIFICATION_TEMPLATE="sendgrid-template-id"
 BUSAPI_URL="https://api.topcoder-dev.com/v6"
 BUS_API_URL="https://api.topcoder-dev.com/v6/bus/events"
 TOPCODER_API_URL_BASE="https://api.topcoder-dev.com"
+TOPCODER_URL="https://www.topcoder-dev.com"
 CHALLENGE_API_URL="https://api.topcoder-dev.com/v6/challenges"
 KAFKA_ERROR_TOPIC="common.error.reporting"
 AUTH0_URL="https://auth.topcoder-dev.com/"
@@ -136,7 +168,7 @@ PORT=3000
 `VANILLA_DB_URL` is used only by the standalone Vanilla import CLI for legacy MySQL reads. The runtime HTTP service does not connect to Vanilla.
 `AUTH_SECRET` is required; the service fails during startup when it is omitted.
 `SENDGRID_NOTIFICATION_TEMPLATE` enables forum watch notification emails. When omitted, notification publishing is skipped and content writes still succeed.
-`CHALLENGE_API_URL` optionally configures the challenges collection endpoint for notification titles. When omitted, it defaults to `${TOPCODER_API_URL_BASE}/v6/challenges`. The lookup uses the same Auth0 configuration and `M2M_CLIENT_ID` / `M2M_CLIENT_SECRET` as outbound bus publishing; the M2M client must have challenge read access.
+`CHALLENGE_API_URL` optionally configures the challenges collection endpoint for notification titles. When omitted, it defaults to `${TOPCODER_API_URL_BASE}/v6/challenges`. The lookup uses the same Auth0 configuration and `M2M_CLIENT_ID` / `M2M_CLIENT_SECRET` as outbound bus publishing; the M2M client must have challenge read access. `TOPCODER_URL` optionally configures the public web origin used by challenge links. When omitted, the service derives it from `TOPCODER_API_URL_BASE` by replacing the conventional `api.` hostname prefix with `www.`.
 `BUSAPI_URL` configures the shared Bus API v6 base for `external.action.email`; the backwards-compatible `BUS_API_URL` alias may contain either that base or the complete `/v6/bus/events` endpoint. Both values are normalized to the `/v6` base because `tc-bus-api-wrapper` appends `/bus/events`, and conflicting aliases or legacy `/eventBus` and `/v5` values are rejected. When neither alias is set, the service derives the v6 base from `TOPCODER_API_URL_BASE`. `KAFKA_ERROR_TOPIC`, `AUTH0_URL`, `AUTH0_AUDIENCE`, `TOKEN_CACHE_TIME`, `M2M_CLIENT_ID`, `M2M_CLIENT_SECRET`, and `AUTH0_PROXY_SERVER_URL` are passed to the standard bus wrapper for outbound authenticated publishing.
 `TRUST_FORWARDED_CLIENT_IP=true` enables forwarded client-IP moderation using the first exact IPv4/IPv6 host from trusted forwarding headers. When disabled, or when the forwarded value is missing, malformed, CIDR, wildcard, or otherwise non-exact, no client IP is resolved and IP-ban enforcement is skipped for that request. Do not enable this unless the service is behind infrastructure that strips or controls inbound forwarding headers.
 
@@ -284,4 +316,4 @@ The forums Prisma schema defines `Topic`, `Post`, `PostReaction`, `TopicClosure`
 
 The production image includes the Prisma schema, migration history, configuration, and CLI. Its startup script runs `prisma migrate deploy` before starting NestJS, so a deployment cannot begin serving requests against an older forums schema. Migration failure stops the container instead of leaving feature-dependent reads or writes partially available.
 
-Topic creation is transactional: it creates the topic, starter post, closure rows, and, for human authors, author watch and read-state rows together. M2M topic creation uses the system author and skips member watch/read-state side effects. Topic deletion is soft deletion, and post deletion preserves the post row while setting content to null for placeholder reads. Topic summary reads use side-effect-free raw queries for topic lock state, visible-post counts, nullable latest visible activity, and unread derivation, then apply centralized forums policy filtering before pagination.
+Topic creation is transactional: it creates the topic, starter post, closure rows, and, for human authors, read-state rows together. General topics also seed an author watch; challenge topics inherit the forum preference. M2M topic creation uses the system author and skips member watch/read-state side effects. Topic deletion is soft deletion, and post deletion preserves the post row while setting content to null for placeholder reads. Topic summary reads use side-effect-free raw queries for topic lock state, visible-post counts, nullable latest visible activity, and unread derivation, then apply centralized forums policy filtering before pagination.

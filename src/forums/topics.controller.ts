@@ -108,7 +108,7 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Create a forum topic with a starter post',
     description:
-      'Command route requiring an authenticated member token or `create:forums-topics`. Top-level non-challenge topics are allowed for human admins and scoped M2M callers. Top-level challenge topics are allowed for eligible challenge members, challenge copilots, and admins; M2M callers cannot create challenge roots. Child topics require visible parents, monotonic restrictions, and a resolved effective non-challenge context; challenge-scoped child creates are forbidden. Active member bans and trusted exact-IP bans return 403 before writes. Locked parents reject child-topic creation unless the caller is an administrator or eligible challenge copilot. M2M-created content uses the system author and does not seed member watch or read-state rows. Successful child-topic starter posts trigger best-effort watch notifications after commit.',
+      'Command route requiring an authenticated member token or `create:forums-topics`. Top-level non-challenge topics are allowed for human admins and scoped M2M callers. Top-level challenge topics are allowed for eligible challenge members, challenge copilots, and admins; M2M callers cannot create challenge roots. Child topics require visible parents, monotonic restrictions, and a resolved effective non-challenge context; challenge-scoped child creates are forbidden. Active member bans and trusted exact-IP bans return 403 before writes. Locked parents reject child-topic creation unless the caller is an administrator or eligible challenge copilot. M2M-created content uses the system author and does not seed member watch or read-state rows. Successful child-topic and top-level challenge starter posts trigger best-effort watch notifications after commit.',
   })
   @ApiResponse({
     status: 201,
@@ -166,7 +166,9 @@ export class TopicsController {
     type: ForumsTopicSummaryPageDto,
   })
   @ApiBadRequestResponse({ description: 'Invalid pagination query.' })
-  @ApiUnauthorizedResponse({ description: 'A supplied bearer token is invalid.' })
+  @ApiUnauthorizedResponse({
+    description: 'A supplied bearer token is invalid.',
+  })
   @ApiForbiddenResponse({ description: 'Active forums ban.' })
   listGeneralRootTopics(
     @Query() query: ForumsTopicListQueryDto,
@@ -260,7 +262,9 @@ export class TopicsController {
     description: 'Visible direct child topics.',
     type: [ForumsTopicSummaryDto],
   })
-  @ApiUnauthorizedResponse({ description: 'A supplied bearer token is invalid.' })
+  @ApiUnauthorizedResponse({
+    description: 'A supplied bearer token is invalid.',
+  })
   @ApiForbiddenResponse({
     description: 'Active forums ban or parent topic visibility denied.',
   })
@@ -300,7 +304,9 @@ export class TopicsController {
     description: 'Topic detail with embedded post tree.',
     type: ForumsTopicDetailDto,
   })
-  @ApiUnauthorizedResponse({ description: 'A supplied bearer token is invalid.' })
+  @ApiUnauthorizedResponse({
+    description: 'A supplied bearer token is invalid.',
+  })
   @ApiForbiddenResponse({
     description: 'Active forums ban or topic visibility denied.',
   })
@@ -484,7 +490,7 @@ export class TopicsController {
   }
 
   /**
-   * Removes a watch on a topic for a member.
+   * Unwatches a topic, persisting an opt-out for challenge-scoped topics.
    *
    * @param topicId Topic id from the route.
    * @param dto Optional target member body; required for scoped M2M callers.
@@ -501,12 +507,13 @@ export class TopicsController {
   @ApiOperation({
     summary: 'Unwatch a forum topic',
     description:
-      'Command route requiring an authenticated member token or `remove:forums-topic-watch`. Human tokens unwatch for themselves and active member or trusted exact-IP bans return 403. Scoped M2M callers must supply a `memberId` that resolves in external Members and Identity data; active target-member bans return 403 before context loading, and policy evaluates inherited challenge and role visibility for that target member before removing the watch row.',
+      'Command route requiring an authenticated member token or `remove:forums-topic-watch`. Human tokens unwatch for themselves and active member or trusted exact-IP bans return 403. Scoped M2M callers must supply a `memberId` that resolves in external Members and Identity data; active target-member bans return 403 before context loading, and policy evaluates inherited challenge and role visibility for that target member before persisting a challenge-topic opt-out or removing a general-topic watch row.',
   })
   @ApiParam({ name: 'topicId', description: 'Topic id.' })
   @ApiResponse({
     status: 200,
-    description: 'Topic watch removed.',
+    description:
+      'Topic unwatched; challenge-topic opt-outs override the forum preference.',
     type: TopicWatchStateCommandResponseDto,
   })
   @ApiBadRequestResponse({ description: 'Invalid member target.' })

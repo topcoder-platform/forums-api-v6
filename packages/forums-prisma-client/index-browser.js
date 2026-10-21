@@ -187,7 +187,16 @@ exports.Prisma.TopicClosureScalarFieldEnum = {
 exports.Prisma.TopicWatchScalarFieldEnum = {
   topicId: 'topicId',
   memberId: 'memberId',
+  watching: 'watching',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.ChallengeForumWatchScalarFieldEnum = {
+  challengeId: 'challengeId',
+  memberId: 'memberId',
+  watching: 'watching',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TopicReadStateScalarFieldEnum = {
@@ -261,6 +270,7 @@ exports.Prisma.ModelName = {
   PostReaction: 'PostReaction',
   TopicClosure: 'TopicClosure',
   TopicWatch: 'TopicWatch',
+  ChallengeForumWatch: 'ChallengeForumWatch',
   TopicReadState: 'TopicReadState',
   PublicForumCategory: 'PublicForumCategory',
   PublicForumRoleMember: 'PublicForumRoleMember',
