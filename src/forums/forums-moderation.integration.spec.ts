@@ -344,6 +344,7 @@ describe('forums moderation endpoints', () => {
         req.user = {
           roles: splitHeader(req.header('x-roles')),
           scopes: splitHeader(req.header('x-scopes')),
+          kind: 'service',
           isMachine: true,
         };
         next();

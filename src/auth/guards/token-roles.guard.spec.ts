@@ -14,6 +14,7 @@ interface GuardUser {
   userId?: string;
   roles?: string[];
   scopes?: string[];
+  kind?: 'user' | 'service';
   isMachine: boolean;
 }
 
@@ -98,7 +99,7 @@ describe('TokenRolesGuard', () => {
       {
         roles: [],
         scopes: [FORUMS_SCOPE_MODERATE],
-        isMachine: true,
+        kind: 'service', isMachine: true,
       },
       {
         roles: [FORUMS_ADMIN_ROLE],
@@ -114,7 +115,7 @@ describe('TokenRolesGuard', () => {
       {
         roles: [FORUMS_ADMIN_ROLE],
         scopes: [FORUMS_SCOPE_CREATE_TOPIC],
-        isMachine: true,
+        kind: 'service', isMachine: true,
       },
       {
         roles: [FORUMS_ADMIN_ROLE],
@@ -132,7 +133,7 @@ describe('TokenRolesGuard', () => {
       {
         roles: [FORUMS_ADMIN_ROLE],
         scopes: [FORUMS_SCOPE_MODERATE],
-        isMachine: true,
+        kind: 'service', isMachine: true,
       },
       {
         roles: [FORUMS_ADMIN_ROLE],

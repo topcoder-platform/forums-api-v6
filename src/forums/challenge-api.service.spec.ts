@@ -12,10 +12,9 @@ import { ChallengeApiService } from './challenge-api.service';
 function createService(overrides: Record<string, string | undefined> = {}) {
   const values = {
     'notifications.topcoderApiUrlBase': 'https://api.topcoder-dev.com/',
-    'notifications.auth0Url': 'https://auth.example.com/oauth/token',
-    'notifications.auth0Audience': 'https://m2m.example.com/',
+    'notifications.keycloakTokenUrl': 'https://auth.example.com/oauth/token',
+    'notifications.keycloakAudience': 'https://m2m.example.com/',
     'notifications.tokenCacheTime': '86400',
-    'notifications.auth0ProxyServerUrl': 'https://proxy.example.com/token',
     'notifications.m2mClientId': 'client-id',
     'notifications.m2mClientSecret': 'client-secret',
     ...overrides,
@@ -32,7 +31,7 @@ describe('ChallengeApiService', () => {
 
   beforeEach(() => {
     getMachineToken = jest.fn().mockResolvedValue('machine-token');
-    m2mSpy = jest.spyOn(auth, 'm2m').mockReturnValue({ getMachineToken });
+    m2mSpy = jest.spyOn(auth, 'm2m').mockReturnValue({ getMachineToken, clearCache: jest.fn() });
     fetchSpy = jest
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(Response.json({ id: 'challenge-1', name: 'Challenge title' }));
@@ -49,12 +48,7 @@ describe('ChallengeApiService', () => {
     await expect(service.getChallengeTitle('challenge-1')).resolves.toBe(
       'Challenge title',
     );
-    expect(m2mSpy).toHaveBeenCalledWith({
-      AUTH0_URL: 'https://auth.example.com/oauth/token',
-      AUTH0_AUDIENCE: 'https://m2m.example.com/',
-      TOKEN_CACHE_TIME: 86400,
-      AUTH0_PROXY_SERVER_URL: 'https://proxy.example.com/token',
-    });
+    expect(m2mSpy).toHaveBeenCalledWith();
     expect(getMachineToken).toHaveBeenCalledWith('client-id', 'client-secret');
     expect(fetchSpy).toHaveBeenCalledWith(
       'https://api.topcoder-dev.com/v6/challenges/challenge-1',
@@ -109,8 +103,8 @@ describe('ChallengeApiService', () => {
 
   it.each([
     ['notifications.topcoderApiUrlBase', 'CHALLENGE_API_URL'],
-    ['notifications.m2mClientId', 'M2M_CLIENT_ID'],
-    ['notifications.m2mClientSecret', 'M2M_CLIENT_SECRET'],
+    ['notifications.m2mClientId', 'KEYCLOAK_CLIENT_ID'],
+    ['notifications.m2mClientSecret', 'KEYCLOAK_CLIENT_SECRET'],
   ])('fails before outbound requests when %s is missing', async (key, message) => {
     await expect(
       createService({ [key]: undefined }).getChallengeTitle('challenge-1'),

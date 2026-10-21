@@ -6,6 +6,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { auth, Principal } from 'tc-core-library-js';
+import { ALL_SCOPE_MAPPINGS } from '../scope-mappings';
 import {
   AUTHENTICATED_USER_ROLE,
   ROLES_KEY,
@@ -71,7 +73,7 @@ export class TokenRolesGuard implements CanActivate {
     }
 
     if (user.isMachine) {
-      if (this.hasRequiredScope(user.scopes, requiredScopes)) {
+      if (this.hasRequiredScope(user, requiredScopes)) {
         return true;
       }
 
@@ -92,26 +94,26 @@ export class TokenRolesGuard implements CanActivate {
   }
 
   /**
-   * Checks whether a token contains at least one required scope.
-   *
-   * @param tokenScopes Scopes present in the authenticated token.
-   * @param requiredScopes Scopes required by route metadata.
-   * @returns `true` when at least one required scope is present.
-   * @throws Does not throw.
+   * Checks a verified service against route scopes and explicit broad aliases.
+   * @param user Shared principal adapted for forums domain code.
+   * @param requiredScopes Nonempty route permission alternatives.
+   * @returns Whether an exact scope or documented one-way alias grants access.
+   * @throws Does not throw; missing route permissions deny service access.
    */
-  private hasRequiredScope(
-    tokenScopes: string[] | undefined,
-    requiredScopes: string[],
-  ): boolean {
-    if (requiredScopes.length === 0) {
-      return false;
+  private hasRequiredScope(user: AuthenticatedRequest['user'], requiredScopes: string[]): boolean {
+    if (!requiredScopes.length) return false;
+    const accepted = new Set(requiredScopes);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const [alias, implied] of Object.entries(ALL_SCOPE_MAPPINGS)) {
+        if (!accepted.has(alias) && implied.some(scope => accepted.has(scope))) {
+          accepted.add(alias);
+          changed = true;
+        }
+      }
     }
-
-    if (!Array.isArray(tokenScopes)) {
-      return false;
-    }
-
-    return requiredScopes.some((scope) => tokenScopes.includes(scope));
+    return auth.hasScopes(user as unknown as Principal, [...accepted], 'any');
   }
 
   /**

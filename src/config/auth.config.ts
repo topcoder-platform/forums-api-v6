@@ -1,6 +1,3 @@
-const DEFAULT_VALID_ISSUERS =
-  '["https://api.topcoder.com","https://api.topcoder-dev.com","https://topcoder-dev.auth0.com/","https://auth.topcoder-dev.com/","https://topcoder.auth0.com/","https://auth.topcoder.com/"]';
-
 /**
  * Loads authentication configuration used by the token validation pipeline.
  *
@@ -10,6 +7,6 @@ const DEFAULT_VALID_ISSUERS =
 export default () => ({
   auth: {
     authSecret: process.env.AUTH_SECRET,
-    validIssuers: process.env.VALID_ISSUERS ?? DEFAULT_VALID_ISSUERS,
+    validIssuers: process.env.VALID_ISSUERS ?? '[]',
   },
 });

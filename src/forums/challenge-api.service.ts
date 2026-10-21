@@ -16,7 +16,7 @@ export class ChallengeApiService {
   /**
    * Creates the notification challenge lookup adapter.
    *
-   * @param configService Notification API and Auth0 M2M configuration.
+   * @param configService Notification API and Keycloak M2M configuration.
    * @throws Does not throw; configuration is validated on lookup.
    */
   constructor(private readonly configService: ConfigService) {}
@@ -41,26 +41,12 @@ export class ChallengeApiService {
 
     if (!clientId || !clientSecret) {
       throw new Error(
-        'M2M_CLIENT_ID and M2M_CLIENT_SECRET must configure Challenge API access.',
+        'KEYCLOAK_CLIENT_ID and KEYCLOAK_CLIENT_SECRET must configure Challenge API access.',
       );
     }
 
     if (!this.m2mClient) {
-      const tokenCacheTime = Number(
-        this.configService.get<string>('notifications.tokenCacheTime'),
-      );
-      this.m2mClient = auth.m2m({
-        AUTH0_URL: this.configService.get<string>('notifications.auth0Url'),
-        AUTH0_AUDIENCE: this.configService.get<string>(
-          'notifications.auth0Audience',
-        ),
-        TOKEN_CACHE_TIME: Number.isFinite(tokenCacheTime)
-          ? tokenCacheTime
-          : undefined,
-        AUTH0_PROXY_SERVER_URL: this.configService.get<string>(
-          'notifications.auth0ProxyServerUrl',
-        ),
-      });
+      this.m2mClient = auth.m2m();
     }
 
     const token = await this.m2mClient.getMachineToken(clientId, clientSecret);

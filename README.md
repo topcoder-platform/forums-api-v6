@@ -150,12 +150,13 @@ TOPCODER_API_URL_BASE="https://api.topcoder-dev.com"
 TOPCODER_URL="https://www.topcoder-dev.com"
 CHALLENGE_API_URL="https://api.topcoder-dev.com/v6/challenges"
 KAFKA_ERROR_TOPIC="common.error.reporting"
-AUTH0_URL="https://auth.topcoder-dev.com/"
-AUTH0_AUDIENCE="https://m2m.topcoder-dev.com/"
+KEYCLOAK_TOKEN_URL="https://keycloak.topcoder-dev.com/m2m/token"
+M2M_PROVIDER="keycloak"
+KEYCLOAK_ISSUER="https://keycloak.topcoder-dev.com/realms/topcoder-m2m-dev"
+KEYCLOAK_AUDIENCE="https://api.topcoder-dev.com"
 TOKEN_CACHE_TIME=86400
-M2M_CLIENT_ID="replace-with-client-id"
-M2M_CLIENT_SECRET="replace-with-client-secret"
-AUTH0_PROXY_SERVER_URL="http://optional-auth0-proxy"
+KEYCLOAK_CLIENT_ID="replace-with-client-id"
+KEYCLOAK_CLIENT_SECRET="replace-with-client-secret"
 TRUST_FORWARDED_CLIENT_IP=false
 PORT=3000
 ```
@@ -168,8 +169,8 @@ PORT=3000
 `VANILLA_DB_URL` is used only by the standalone Vanilla import CLI for legacy MySQL reads. The runtime HTTP service does not connect to Vanilla.
 `AUTH_SECRET` is required; the service fails during startup when it is omitted.
 `SENDGRID_NOTIFICATION_TEMPLATE` enables forum watch notification emails. When omitted, notification publishing is skipped and content writes still succeed.
-`CHALLENGE_API_URL` optionally configures the challenges collection endpoint for notification titles. When omitted, it defaults to `${TOPCODER_API_URL_BASE}/v6/challenges`. The lookup uses the same Auth0 configuration and `M2M_CLIENT_ID` / `M2M_CLIENT_SECRET` as outbound bus publishing; the M2M client must have challenge read access. `TOPCODER_URL` optionally configures the public web origin used by challenge links. When omitted, the service derives it from `TOPCODER_API_URL_BASE` by replacing the conventional `api.` hostname prefix with `www.`.
-`BUSAPI_URL` configures the shared Bus API v6 base for `external.action.email`; the backwards-compatible `BUS_API_URL` alias may contain either that base or the complete `/v6/bus/events` endpoint. Both values are normalized to the `/v6` base because `tc-bus-api-wrapper` appends `/bus/events`, and conflicting aliases or legacy `/eventBus` and `/v5` values are rejected. When neither alias is set, the service derives the v6 base from `TOPCODER_API_URL_BASE`. `KAFKA_ERROR_TOPIC`, `AUTH0_URL`, `AUTH0_AUDIENCE`, `TOKEN_CACHE_TIME`, `M2M_CLIENT_ID`, `M2M_CLIENT_SECRET`, and `AUTH0_PROXY_SERVER_URL` are passed to the standard bus wrapper for outbound authenticated publishing.
+`CHALLENGE_API_URL` optionally configures the challenges collection endpoint for notification titles. When omitted, it defaults to `${TOPCODER_API_URL_BASE}/v6/challenges`. The lookup uses the same Keycloak configuration and `KEYCLOAK_CLIENT_ID` / `KEYCLOAK_CLIENT_SECRET` as outbound bus publishing; the M2M client must have challenge read access. `TOPCODER_URL` optionally configures the public web origin used by challenge links. When omitted, the service derives it from `TOPCODER_API_URL_BASE` by replacing the conventional `api.` hostname prefix with `www.`.
+`BUSAPI_URL` configures the shared Bus API v6 base for `external.action.email`; the backwards-compatible `BUS_API_URL` alias may contain either that base or the complete `/v6/bus/events` endpoint. Both values are normalized to the `/v6` base because `tc-bus-api-wrapper` appends `/bus/events`, and conflicting aliases or legacy `/eventBus` and `/v5` values are rejected. When neither alias is set, the service derives the v6 base from `TOPCODER_API_URL_BASE`. `KAFKA_ERROR_TOPIC`, `KEYCLOAK_TOKEN_URL`, `KEYCLOAK_AUDIENCE`, `TOKEN_CACHE_TIME`, `KEYCLOAK_CLIENT_ID`, and `KEYCLOAK_CLIENT_SECRET` configure the standard bus wrapper (whose legacy option names carry only Keycloak values) for outbound authenticated publishing.
 `TRUST_FORWARDED_CLIENT_IP=true` enables forwarded client-IP moderation using the first exact IPv4/IPv6 host from trusted forwarding headers. When disabled, or when the forwarded value is missing, malformed, CIDR, wildcard, or otherwise non-exact, no client IP is resolved and IP-ban enforcement is skipped for that request. Do not enable this unless the service is behind infrastructure that strips or controls inbound forwarding headers.
 
 Health and readiness checks intentionally remain DB-only; they do not validate
@@ -188,13 +189,11 @@ filtered before statistics, search, pagination, watches and notifications.
 Bearer tokens are validated with `tc-core-library-js` and normalized before guards
 read roles or scopes.
 
-Role claims are accepted from `roles`, `role`, or namespaced/suffixed claim keys
-ending in `roles` or `role`. Each role claim may be an array, a JSON-array
-string, a single string, or a comma-delimited string. Role names are not split on
-whitespace, so multi-word roles stay intact.
-
-Scope claims are accepted from `scopes` or `scope` and split on whitespace. Batch
-3 routes use granular forums M2M scopes:
+The shared core owns signature, issuer, audience and identity classification.
+Only its known member claim namespaces are accepted. Member OAuth scopes never
+grant machine access, and service tokens never gain member roles or IDs.
+Exact machine scopes remain unchanged in the principal; aliases are route policy.
+Batch 3 routes use granular forums M2M scopes:
 
 - `read:forums-topics`
 - `create:forums-topics`
@@ -317,3 +316,7 @@ The forums Prisma schema defines `Topic`, `Post`, `PostReaction`, `TopicClosure`
 The production image includes the Prisma schema, migration history, configuration, and CLI. Its startup script runs `prisma migrate deploy` before starting NestJS, so a deployment cannot begin serving requests against an older forums schema. Migration failure stops the container instead of leaving feature-dependent reads or writes partially available.
 
 Topic creation is transactional: it creates the topic, starter post, closure rows, and, for human authors, read-state rows together. General topics also seed an author watch; challenge topics inherit the forum preference. M2M topic creation uses the system author and skips member watch/read-state side effects. Topic deletion is soft deletion, and post deletion preserves the post row while setting content to null for placeholder reads. Topic summary reads use side-effect-free raw queries for topic lock state, visible-post counts, nullable latest visible activity, and unread derivation, then apply centralized forums policy filtering before pagination.
+
+## Keycloak migration branch
+
+See [Keycloak configuration and rollout](docs/keycloak-m2m.md). This branch requires explicit Keycloak configuration and is not deployed to existing DEV applications.

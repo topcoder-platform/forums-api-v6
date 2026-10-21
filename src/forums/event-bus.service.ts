@@ -176,9 +176,9 @@ export class EventBusService {
 
     try {
       this.busApiClient = busApi({
-        AUTH0_URL: this.configService.get<string>('notifications.auth0Url'),
+        AUTH0_URL: this.configService.get<string>('notifications.keycloakTokenUrl'),
         AUTH0_AUDIENCE: this.configService.get<string>(
-          'notifications.auth0Audience',
+          'notifications.keycloakAudience',
         ),
         TOKEN_CACHE_TIME: Number.isFinite(tokenCacheTime)
           ? tokenCacheTime
@@ -193,9 +193,6 @@ export class EventBusService {
         KAFKA_ERROR_TOPIC:
           this.configService.get<string>('notifications.kafkaErrorTopic') ||
           'common.error.reporting',
-        AUTH0_PROXY_SERVER_URL: this.configService.get<string>(
-          'notifications.auth0ProxyServerUrl',
-        ),
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
