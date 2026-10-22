@@ -82,10 +82,13 @@ Members database, removes active member bans, and filters each candidate through
 the shared forums access policy using the effective challenge, role, and
 conflict state for the created content. IP bans are not evaluated for
 notifications because delivery is not bound to a trusted request client IP. The
-publisher emits one `external.action.email` event with the final deduped email
-list and `SENDGRID_NOTIFICATION_TEMPLATE`. Missing template or missing
-recipient email skips notification delivery and is logged without rolling back
-the content write.
+publisher emits one `external.action.email` event with
+`SENDGRID_NOTIFICATION_TEMPLATE`, a single non-member `To` address
+(`NOTIFICATION_TO_EMAIL`, default `no-reply@topcoder.com`) in `recipients`, and
+the final deduped member email list in `bcc`. Member addresses are never placed
+in `recipients` or `cc`, because SendGrid shows those headers to every
+recipient. Missing template or missing recipient email skips notification
+delivery and is logged without rolling back the content write.
 
 For challenge-scoped notifications, the publisher fetches the effective challenge
 from `GET /v6/challenges/:challengeId` using the configured M2M credentials and
@@ -144,6 +147,7 @@ DATABASE_URL="postgresql://user:password@localhost:5432/forums"
 AUTH_SECRET="replace-with-a-secure-secret"
 VALID_ISSUERS='["https://topcoder-dev.auth0.com/","https://auth.topcoder-dev.com/","https://topcoder.auth0.com/","https://auth.topcoder.com/","https://api.topcoder.com","https://api.topcoder-dev.com"]'
 SENDGRID_NOTIFICATION_TEMPLATE="sendgrid-template-id"
+NOTIFICATION_TO_EMAIL="no-reply@topcoder.com"
 BUSAPI_URL="https://api.topcoder-dev.com/v6"
 BUS_API_URL="https://api.topcoder-dev.com/v6/bus/events"
 TOPCODER_API_URL_BASE="https://api.topcoder-dev.com"
@@ -168,6 +172,7 @@ PORT=3000
 `VANILLA_DB_URL` is used only by the standalone Vanilla import CLI for legacy MySQL reads. The runtime HTTP service does not connect to Vanilla.
 `AUTH_SECRET` is required; the service fails during startup when it is omitted.
 `SENDGRID_NOTIFICATION_TEMPLATE` enables forum watch notification emails. When omitted, notification publishing is skipped and content writes still succeed.
+`NOTIFICATION_TO_EMAIL` optionally sets the only address shown in the `To` header of forum watch notification emails; all watching members receive the email via BCC so their addresses are not exposed to each other. When omitted or blank, it defaults to `no-reply@topcoder.com`. Use a non-member address.
 `CHALLENGE_API_URL` optionally configures the challenges collection endpoint for notification titles. When omitted, it defaults to `${TOPCODER_API_URL_BASE}/v6/challenges`. The lookup uses the same Auth0 configuration and `M2M_CLIENT_ID` / `M2M_CLIENT_SECRET` as outbound bus publishing; the M2M client must have challenge read access. `TOPCODER_URL` optionally configures the public web origin used by challenge links. When omitted, the service derives it from `TOPCODER_API_URL_BASE` by replacing the conventional `api.` hostname prefix with `www.`.
 `BUSAPI_URL` configures the shared Bus API v6 base for `external.action.email`; the backwards-compatible `BUS_API_URL` alias may contain either that base or the complete `/v6/bus/events` endpoint. Both values are normalized to the `/v6` base because `tc-bus-api-wrapper` appends `/bus/events`, and conflicting aliases or legacy `/eventBus` and `/v5` values are rejected. When neither alias is set, the service derives the v6 base from `TOPCODER_API_URL_BASE`. `KAFKA_ERROR_TOPIC`, `AUTH0_URL`, `AUTH0_AUDIENCE`, `TOKEN_CACHE_TIME`, `M2M_CLIENT_ID`, `M2M_CLIENT_SECRET`, and `AUTH0_PROXY_SERVER_URL` are passed to the standard bus wrapper for outbound authenticated publishing.
 `TRUST_FORWARDED_CLIENT_IP=true` enables forwarded client-IP moderation using the first exact IPv4/IPv6 host from trusted forwarding headers. When disabled, or when the forwarded value is missing, malformed, CIDR, wildcard, or otherwise non-exact, no client IP is resolved and IP-ban enforcement is skipped for that request. Do not enable this unless the service is behind infrastructure that strips or controls inbound forwarding headers.

@@ -944,7 +944,7 @@ describe('forums notification/read integration', () => {
       })
       .expect(201);
     expect(publishedEvents).toHaveLength(1);
-    expect(publishedEvents[0].payload.recipients).toEqual(['six@example.com']);
+    expect(publishedEvents[0].payload.bcc).toEqual(['six@example.com']);
 
     await request(app.getHttpServer())
       .put('/challenges/challenge-1/watch')
@@ -962,7 +962,7 @@ describe('forums notification/read integration', () => {
       })
       .expect(201);
     expect(publishedEvents).toHaveLength(2);
-    expect(publishedEvents[1].payload.recipients).toEqual([
+    expect(publishedEvents[1].payload.bcc).toEqual([
       'two@example.com',
       'six@example.com',
     ]);
@@ -1053,7 +1053,7 @@ describe('forums notification/read integration', () => {
             .send({ content: 'Notification check' })
             .expect(201);
           expect(
-            publishedEvents.flatMap((event) => event.payload.recipients),
+            publishedEvents.flatMap((event) => event.payload.bcc),
           ).toEqual(expectedWatching ? [emailsByMemberId.get(memberId)] : []);
         }
       }
@@ -1106,7 +1106,8 @@ describe('forums notification/read integration', () => {
     expect(publishedEvents[0]).toEqual({
       topic: 'external.action.email',
       payload: expect.objectContaining({
-        recipients: ['two@example.com'],
+        recipients: ['no-reply@topcoder.com'],
+        bcc: ['two@example.com'],
         sendgrid_template_id: 'template-id',
         version: 'v3',
       }),
@@ -1165,7 +1166,7 @@ describe('forums notification/read integration', () => {
       expect.objectContaining({ topic: 'external.action.email' }),
     );
 
-    const notifiedMemberIds = publishedEvents[0].payload.recipients.map(
+    const notifiedMemberIds = publishedEvents[0].payload.bcc.map(
       (email: string) =>
         Array.from(emailsByMemberId.entries()).find(
           ([, memberEmail]) => memberEmail === email,
@@ -1174,7 +1175,7 @@ describe('forums notification/read integration', () => {
 
     expect(visibleWatchedMemberIds).toEqual(['2', '4', '5', '6']);
     expect(notifiedMemberIds).toEqual(visibleWatchedMemberIds);
-    expect(publishedEvents[0].payload.recipients).not.toContain(
+    expect(publishedEvents[0].payload.bcc).not.toContain(
       'author@example.com',
     );
   });
@@ -1238,12 +1239,12 @@ describe('forums notification/read integration', () => {
       .expect(201);
 
     expect(publishedEvents).toHaveLength(1);
-    expect(publishedEvents[0].payload.recipients).toEqual([
+    expect(publishedEvents[0].payload.bcc).toEqual([
       'two@example.com',
       'five@example.com',
       'six@example.com',
     ]);
-    expect(publishedEvents[0].payload.recipients).not.toContain(
+    expect(publishedEvents[0].payload.bcc).not.toContain(
       'four@example.com',
     );
   });
