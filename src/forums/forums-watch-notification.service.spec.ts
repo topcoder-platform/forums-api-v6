@@ -191,7 +191,8 @@ describe('ForumsWatchNotificationService', () => {
     expect(eventBusService.postEvent).toHaveBeenCalledWith(
       'external.action.email',
       expect.objectContaining({
-        recipients: ['two@example.com', 'three@example.com'],
+        recipients: ['no-reply@topcoder.com'],
+        bcc: ['two@example.com', 'three@example.com'],
       }),
     );
   });
@@ -238,7 +239,8 @@ describe('ForumsWatchNotificationService', () => {
     expect(eventBusService.postEvent).toHaveBeenCalledWith(
       'external.action.email',
       expect.objectContaining({
-        recipients: ['2@example.com'],
+        recipients: ['no-reply@topcoder.com'],
+        bcc: ['2@example.com'],
       }),
     );
   });
@@ -301,7 +303,8 @@ describe('ForumsWatchNotificationService', () => {
     expect(eventBusService.postEvent).toHaveBeenCalledWith(
       'external.action.email',
       expect.objectContaining({
-        recipients: ['two@example.com'],
+        recipients: ['no-reply@topcoder.com'],
+        bcc: ['two@example.com'],
         sendgrid_template_id: 'template-id',
         version: 'v3',
       }),
@@ -421,7 +424,8 @@ describe('ForumsWatchNotificationService', () => {
     expect(eventBusService.postEvent).toHaveBeenCalledWith(
       'external.action.email',
       expect.objectContaining({
-        recipients: ['two@example.com'],
+        recipients: ['no-reply@topcoder.com'],
+        bcc: ['two@example.com'],
       }),
     );
   });
@@ -473,7 +477,8 @@ describe('ForumsWatchNotificationService', () => {
     expect(eventBusService.postEvent).toHaveBeenCalledWith(
       'external.action.email',
       expect.objectContaining({
-        recipients: ['two@example.com', 'four@example.com'],
+        recipients: ['no-reply@topcoder.com'],
+        bcc: ['two@example.com', 'four@example.com'],
       }),
     );
   });
@@ -671,7 +676,8 @@ describe('ForumsWatchNotificationService', () => {
             authorHandle: 'author',
             createdAt: createdAt.toISOString(),
           },
-          recipients: ['two@example.com', 'three@example.com'],
+          recipients: ['no-reply@topcoder.com'],
+          bcc: ['two@example.com', 'three@example.com'],
           sendgrid_template_id: 'template-id',
           version: 'v3',
         },
@@ -735,5 +741,77 @@ describe('ForumsWatchNotificationService', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('challenge challenge-1 URL resolution failed'),
     );
+  });
+
+  it('never exposes member addresses in the To or CC headers', async () => {
+    const { db, eventBusService, memberDirectoryService, service } =
+      createService();
+    db.topicWatch.findMany.mockResolvedValue([
+      { memberId: '2', watching: true },
+      { memberId: '3', watching: true },
+    ]);
+    memberDirectoryService.getMembersByIds.mockResolvedValue([
+      { memberId: '2', email: 'two@example.com', handle: 'two' },
+      { memberId: '3', email: 'three@example.com', handle: 'three' },
+    ]);
+
+    await service.publishPostNotification({
+      topic: makeTopic(),
+      post: makePost(),
+      restrictions: {
+        challengeId: null,
+        roleName: null,
+        hasRestrictionConflict: false,
+      },
+      operationName: 'createPost',
+    });
+
+    const payload = eventBusService.postEvent.mock.calls[0][1];
+    expect(payload.recipients).toEqual(['no-reply@topcoder.com']);
+    expect(payload).not.toHaveProperty('cc');
+    expect(payload.bcc).toEqual(['two@example.com', 'three@example.com']);
+  });
+
+  it('uses NOTIFICATION_TO_EMAIL as the visible recipient and keeps it out of BCC', async () => {
+    const {
+      configService,
+      db,
+      eventBusService,
+      memberDirectoryService,
+      service,
+    } = createService();
+    configService.get.mockImplementation((key: string) => {
+      if (key === 'notifications.sendgridNotificationTemplate') {
+        return 'template-id';
+      }
+
+      return key === 'notifications.notificationToEmail'
+        ? ' Forums@Example.com '
+        : undefined;
+    });
+    db.topicWatch.findMany.mockResolvedValue([
+      { memberId: '2', watching: true },
+      { memberId: '3', watching: true },
+    ]);
+    memberDirectoryService.getMembersByIds.mockResolvedValue([
+      { memberId: '2', email: 'two@example.com', handle: 'two' },
+      { memberId: '3', email: 'forums@example.com', handle: 'three' },
+    ]);
+
+    const result = await service.publishPostNotification({
+      topic: makeTopic(),
+      post: makePost(),
+      restrictions: {
+        challengeId: null,
+        roleName: null,
+        hasRestrictionConflict: false,
+      },
+      operationName: 'createPost',
+    });
+
+    expect(result).toEqual({ attemptedRecipientCount: 2, published: true });
+    const payload = eventBusService.postEvent.mock.calls[0][1];
+    expect(payload.recipients).toEqual(['Forums@Example.com']);
+    expect(payload.bcc).toEqual(['two@example.com']);
   });
 });

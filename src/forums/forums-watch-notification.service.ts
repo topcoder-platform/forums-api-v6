@@ -19,10 +19,19 @@ import { IdentityAccessService } from './identity-access.service';
 
 const EMAIL_EVENT_TOPIC = 'external.action.email';
 const RECIPIENT_AUTHORIZATION_CONCURRENCY = 10;
+const DEFAULT_NOTIFICATION_TO_EMAIL = 'no-reply@topcoder.com';
 
+/**
+ * Bus payload for `external.action.email`.
+ *
+ * `recipients` maps to the SendGrid `To` header and is shared by every copy of
+ * the message, so it only ever carries the non-member visible address. Watcher
+ * addresses are delivered through `bcc` so members never see each other.
+ */
 interface ForumsWatchNotificationEmailPayload {
   data: Record<string, string>;
   recipients: string[];
+  bcc: string[];
   sendgrid_template_id: string;
   version: 'v3';
 }
@@ -81,8 +90,10 @@ export class ForumsNotificationPublishError extends Error {
  * excludes the persisted author member id,
  * filters active member bans and remaining recipients through the shared forums
  * access policy, resolves the challenge title when applicable, and publishes one
- * SendGrid email event for the final recipient list. IP-ban checks are intentionally
- * excluded because notification delivery is not bound to a trusted request client IP.
+ * SendGrid email event addressed to a single non-member `To` address with the
+ * final recipient list in BCC, so watcher email addresses are never exposed to
+ * other recipients. IP-ban checks are intentionally excluded because
+ * notification delivery is not bound to a trusted request client IP.
  */
 @Injectable()
 export class ForumsWatchNotificationService {
@@ -174,6 +185,7 @@ export class ForumsWatchNotificationService {
     const payload = this.buildEmailPayload(
       params,
       templateId,
+      this.resolveVisibleRecipient(),
       recipientEmails,
       challengeContext,
     );
@@ -181,7 +193,7 @@ export class ForumsWatchNotificationService {
     try {
       await this.eventBusService.postEvent(EMAIL_EVENT_TOPIC, payload);
       this.logger.log(
-        `Published '${EMAIL_EVENT_TOPIC}' (${params.operationName}) for topic ${params.topic.id}, post ${params.post.id} to ${recipientEmails.length} recipients.`,
+        `Published '${EMAIL_EVENT_TOPIC}' (${params.operationName}) for topic ${params.topic.id}, post ${params.post.id} to ${recipientEmails.length} BCC recipients.`,
       );
       return {
         attemptedRecipientCount: recipientEmails.length,
@@ -444,11 +456,36 @@ export class ForumsWatchNotificationService {
   }
 
   /**
+   * Resolves the single address shown in the notification `To` header.
+   *
+   * SendGrid shows every `To` and `CC` address to all recipients of a message,
+   * so member addresses must never be placed there. This non-member address
+   * fills the required `To` slot while members receive the email through BCC.
+   *
+   * @returns Trimmed `NOTIFICATION_TO_EMAIL`, or `no-reply@topcoder.com` when unset or blank.
+   * @throws Does not throw.
+   */
+  private resolveVisibleRecipient(): string {
+    return (
+      this.configService
+        .get<string>('notifications.notificationToEmail')
+        ?.trim() || DEFAULT_NOTIFICATION_TO_EMAIL
+    );
+  }
+
+  /**
    * Builds the SendGrid event payload from persisted topic and post rows.
+   *
+   * Member addresses are placed only in `bcc`; `recipients` (the SendGrid `To`
+   * header) carries just the visible non-member address. A member address that
+   * matches the visible address case-insensitively is dropped from BCC because
+   * it already receives the message through `To` and SendGrid rejects addresses
+   * repeated across `To` and BCC.
    *
    * @param params Current notification publish parameters.
    * @param templateId Configured SendGrid template id.
-   * @param recipients Final recipient email list.
+   * @param visibleRecipient Non-member address used as the only `To` recipient.
+   * @param bccRecipients Final authorized member email list, delivered via BCC.
    * @param challengeContext Challenge API name and public Opportunities URL when available.
    * @returns Event-bus email payload.
    * @throws Does not throw.
@@ -456,9 +493,12 @@ export class ForumsWatchNotificationService {
   private buildEmailPayload(
     params: PublishForumsPostNotificationParams,
     templateId: string,
-    recipients: string[],
+    visibleRecipient: string,
+    bccRecipients: string[],
     challengeContext: ForumsNotificationChallengeContext,
   ): ForumsWatchNotificationEmailPayload {
+    const normalizedVisibleRecipient = visibleRecipient.toLowerCase();
+
     return {
       data: {
         ...(params.restrictions.challengeId
@@ -482,7 +522,10 @@ export class ForumsWatchNotificationService {
         authorHandle: params.post.authorHandle,
         createdAt: params.post.createdAt.toISOString(),
       },
-      recipients,
+      recipients: [visibleRecipient],
+      bcc: bccRecipients.filter(
+        (email) => email.toLowerCase() !== normalizedVisibleRecipient,
+      ),
       sendgrid_template_id: templateId,
       version: 'v3',
     };
