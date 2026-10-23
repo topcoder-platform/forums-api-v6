@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { auth } from 'tc-core-library-js';
+import { resolveM2mSettings } from './event-bus.service';
 
 const CHALLENGE_REQUEST_TIMEOUT_MS = 5_000;
 
@@ -16,7 +17,7 @@ export class ChallengeApiService {
   /**
    * Creates the notification challenge lookup adapter.
    *
-   * @param configService Notification API and Keycloak M2M configuration.
+   * @param configService Notification API and Keycloak/Auth0 M2M configuration.
    * @throws Does not throw; configuration is validated on lookup.
    */
   constructor(private readonly configService: ConfigService) {}
@@ -24,29 +25,48 @@ export class ChallengeApiService {
   /**
    * Fetches a challenge's name for the notification's `challengeTitle` field.
    *
+   * The token comes from the provider `USE_KEYCLOAK` selects: Keycloak with
+   * `KEYCLOAK_CLIENT_ID`/`KEYCLOAK_CLIENT_SECRET` when true, otherwise Auth0 with
+   * `AUTH0_URL`, `AUTH0_AUDIENCE`, `TOKEN_CACHE_TIME`, `AUTH0_PROXY_SERVER_URL` and
+   * `M2M_CLIENT_ID`/`M2M_CLIENT_SECRET`, as before the Keycloak migration.
+   *
    * @param challengeId Effective challenge id inherited by the notified topic.
    * @returns Non-empty challenge name from the Challenge API.
-   * @throws Error for missing configuration, token failures, unsuccessful or invalid
-   * API responses, and HTTP requests exceeding five seconds. The publisher catches
-   * these errors and sends the notification without a challenge title.
+   * @throws Error for missing configuration (naming the active provider's client
+   * settings), token failures, unsuccessful or invalid API responses, and HTTP requests
+   * exceeding five seconds. The publisher catches these errors and sends the
+   * notification without a challenge title.
    */
   async getChallengeTitle(challengeId: string): Promise<string> {
     const apiBase = this.resolveApiBase();
-    const clientId = this.configService.get<string>(
-      'notifications.m2mClientId',
-    );
-    const clientSecret = this.configService.get<string>(
-      'notifications.m2mClientSecret',
-    );
+    const { AUTH0_CLIENT_ID: clientId, AUTH0_CLIENT_SECRET: clientSecret } =
+      resolveM2mSettings(this.configService);
 
     if (!clientId || !clientSecret) {
       throw new Error(
-        'KEYCLOAK_CLIENT_ID and KEYCLOAK_CLIENT_SECRET must configure Challenge API access.',
+        auth.useKeycloak()
+          ? 'KEYCLOAK_CLIENT_ID and KEYCLOAK_CLIENT_SECRET must configure Challenge API access.'
+          : 'M2M_CLIENT_ID and M2M_CLIENT_SECRET must configure Challenge API access.',
       );
     }
 
     if (!this.m2mClient) {
-      this.m2mClient = auth.m2m();
+      // Keycloak mode ignores these Auth0 options and uses the KEYCLOAK_* settings.
+      const tokenCacheTime = Number(
+        this.configService.get<string>('notifications.tokenCacheTime'),
+      );
+      this.m2mClient = auth.m2m({
+        AUTH0_URL: this.configService.get<string>('notifications.auth0Url'),
+        AUTH0_AUDIENCE: this.configService.get<string>(
+          'notifications.auth0Audience',
+        ),
+        TOKEN_CACHE_TIME: Number.isFinite(tokenCacheTime)
+          ? tokenCacheTime
+          : undefined,
+        AUTH0_PROXY_SERVER_URL: this.configService.get<string>(
+          'notifications.auth0ProxyServerUrl',
+        ),
+      });
     }
 
     const token = await this.m2mClient.getMachineToken(clientId, clientSecret);

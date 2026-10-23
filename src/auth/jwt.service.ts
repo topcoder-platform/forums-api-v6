@@ -27,7 +27,11 @@ export class JwtService implements OnModuleInit {
 
   private validator?: ReturnType<typeof auth.createValidator>;
 
-  /** Initializes explicit Keycloak and member trust configuration; takes no arguments and throws on invalid settings. */
+  /**
+   * Initializes machine trust (Keycloak and/or Auth0, as `USE_KEYCLOAK` and the core's
+   * `KEYCLOAK_*`/`LEGACY_M2M_*` settings define) and member trust configuration.
+   * Takes no arguments; throws on invalid settings, including an invalid `USE_KEYCLOAK`.
+   */
   onModuleInit(): void {
     this.validator = auth.createValidator({
       AUTH_SECRET: this.configService.get<string>('auth.authSecret'),

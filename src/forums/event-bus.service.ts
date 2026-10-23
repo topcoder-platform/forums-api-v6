@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as busApi from 'tc-bus-api-wrapper';
+import { auth } from 'tc-core-library-js';
 
 interface EventBusMessage<T> {
   topic: string;
@@ -72,6 +73,50 @@ export function resolveV6BusApiBase(configService: ConfigService): string {
     `${topcoderApiUrlBase.replace(/\/+$/, '')}/v6`,
     'TOPCODER_API_URL_BASE',
   );
+}
+
+/**
+ * Resolves the outbound M2M token endpoint, audience and client credentials for the
+ * provider `USE_KEYCLOAK` selects, under the `AUTH0_*` option names that
+ * `tc-bus-api-wrapper` expects. Used by `EventBusService` for the Bus client and by
+ * `ChallengeApiService` for its client credentials, so both use the same provider.
+ *
+ * - `USE_KEYCLOAK=true`: `KEYCLOAK_TOKEN_URL` (also as the proxy URL), `KEYCLOAK_AUDIENCE`,
+ *   `KEYCLOAK_CLIENT_ID` and `KEYCLOAK_CLIENT_SECRET`.
+ * - Unset, empty or `false`: `AUTH0_URL`, `AUTH0_AUDIENCE`, `AUTH0_PROXY_SERVER_URL`,
+ *   `M2M_CLIENT_ID` and `M2M_CLIENT_SECRET`, as before the Keycloak migration.
+ *
+ * @param configService Nest configuration service containing notification settings.
+ * @returns `AUTH0_URL`, `AUTH0_AUDIENCE`, `AUTH0_PROXY_SERVER_URL`, `AUTH0_CLIENT_ID` and
+ * `AUTH0_CLIENT_SECRET`; missing values are undefined so callers or the wrapper report them.
+ * @throws TypeError when `USE_KEYCLOAK` is not true/false.
+ */
+export function resolveM2mSettings(
+  configService: ConfigService,
+): ReturnType<typeof auth.wrapperSettings> {
+  return auth.wrapperSettings({
+    AUTH0_URL: configService.get<string>('notifications.auth0Url'),
+    AUTH0_AUDIENCE: configService.get<string>('notifications.auth0Audience'),
+    AUTH0_PROXY_SERVER_URL: configService.get<string>(
+      'notifications.auth0ProxyServerUrl',
+    ),
+    AUTH0_CLIENT_ID: configService.get<string>('notifications.m2mClientId'),
+    AUTH0_CLIENT_SECRET: configService.get<string>(
+      'notifications.m2mClientSecret',
+    ),
+    KEYCLOAK_TOKEN_URL: configService.get<string>(
+      'notifications.keycloakTokenUrl',
+    ),
+    KEYCLOAK_AUDIENCE: configService.get<string>(
+      'notifications.keycloakAudience',
+    ),
+    KEYCLOAK_CLIENT_ID: configService.get<string>(
+      'notifications.keycloakClientId',
+    ),
+    KEYCLOAK_CLIENT_SECRET: configService.get<string>(
+      'notifications.keycloakClientSecret',
+    ),
+  });
 }
 
 /**
@@ -160,10 +205,13 @@ export class EventBusService {
   }
 
   /**
-   * Lazily creates the shared event-bus client.
+   * Lazily creates the shared event-bus client. Its token settings come from
+   * `resolveM2mSettings`, so they follow `USE_KEYCLOAK` (Keycloak or the pre-migration
+   * Auth0 values); `TOKEN_CACHE_TIME`, the Bus base and the error topic apply to both.
    *
    * @returns Configured event-bus client.
    * @throws InternalServerErrorException when the wrapper returns no client.
+   * @throws Error when the wrapper rejects the settings or `USE_KEYCLOAK` is invalid.
    */
   private getBusApiClient(): BusApiClient {
     if (this.busApiClient) {
@@ -176,19 +224,10 @@ export class EventBusService {
 
     try {
       this.busApiClient = busApi({
-        AUTH0_URL: this.configService.get<string>('notifications.keycloakTokenUrl'),
-        AUTH0_AUDIENCE: this.configService.get<string>(
-          'notifications.keycloakAudience',
-        ),
+        ...resolveM2mSettings(this.configService),
         TOKEN_CACHE_TIME: Number.isFinite(tokenCacheTime)
           ? tokenCacheTime
           : undefined,
-        AUTH0_CLIENT_ID: this.configService.get<string>(
-          'notifications.m2mClientId',
-        ),
-        AUTH0_CLIENT_SECRET: this.configService.get<string>(
-          'notifications.m2mClientSecret',
-        ),
         BUSAPI_URL: resolveV6BusApiBase(this.configService),
         KAFKA_ERROR_TOPIC:
           this.configService.get<string>('notifications.kafkaErrorTopic') ||

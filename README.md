@@ -150,13 +150,19 @@ TOPCODER_API_URL_BASE="https://api.topcoder-dev.com"
 TOPCODER_URL="https://www.topcoder-dev.com"
 CHALLENGE_API_URL="https://api.topcoder-dev.com/v6/challenges"
 KAFKA_ERROR_TOPIC="common.error.reporting"
+# M2M provider: true = Keycloak (KEYCLOAK_*), unset/false = Auth0 (AUTH0_*, M2M_CLIENT_*)
+USE_KEYCLOAK=true
 KEYCLOAK_TOKEN_URL="https://keycloak.topcoder-dev.com/m2m/token"
-M2M_PROVIDER="keycloak"
 KEYCLOAK_ISSUER="https://keycloak.topcoder-dev.com/realms/topcoder-m2m-dev"
 KEYCLOAK_AUDIENCE="https://api.topcoder-dev.com"
 TOKEN_CACHE_TIME=86400
 KEYCLOAK_CLIENT_ID="replace-with-client-id"
 KEYCLOAK_CLIENT_SECRET="replace-with-client-secret"
+AUTH0_URL="https://auth.topcoder-dev.com/"
+AUTH0_AUDIENCE="https://m2m.topcoder-dev.com/"
+M2M_CLIENT_ID="replace-with-auth0-client-id"
+M2M_CLIENT_SECRET="replace-with-auth0-client-secret"
+AUTH0_PROXY_SERVER_URL="http://optional-auth0-proxy"
 TRUST_FORWARDED_CLIENT_IP=false
 PORT=3000
 ```
@@ -169,8 +175,8 @@ PORT=3000
 `VANILLA_DB_URL` is used only by the standalone Vanilla import CLI for legacy MySQL reads. The runtime HTTP service does not connect to Vanilla.
 `AUTH_SECRET` is required; the service fails during startup when it is omitted.
 `SENDGRID_NOTIFICATION_TEMPLATE` enables forum watch notification emails. When omitted, notification publishing is skipped and content writes still succeed.
-`CHALLENGE_API_URL` optionally configures the challenges collection endpoint for notification titles. When omitted, it defaults to `${TOPCODER_API_URL_BASE}/v6/challenges`. The lookup uses the same Keycloak configuration and `KEYCLOAK_CLIENT_ID` / `KEYCLOAK_CLIENT_SECRET` as outbound bus publishing; the M2M client must have challenge read access. `TOPCODER_URL` optionally configures the public web origin used by challenge links. When omitted, the service derives it from `TOPCODER_API_URL_BASE` by replacing the conventional `api.` hostname prefix with `www.`.
-`BUSAPI_URL` configures the shared Bus API v6 base for `external.action.email`; the backwards-compatible `BUS_API_URL` alias may contain either that base or the complete `/v6/bus/events` endpoint. Both values are normalized to the `/v6` base because `tc-bus-api-wrapper` appends `/bus/events`, and conflicting aliases or legacy `/eventBus` and `/v5` values are rejected. When neither alias is set, the service derives the v6 base from `TOPCODER_API_URL_BASE`. `KAFKA_ERROR_TOPIC`, `KEYCLOAK_TOKEN_URL`, `KEYCLOAK_AUDIENCE`, `TOKEN_CACHE_TIME`, `KEYCLOAK_CLIENT_ID`, and `KEYCLOAK_CLIENT_SECRET` configure the standard bus wrapper (whose legacy option names carry only Keycloak values) for outbound authenticated publishing.
+`CHALLENGE_API_URL` optionally configures the challenges collection endpoint for notification titles. When omitted, it defaults to `${TOPCODER_API_URL_BASE}/v6/challenges`. The lookup uses the same M2M provider and client as outbound bus publishing: `KEYCLOAK_CLIENT_ID` / `KEYCLOAK_CLIENT_SECRET` when `USE_KEYCLOAK=true`, otherwise the Auth0 configuration and `M2M_CLIENT_ID` / `M2M_CLIENT_SECRET`; the M2M client must have challenge read access. `TOPCODER_URL` optionally configures the public web origin used by challenge links. When omitted, the service derives it from `TOPCODER_API_URL_BASE` by replacing the conventional `api.` hostname prefix with `www.`.
+`BUSAPI_URL` configures the shared Bus API v6 base for `external.action.email`; the backwards-compatible `BUS_API_URL` alias may contain either that base or the complete `/v6/bus/events` endpoint. Both values are normalized to the `/v6` base because `tc-bus-api-wrapper` appends `/bus/events`, and conflicting aliases or legacy `/eventBus` and `/v5` values are rejected. When neither alias is set, the service derives the v6 base from `TOPCODER_API_URL_BASE`. `KAFKA_ERROR_TOPIC` and `TOKEN_CACHE_TIME` are passed to the standard bus wrapper for outbound authenticated publishing, together with the M2M settings `USE_KEYCLOAK` selects: `KEYCLOAK_TOKEN_URL`, `KEYCLOAK_AUDIENCE`, `KEYCLOAK_CLIENT_ID` and `KEYCLOAK_CLIENT_SECRET` when it is `true`; otherwise `AUTH0_URL`, `AUTH0_AUDIENCE`, `M2M_CLIENT_ID`, `M2M_CLIENT_SECRET` and `AUTH0_PROXY_SERVER_URL`. Any other `USE_KEYCLOAK` value fails at startup or on first use.
 `TRUST_FORWARDED_CLIENT_IP=true` enables forwarded client-IP moderation using the first exact IPv4/IPv6 host from trusted forwarding headers. When disabled, or when the forwarded value is missing, malformed, CIDR, wildcard, or otherwise non-exact, no client IP is resolved and IP-ban enforcement is skipped for that request. Do not enable this unless the service is behind infrastructure that strips or controls inbound forwarding headers.
 
 Health and readiness checks intentionally remain DB-only; they do not validate
@@ -319,4 +325,4 @@ Topic creation is transactional: it creates the topic, starter post, closure row
 
 ## Keycloak migration branch
 
-See [Keycloak configuration and rollout](docs/keycloak-m2m.md). This branch requires explicit Keycloak configuration and is not deployed to existing DEV applications.
+See [Keycloak configuration and rollout](docs/keycloak-m2m.md). `USE_KEYCLOAK=true` selects Keycloak; unset or `false` keeps the Auth0 settings, so rollback is `USE_KEYCLOAK=false` plus a new deployment. This branch is not deployed to existing DEV applications.
