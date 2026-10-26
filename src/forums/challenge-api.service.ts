@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { auth } from 'tc-core-library-js';
+import { createM2MClient } from 'tc-core-library-js';
 
 const CHALLENGE_REQUEST_TIMEOUT_MS = 5_000;
 
@@ -11,7 +11,7 @@ const CHALLENGE_REQUEST_TIMEOUT_MS = 5_000;
  */
 @Injectable()
 export class ChallengeApiService {
-  private m2mClient?: ReturnType<typeof auth.m2m>;
+  private m2mClient?: ReturnType<typeof createM2MClient>;
 
   /**
    * Creates the notification challenge lookup adapter.
@@ -49,7 +49,7 @@ export class ChallengeApiService {
       const tokenCacheTime = Number(
         this.configService.get<string>('notifications.tokenCacheTime'),
       );
-      this.m2mClient = auth.m2m({
+      this.m2mClient = createM2MClient({
         AUTH0_URL: this.configService.get<string>('notifications.auth0Url'),
         AUTH0_AUDIENCE: this.configService.get<string>(
           'notifications.auth0Audience',
