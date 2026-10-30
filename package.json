@@ -34,8 +34,7 @@
     "prisma": "^7.9.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "tc-bus-api-wrapper": "github:topcoder-platform/tc-bus-api-wrapper",
-    "tc-core-library-js": "github:topcoder-platform/tc-core-library-js#master"
+    "tc-core-library-js": "github:topcoder-platform/tc-core-library-js#v4.0.0-rc.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

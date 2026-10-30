@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { auth } from 'tc-core-library-js';
+import { createM2MClient } from 'tc-core-library-js';
 import { ChallengeApiService } from './challenge-api.service';
 
 /**
@@ -27,7 +27,7 @@ function createService(overrides: Record<string, string | undefined> = {}) {
 
 describe('ChallengeApiService', () => {
   let fetchSpy: jest.SpiedFunction<typeof fetch>;
-  let m2mSpy: jest.SpiedFunction<typeof auth.m2m>;
+  let m2mSpy: jest.SpiedFunction<typeof createM2MClient>;
   let getMachineToken: jest.Mock;
 
   beforeEach(() => {

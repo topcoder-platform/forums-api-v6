@@ -4,7 +4,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as busApi from 'tc-bus-api-wrapper';
+import { createBusApiClient as busApi, type BusApiClient } from 'tc-core-library-js';
 
 interface EventBusMessage<T> {
   topic: string;
@@ -14,12 +14,9 @@ interface EventBusMessage<T> {
   payload: T;
 }
 
-type BusApiClient = {
-  postEvent: <T>(message: EventBusMessage<T>) => Promise<void>;
-};
 
 /**
- * Resolves the Bus API v6 base consumed by `tc-bus-api-wrapper`.
+ * Resolves the Bus API v6 base consumed by `tc-core-library-js`.
  *
  * The wrapper appends `/bus/events` itself. The canonical `BUSAPI_URL` and
  * backwards-compatible `BUS_API_URL` alias may therefore provide either the

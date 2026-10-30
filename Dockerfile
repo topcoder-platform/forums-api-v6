@@ -18,6 +18,7 @@ RUN git clone --depth 1 https://github.com/topcoder-platform/challenge-api-v6.gi
     /clients/identity-api-v6/packages/identity-prisma-client/
 
 FROM node:${NODE_VERSION}-alpine AS build
+ARG PNPM_VERSION
 
 RUN apk upgrade --no-cache
 WORKDIR /usr/src/app
@@ -41,8 +42,11 @@ RUN DATABASE_URL="postgresql://user:password@localhost:5432/forums" pnpm prisma:
 FROM alpine:3.24 AS production
 
 ARG NODE_VERSION
+# Alpine replaces old APK patch versions. Keep the configured Node major while
+# accepting maintained patch releases and verify the selected runtime below.
 RUN apk upgrade --no-cache \
-  && apk add --no-cache nodejs-current=${NODE_VERSION}-r0 \
+  && apk add --no-cache "nodejs-current~${NODE_VERSION%%.*}" \
+  && test "$(node -p 'process.versions.node.split(".")[0]')" = "${NODE_VERSION%%.*}" \
   && addgroup -S app \
   && adduser -S -D -H -u 10001 -G app app
 
