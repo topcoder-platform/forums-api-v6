@@ -1,4 +1,8 @@
-import { Injectable, OnModuleInit, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createJwtVerifier, type JwtVerifier } from 'tc-core-library-js';
 import { ALL_SCOPE_MAPPINGS } from './scope-mappings';
@@ -43,7 +47,9 @@ export class JwtService implements OnModuleInit {
         scopes: this.expandScopes(user.scopes),
         isMachine: user.isMachine,
       };
-    } catch { throw new UnauthorizedException('Invalid or expired access token'); }
+    } catch {
+      throw new UnauthorizedException('Invalid or expired access token');
+    }
   }
 
   /**
@@ -73,5 +79,4 @@ export class JwtService implements OnModuleInit {
 
     return Array.from(expandedScopes);
   }
-
 }

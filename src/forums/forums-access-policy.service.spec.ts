@@ -76,7 +76,15 @@ function createPolicyHarness(
     service: new ForumsAccessPolicyService(
       challengeAccessService as unknown as ChallengeAccessService,
       resourceAccessService as unknown as ResourceAccessService,
-      { decide: jest.fn().mockResolvedValue({ view: true, create: true, reply: true, category: false, managed: false }) } as unknown as PublicForumAccessService,
+      {
+        decide: jest.fn().mockResolvedValue({
+          view: true,
+          create: true,
+          reply: true,
+          category: false,
+          managed: false,
+        }),
+      } as unknown as PublicForumAccessService,
     ),
   };
 }

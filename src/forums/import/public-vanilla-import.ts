@@ -107,7 +107,7 @@ export function publicMarkdown(
     const attributes = operation.attributes ?? {};
     if (typeof operation.insert !== 'string')
       throw new Error('Unsupported Rich embed; review required');
-    let text = operation.insert as string;
+    let text = operation.insert;
     for (const key of Object.keys(attributes)) {
       if (
         ![

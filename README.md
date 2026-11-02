@@ -261,7 +261,7 @@ but the `/moderation` endpoints require administrator role access for humans or
 
 ## Development
 
-The supported local and container runtime is Node.js 26.5.1 with pnpm 11.15.1.
+The supported local and container runtime is Node.js 26.12.1 with pnpm 11.15.1.
 The checked-in `.nvmrc` selects the required Node.js release.
 The production image installs Alpine's dynamically linked Node.js package and
 runs as an unprivileged application user so patched system libraries are used at
@@ -356,3 +356,16 @@ Node major. The runtime keeps Alpine's dynamically linked Node and system
 libraries. Existing non-root users and application entrypoints are preserved.
 Build stages using a versioned official Node image retain their configured
 version, and pnpm build arguments are explicitly declared in the consuming stage.
+
+## Security dependency checks
+
+The November 2026 update pins the reviewed core library and external Prisma
+client revisions, upgrades Prisma to 7.10.1, and patches vulnerable transitive
+dependencies. Legacy glob tooling uses the tested adapter in
+`tools/minimatch-compat`; run `pnpm test:dependency-compat` after updating it.
+Docker builds run lint, unit tests, and compatibility checks.
+
+Run the PostgreSQL integration suites with `TZ=UTC`, matching the container;
+the importer compares timestamp-without-time-zone columns in UTC. Provide the
+existing `options=-c%20search_path%3Dforums%2Cpublic` URL parameter when testing
+raw forum queries against a database whose default search path is `public`.

@@ -62,7 +62,13 @@ export class TokenRolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const user = request.user;
 
-    if (!user && this.reflector.getAllAndOverride<boolean>(OPTIONAL_READ_KEY, [context.getHandler(), context.getClass()])) {
+    if (
+      !user &&
+      this.reflector.getAllAndOverride<boolean>(OPTIONAL_READ_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    ) {
       return true;
     }
 
