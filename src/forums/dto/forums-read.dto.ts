@@ -333,8 +333,17 @@ export class ForumsPostTreeNodeDto {
  * topic-detail surface.
  */
 export class ForumsTopicDetailDto {
-  @ApiProperty({ description: "Actions authorized for this reader; commands recheck permissions." })
-  permissions?: { createPost: boolean; createTopic: boolean; watch: boolean; update: boolean; delete: boolean };
+  @ApiProperty({
+    description:
+      'Actions authorized for this reader; commands recheck permissions.',
+  })
+  permissions?: {
+    createPost: boolean;
+    createTopic: boolean;
+    watch: boolean;
+    update: boolean;
+    delete: boolean;
+  };
   @ApiProperty({
     description: 'Topic summary header for the requested topic.',
     type: ForumsTopicSummaryDto,

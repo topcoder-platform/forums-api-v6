@@ -4,7 +4,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createBusApiClient as busApi, type BusApiClient } from 'tc-core-library-js';
+import {
+  createBusApiClient as busApi,
+  type BusApiClient,
+} from 'tc-core-library-js';
 
 interface EventBusMessage<T> {
   topic: string;
@@ -13,7 +16,6 @@ interface EventBusMessage<T> {
   'mime-type': string;
   payload: T;
 }
-
 
 /**
  * Resolves the Bus API v6 base consumed by `tc-core-library-js`.

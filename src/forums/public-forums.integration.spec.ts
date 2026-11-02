@@ -56,10 +56,10 @@ integration('public forums PostgreSQL/HTTP access boundaries', () => {
       )
       .overrideProvider(JwtService)
       .useValue({
-        validateToken: async (token: string) => {
+        validateToken: (token: string) => {
           if (token === 'invalid')
-            throw new UnauthorizedException('Invalid token');
-          return {
+            return Promise.reject(new UnauthorizedException('Invalid token'));
+          return Promise.resolve({
             userId:
               token === 'idless-admin'
                 ? undefined
@@ -77,7 +77,7 @@ integration('public forums PostgreSQL/HTTP access boundaries', () => {
                     : [],
             isMachine: token === 'machine',
             scopes: [],
-          };
+          });
         },
       })
       .overrideProvider(EventBusService)
