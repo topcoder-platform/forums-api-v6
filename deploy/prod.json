@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "environment": "prod",
+  "accountId": "409275337247",
+  "region": "us-east-1",
+  "deployRoleArn": "arn:aws:iam::409275337247:role/forums-api-v6-prod-deploy",
+  "taskRoleArn": null,
+  "executionRoleArn": "arn:aws:iam::409275337247:role/ecsTaskExecutionRole",
+  "cluster": "tc-forums-serverless",
+  "service": "forums-api-v6",
+  "taskFamily": "forums-api-v6",
+  "circleciOrgId": "947bef5e-1669-415d-b83c-4fc85155b7df",
+  "circleciProjectId": "51e5eac1-2f4c-4fde-825e-a78168fd4f3f",
+  "repository": "github.com/topcoder-platform/forums-api-v6",
+  "branch": "master",
+  "images": {
+    "forums-api-v6": "forums-api-v6"
+  }
+}

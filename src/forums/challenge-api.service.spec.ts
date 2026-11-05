@@ -1,6 +1,8 @@
 import { ConfigService } from '@nestjs/config';
-import { auth } from 'tc-core-library-js';
+import { createM2MClient } from 'tc-core-library-js';
 import { ChallengeApiService } from './challenge-api.service';
+
+jest.mock('tc-core-library-js', () => ({ createM2MClient: jest.fn() }));
 
 /**
  * Creates a Challenge API adapter with test M2M and endpoint configuration.
@@ -27,15 +29,19 @@ function createService(overrides: Record<string, string | undefined> = {}) {
 
 describe('ChallengeApiService', () => {
   let fetchSpy: jest.SpiedFunction<typeof fetch>;
-  let m2mSpy: jest.SpiedFunction<typeof auth.m2m>;
+  const m2mSpy = jest.mocked(createM2MClient);
   let getMachineToken: jest.Mock;
 
   beforeEach(() => {
     getMachineToken = jest.fn().mockResolvedValue('machine-token');
-    m2mSpy = jest.spyOn(auth, 'm2m').mockReturnValue({ getMachineToken });
+    m2mSpy
+      .mockReset()
+      .mockReturnValue({ getMachineToken, clearCache: jest.fn() });
     fetchSpy = jest
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(Response.json({ id: 'challenge-1', name: 'Challenge title' }));
+      .mockResolvedValue(
+        Response.json({ id: 'challenge-1', name: 'Challenge title' }),
+      );
   });
 
   afterEach(() => {
@@ -86,7 +92,8 @@ describe('ChallengeApiService', () => {
 
   it('uses the explicit Topcoder web URL for public challenge links', () => {
     const service = createService({
-      'notifications.topcoderUrl': 'https://community.example.com/ignored/path?query=1',
+      'notifications.topcoderUrl':
+        'https://community.example.com/ignored/path?query=1',
     });
 
     expect(service.getChallengeUrl('challenge-1')).toBe(
@@ -101,39 +108,45 @@ describe('ChallengeApiService', () => {
       'absolute HTTP(S) URL',
     ],
     [{ 'notifications.topcoderUrl': 'not-a-url' }, 'absolute HTTP(S) URL'],
-  ])('rejects unusable public challenge URL configuration: %p', (overrides, message) => {
-    expect(() => createService(overrides).getChallengeUrl('challenge-1')).toThrow(
-      message,
-    );
-  });
+  ])(
+    'rejects unusable public challenge URL configuration: %p',
+    (overrides, message) => {
+      expect(() =>
+        createService(overrides).getChallengeUrl('challenge-1'),
+      ).toThrow(message);
+    },
+  );
 
   it.each([
     ['notifications.topcoderApiUrlBase', 'CHALLENGE_API_URL'],
     ['notifications.m2mClientId', 'M2M_CLIENT_ID'],
     ['notifications.m2mClientSecret', 'M2M_CLIENT_SECRET'],
-  ])('fails before outbound requests when %s is missing', async (key, message) => {
-    await expect(
-      createService({ [key]: undefined }).getChallengeTitle('challenge-1'),
-    ).rejects.toThrow(message);
-    expect(getMachineToken).not.toHaveBeenCalled();
-    expect(fetchSpy).not.toHaveBeenCalled();
-  });
+  ])(
+    'fails before outbound requests when %s is missing',
+    async (key, message) => {
+      await expect(
+        createService({ [key]: undefined }).getChallengeTitle('challenge-1'),
+      ).rejects.toThrow(message);
+      expect(getMachineToken).not.toHaveBeenCalled();
+      expect(fetchSpy).not.toHaveBeenCalled();
+    },
+  );
 
   it('propagates token failures without calling the Challenge API', async () => {
     getMachineToken.mockRejectedValue(new Error('Token unavailable'));
 
-    await expect(createService().getChallengeTitle('challenge-1')).rejects.toThrow(
-      'Token unavailable',
-    );
+    await expect(
+      createService().getChallengeTitle('challenge-1'),
+    ).rejects.toThrow('Token unavailable');
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it.each([403, 404, 500])('rejects HTTP %s responses', async (status) => {
     fetchSpy.mockResolvedValue(new Response(null, { status }));
 
-    await expect(createService().getChallengeTitle('challenge-1')).rejects.toThrow(
-      `Challenge API returned HTTP ${status}`,
-    );
+    await expect(
+      createService().getChallengeTitle('challenge-1'),
+    ).rejects.toThrow(`Challenge API returned HTTP ${status}`);
   });
 
   it.each([null, {}, { name: '' }, { name: '  ' }, { name: 123 }])(
@@ -141,9 +154,9 @@ describe('ChallengeApiService', () => {
     async (body) => {
       fetchSpy.mockResolvedValue(Response.json(body));
 
-      await expect(createService().getChallengeTitle('challenge-1')).rejects.toThrow(
-        'no usable challenge name',
-      );
+      await expect(
+        createService().getChallengeTitle('challenge-1'),
+      ).rejects.toThrow('no usable challenge name');
     },
   );
 

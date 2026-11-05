@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as mysql from 'mysql2/promise';
-import type { Pool, RowDataPacket } from 'mysql2/promise';
+import type { Pool, QueryValues, RowDataPacket } from 'mysql2/promise';
 
 /**
  * Lazy MySQL connection owner for importer-only Vanilla source access.
@@ -42,9 +42,9 @@ export class VanillaMysqlService implements OnModuleDestroy {
    */
   async query<T extends RowDataPacket[]>(
     sql: string,
-    values: readonly unknown[] = [],
+    values: readonly QueryValues[] = [],
   ): Promise<T> {
-    const [rows] = await this.resolvePool().query<T>(sql, values);
+    const [rows] = await this.resolvePool().query<T>(sql, [...values]);
     return rows;
   }
 

@@ -22,10 +22,7 @@ import {
   FORUMS_SCOPE_DELETE_POST,
   FORUMS_SCOPE_UPDATE_POST,
 } from '../auth/scope-mappings';
-import {
-  SetPostReactionDto,
-  UpdatePostDto,
-} from './dto/forums-command.dto';
+import { SetPostReactionDto, UpdatePostDto } from './dto/forums-command.dto';
 import {
   ForumPostCommandResponseDto,
   ForumPostReactionStateDto,
@@ -70,7 +67,7 @@ export class PostsController {
   @ApiOperation({
     summary: 'Set the current member forum post reaction',
     description:
-      'Human-member command route that adds a thumbs-up or thumbs-down reaction, or replaces the member\'s existing reaction with the requested value. Reactions require inherited post visibility and pass active member and trusted exact-IP ban checks. Locked topics remain reactable because reactions do not modify discussion content.',
+      "Human-member command route that adds a thumbs-up or thumbs-down reaction, or replaces the member's existing reaction with the requested value. Reactions require inherited post visibility and pass active member and trusted exact-IP ban checks. Locked topics remain reactable because reactions do not modify discussion content.",
   })
   @ApiParam({ name: 'postId', description: 'Post id.' })
   @ApiResponse({
@@ -116,7 +113,7 @@ export class PostsController {
   @ApiOperation({
     summary: 'Remove the current member forum post reaction',
     description:
-      'Human-member command route that idempotently removes the caller\'s reaction. It applies inherited post visibility plus active member and trusted exact-IP ban checks. Locked topics remain reactable because reactions do not modify discussion content.',
+      "Human-member command route that idempotently removes the caller's reaction. It applies inherited post visibility plus active member and trusted exact-IP ban checks. Locked topics remain reactable because reactions do not modify discussion content.",
   })
   @ApiParam({ name: 'postId', description: 'Post id.' })
   @ApiResponse({

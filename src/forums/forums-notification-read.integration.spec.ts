@@ -1052,9 +1052,9 @@ describe('forums notification/read integration', () => {
             .set('x-member-id', '1')
             .send({ content: 'Notification check' })
             .expect(201);
-          expect(
-            publishedEvents.flatMap((event) => event.payload.bcc),
-          ).toEqual(expectedWatching ? [emailsByMemberId.get(memberId)] : []);
+          expect(publishedEvents.flatMap((event) => event.payload.bcc)).toEqual(
+            expectedWatching ? [emailsByMemberId.get(memberId)] : [],
+          );
         }
       }
       await request(app.getHttpServer())
@@ -1175,9 +1175,7 @@ describe('forums notification/read integration', () => {
 
     expect(visibleWatchedMemberIds).toEqual(['2', '4', '5', '6']);
     expect(notifiedMemberIds).toEqual(visibleWatchedMemberIds);
-    expect(publishedEvents[0].payload.bcc).not.toContain(
-      'author@example.com',
-    );
+    expect(publishedEvents[0].payload.bcc).not.toContain('author@example.com');
   });
 
   it('returns 403 for banned reads', async () => {
@@ -1244,9 +1242,7 @@ describe('forums notification/read integration', () => {
       'five@example.com',
       'six@example.com',
     ]);
-    expect(publishedEvents[0].payload.bcc).not.toContain(
-      'four@example.com',
-    );
+    expect(publishedEvents[0].payload.bcc).not.toContain('four@example.com');
   });
 
   it('returns imported locked topics with nullable legacy lock metadata', async () => {

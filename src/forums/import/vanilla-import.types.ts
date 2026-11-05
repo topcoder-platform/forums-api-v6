@@ -2,12 +2,7 @@
  * Normalized importer stage names used by orchestration and report output.
  */
 export type VanillaImportStageName =
-  | 'topics'
-  | 'replies'
-  | 'watches'
-  | 'readState'
-  | 'memberBans'
-  | 'ipBans';
+  'topics' | 'replies' | 'watches' | 'readState' | 'memberBans' | 'ipBans';
 
 /**
  * Minimal legacy actor fields required to resolve a Vanilla user to a
@@ -109,8 +104,7 @@ export interface VanillaUnmatchedMember {
  * Full member mapping result returned by the importer mapper.
  */
 export type VanillaMemberMappingResult =
-  | VanillaMatchedMember
-  | VanillaUnmatchedMember;
+  VanillaMatchedMember | VanillaUnmatchedMember;
 
 /**
  * Target identifiers produced after a discussion is imported.

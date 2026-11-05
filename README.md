@@ -261,7 +261,7 @@ but the `/moderation` endpoints require administrator role access for humans or
 
 ## Development
 
-The supported local and container runtime is Node.js 26.5.1 with pnpm 11.15.1.
+The supported local and container runtime is Node.js 26.12.1 with pnpm 11.15.1.
 The checked-in `.nvmrc` selects the required Node.js release.
 The production image installs Alpine's dynamically linked Node.js package and
 runs as an unprivileged application user so patched system libraries are used at
@@ -322,3 +322,50 @@ The forums Prisma schema defines `Topic`, `Post`, `PostReaction`, `TopicClosure`
 The production image includes the Prisma schema, migration history, configuration, and CLI. Its startup script runs `prisma migrate deploy` before starting NestJS, so a deployment cannot begin serving requests against an older forums schema. Migration failure stops the container instead of leaving feature-dependent reads or writes partially available.
 
 Topic creation is transactional: it creates the topic, starter post, closure rows, and, for human authors, read-state rows together. General topics also seed an author watch; challenge topics inherit the forum preference. M2M topic creation uses the system author and skips member watch/read-state side effects. Topic deletion is soft deletion, and post deletion preserves the post row while setting content to null for placeholder reads. Topic summary reads use side-effect-free raw queries for topic lock state, visible-post counts, nullable latest visible activity, and unread derivation, then apply centralized forums policy filtering before pagination.
+
+## Shared authentication and bus client (v6 refresh)
+
+This branch uses `tc-core-library-js` **4.0.0-rc.1**. Use its named
+`createJwtVerifier` / `createJwtAuthenticator`, `createM2MClient`, and
+`createBusApiClient` exports for shared authentication and bus API publishing.
+Service-specific roles, scopes, sessions and ownership checks remain in this service.
+The former bus wrapper dependency and local JWT cryptography must not be reintroduced.
+
+RSA verification requires an exact configured issuer and audience (`JWT_AUDIENCE`
+for client tokens, `AUTH0_AUDIENCE` for machine/API tokens, or this service's explicit
+issuer-policy settings). HMAC secrets must be at least 32 bytes; no default secret
+is supplied. Expiry is enforced. Machine identity comes from the shared verifier,
+not the presence of scopes. Supply real development credentials through the service's
+existing environment configuration before deployment.
+
+Bus publishers use `createBusApiClient(config).postEvent(event)` with the existing
+event envelope and optional key. Configure `BUSAPI_URL` for v6 and the existing
+OAuth credentials/token provider. The client uses bounded HTTPS requests and does
+not retry POSTs automatically. Application retry/outbox behavior remains local.
+
+See the [core migration guide](https://github.com/topcoder-platform/tc-core-library-js/blob/v4.0.0-rc.1/MIGRATION.md)
+for the API mapping, compatibility requirements, and rollout scope.
+
+## Alpine Node runtime packages
+
+Container stages that install Node through APK constrain `nodejs-current` to the
+major version in `NODE_VERSION`, rather than an exact Alpine package revision.
+Alpine replaces older patch packages in its repositories; the compatible pin
+allows current security patches while a build-time check rejects a different
+Node major. The runtime keeps Alpine's dynamically linked Node and system
+libraries. Existing non-root users and application entrypoints are preserved.
+Build stages using a versioned official Node image retain their configured
+version, and pnpm build arguments are explicitly declared in the consuming stage.
+
+## Security dependency checks
+
+The November 2026 update pins the reviewed core library and external Prisma
+client revisions, upgrades Prisma to 7.10.1, and patches vulnerable transitive
+dependencies. Legacy glob tooling uses the tested adapter in
+`tools/minimatch-compat`; run `pnpm test:dependency-compat` after updating it.
+Docker builds run lint, unit tests, and compatibility checks.
+
+Run the PostgreSQL integration suites with `TZ=UTC`, matching the container;
+the importer compares timestamp-without-time-zone columns in UTC. Provide the
+existing `options=-c%20search_path%3Dforums%2Cpublic` URL parameter when testing
+raw forum queries against a database whose default search path is `public`.
