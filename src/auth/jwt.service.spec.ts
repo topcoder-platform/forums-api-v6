@@ -14,6 +14,7 @@ function token(claims: Record<string, unknown> = {}): string {
       iss: 'https://issuer.test/',
       sub: '42',
       userId: '42',
+      iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 300,
       ...claims,
     }),
@@ -22,6 +23,21 @@ function token(claims: Record<string, unknown> = {}): string {
 }
 
 describe('shared Forums JWT identity', () => {
+  const originalPolicy = process.env.JWT_ISSUER_POLICIES;
+  beforeEach(() => {
+    process.env.JWT_ISSUER_POLICIES = JSON.stringify([
+      {
+        issuer: 'https://issuer.test/',
+        algorithm: 'HS256',
+        allowMissingAudience: true,
+        legacyHs256Until: new Date(Date.now() + 3_600_000).toISOString(),
+      },
+    ]);
+  });
+  afterEach(() => {
+    if (originalPolicy === undefined) delete process.env.JWT_ISSUER_POLICIES;
+    else process.env.JWT_ISSUER_POLICIES = originalPolicy;
+  });
   it('does not elevate a human with scopes or read arbitrary role namespaces', async () => {
     const service = new JwtService(
       new ConfigService({
