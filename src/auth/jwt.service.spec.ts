@@ -10,6 +10,7 @@ function token(claims: Record<string, unknown> = {}): string {
   ).toString('base64url');
   const body = Buffer.from(
     JSON.stringify({
+      emailVerified: true,
       iss: 'https://issuer.test/',
       sub: '42',
       userId: '42',
@@ -37,5 +38,10 @@ describe('shared Forums JWT identity', () => {
     expect(user.isMachine).toBe(false);
     expect(user.roles).toEqual([]);
     expect(user.userId).toBe('42');
+    for (const emailVerified of [undefined, false, 'true']) {
+      await expect(
+        service.validateToken(token({ emailVerified })),
+      ).rejects.toThrow('Invalid or expired access token');
+    }
   });
 });
