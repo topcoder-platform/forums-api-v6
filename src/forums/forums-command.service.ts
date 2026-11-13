@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtUser } from '../auth/jwt.service';
+import { isMarathonForumArchive } from './marathon-forum-archives';
 import { DbService } from '../db/db.service';
 import {
   Post,
@@ -1066,6 +1067,10 @@ export class ForumsCommandService {
     );
 
     this.assertAllowed(postDecisions.canView);
+
+    if (isMarathonForumArchive(context.effectiveChallengeId)) {
+      throw new ForbiddenException('This forum is a read-only archive.');
+    }
 
     if (context.post.deletedAt) {
       throw new NotFoundException('Post not found.');

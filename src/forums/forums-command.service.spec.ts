@@ -961,3 +961,29 @@ describe('ForumsCommandService member-targeted state commands', () => {
     },
   );
 });
+
+describe('Marathon archive reactions', () => {
+  it.each(['set', 'remove'])(
+    'rejects %s before database writes',
+    async (action) => {
+      const { service, topicContextService, db } = createCommandService();
+      const context = await topicContextService.loadPostContext();
+      topicContextService.loadPostContext.mockResolvedValue({
+        ...context,
+        effectiveChallengeId: '0b11e0fd-3e2d-46dc-8f7b-27c9f49d63cb',
+      });
+      const operation =
+        action === 'set'
+          ? service.setPostReaction(
+              'post-1',
+              { reaction: PostReactionType.THUMBS_UP },
+              user,
+            )
+          : service.removePostReaction('post-1', user);
+      await expect(operation).rejects.toThrow(
+        'This forum is a read-only archive.',
+      );
+      expect(db.$transaction).not.toHaveBeenCalled();
+    },
+  );
+});
