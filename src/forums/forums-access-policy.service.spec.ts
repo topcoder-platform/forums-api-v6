@@ -558,3 +558,77 @@ describe('ForumsAccessPolicyService', () => {
     expect(resourceAccessService.getResourceAccessFacts).not.toHaveBeenCalled();
   });
 });
+
+describe('Marathon archive content is immutable', () => {
+  const archive = '0b11e0fd-3e2d-46dc-8f7b-27c9f49d63cb';
+  it.each(['viewer', 'owner', 'copilot', 'admin', 'machine'])(
+    'denies every content mutation for %s',
+    async (role) => {
+      const { service } = createPolicyHarness({
+        challengeFacts: { memberHasChallengeAccess: true },
+        resourceFacts: { isChallengeCopilot: role === 'copilot' },
+      });
+      const principal = makePrincipal({
+        isAdmin: role === 'admin',
+        isMachine: role === 'machine',
+      });
+      const context = makePostContext({
+        effectiveChallengeId: archive,
+        effectiveRoleName: null,
+        isTopicAuthor: role === 'owner',
+        isPostAuthor: role === 'owner',
+      });
+      const decisions = await service.decideForPost(principal, context);
+      expect(decisions.canView.allowed).toBe(true);
+      for (const action of [
+        'canCreateChildTopic',
+        'canCreatePost',
+        'canUpdateTopic',
+        'canDeleteTopic',
+        'canControlAnnouncement',
+        'canUpdatePost',
+        'canDeletePost',
+      ] as const) {
+        expect(decisions[action].allowed).toBe(false);
+      }
+      expect(
+        (
+          await service.decideForCreateTopic(principal, {
+            challengeId: archive,
+            roleName: null,
+          })
+        ).canCreateTopLevelTopic.allowed,
+      ).toBe(false);
+      expect(
+        (
+          await service.decideForCreateTopic(
+            principal,
+            { challengeId: null, roleName: null },
+            context,
+          )
+        ).canCreateChildTopic.allowed,
+      ).toBe(false);
+    },
+  );
+  it('denies guest reads and preserves narrower role restrictions', async () => {
+    const { service } = createPolicyHarness({
+      challengeFacts: { memberHasChallengeAccess: true },
+    });
+    const context = makeTopicContext({
+      effectiveChallengeId: archive,
+      effectiveRoleName: null,
+    });
+    expect(
+      (await service.decideForTopic(makePrincipal({ memberId: null }), context))
+        .canView.allowed,
+    ).toBe(false);
+    expect(
+      (
+        await service.decideForTopic(makePrincipal(), {
+          ...context,
+          effectiveRoleName: 'private-reviewer',
+        })
+      ).canView.allowed,
+    ).toBe(false);
+  });
+});

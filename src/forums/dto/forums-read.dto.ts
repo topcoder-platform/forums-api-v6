@@ -112,6 +112,11 @@ export class ForumsTopicParticipantDto {
  * snapshots are limited and paired with the complete `participantsCount`.
  */
 export class ForumsTopicSummaryDto {
+  @ApiPropertyOptional({
+    description: 'Whether discussion content is permanently read-only.',
+  })
+  readOnly?: boolean;
+
   @ApiProperty({ description: 'Topic id.' })
   id: string;
 

@@ -1,5 +1,6 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { isMarathonForumArchive } from './marathon-forum-archives';
 import {
   createChallengePrismaClient,
   PrismaClient as ChallengePrismaClient,
@@ -66,6 +67,20 @@ export class ChallengeAccessService implements OnModuleDestroy {
         configured: true,
         challengeExists,
         memberHasChallengeAccess: false,
+        memberIsWhitelisted: false,
+      };
+    }
+
+    // Archive access is limited to the reviewed IDs and completed challenges.
+    // The command policy independently forbids archive content mutations.
+    if (
+      isMarathonForumArchive(challengeId) &&
+      challenge?.status === 'COMPLETED'
+    ) {
+      return {
+        configured: true,
+        challengeExists: true,
+        memberHasChallengeAccess: true,
         memberIsWhitelisted: false,
       };
     }

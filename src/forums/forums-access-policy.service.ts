@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { isMarathonForumArchive } from './marathon-forum-archives';
 import {
   ChallengeAccessFacts,
   ChallengeAccessService,
@@ -190,6 +191,19 @@ export class ForumsAccessPolicyService {
       canReceiveNotification: canParticipate
         ? this.allow()
         : this.deny('Authenticated member required.'),
+      ...(isMarathonForumArchive(context.effectiveChallengeId)
+        ? {
+            canCreateChildTopic: this.deny(
+              'This forum is a read-only archive.',
+            ),
+            canCreatePost: this.deny('This forum is a read-only archive.'),
+            canUpdateTopic: this.deny('This forum is a read-only archive.'),
+            canDeleteTopic: this.deny('This forum is a read-only archive.'),
+            canControlAnnouncement: this.deny(
+              'This forum is a read-only archive.',
+            ),
+          }
+        : {}),
     };
   }
 
@@ -212,6 +226,14 @@ export class ForumsAccessPolicyService {
       context,
       options,
     );
+
+    if (isMarathonForumArchive(context.effectiveChallengeId)) {
+      return {
+        ...topicDecisions,
+        canUpdatePost: this.deny('This forum is a read-only archive.'),
+        canDeletePost: this.deny('This forum is a read-only archive.'),
+      };
+    }
 
     if (
       !this.isTopicTargetAvailable(context) ||
@@ -279,6 +301,12 @@ export class ForumsAccessPolicyService {
     parentContext?: ForumsTopicContext,
     options: ForumsAccessEvaluationOptions = {},
   ): Promise<ForumsTopicAccessDecisions> {
+    if (
+      isMarathonForumArchive(restrictions.challengeId) ||
+      isMarathonForumArchive(parentContext?.effectiveChallengeId)
+    ) {
+      return this.denyTopicDecisions('This forum is a read-only archive.');
+    }
     if (parentContext && !this.isTopicTargetAvailable(parentContext)) {
       return this.denyTopicDecisions('Topic not found.');
     }
