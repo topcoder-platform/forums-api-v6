@@ -1,12 +1,14 @@
 import { isIP } from 'net';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { IpBan, MemberBan, Prisma, Topic } from '../../prisma/generated/client';
 import { JwtUser } from '../auth/jwt.service';
+import { isMarathonForumArchive } from './marathon-forum-archives';
 import { DbService } from '../db/db.service';
 import {
   IpBanStateDto,
@@ -488,6 +490,9 @@ export class ForumsModerationService {
   private assertManageableTopic(context: ForumsTopicContext): void {
     if (context.topic.deletedAt || context.hasDeletedAncestor) {
       throw new NotFoundException('Topic not found.');
+    }
+    if (isMarathonForumArchive(context.effectiveChallengeId)) {
+      throw new ForbiddenException('This forum is a read-only archive.');
     }
   }
 

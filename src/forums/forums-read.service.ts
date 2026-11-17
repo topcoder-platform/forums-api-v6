@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtUser } from '../auth/jwt.service';
+import { isMarathonForumArchive } from './marathon-forum-archives';
 import { ChallengeForumWatchService } from './challenge-forum-watch.service';
 import { PostReactionType } from '../../prisma/generated/client';
 import {
@@ -313,7 +314,10 @@ export class ForumsReadService {
         update: topicDecisions.canUpdateTopic.allowed,
         delete: topicDecisions.canDeleteTopic.allowed,
       },
-      topic: this.mapTopicSummary(detailSnapshot.summaryRow),
+      topic: {
+        ...this.mapTopicSummary(detailSnapshot.summaryRow),
+        readOnly: isMarathonForumArchive(context.effectiveChallengeId),
+      },
       posts: this.buildPostTree(
         topicId,
         detailSnapshot.postRows,
@@ -579,6 +583,7 @@ export class ForumsReadService {
    */
   mapTopicSummary(row: ForumsTopicSummaryRow): ForumsTopicSummaryDto {
     return {
+      readOnly: isMarathonForumArchive(row.challengeId),
       id: row.id,
       parentTopicId: row.parentTopicId,
       challengeId: row.challengeId,
