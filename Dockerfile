@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.7
 
-ARG NODE_VERSION=26.12.1
+ARG NODE_VERSION=26.13.1
 ARG PNPM_VERSION=11.15.1
 
-FROM node:${NODE_VERSION}-alpine3.24@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS external-clients
+FROM node:${NODE_VERSION}-alpine3.24@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS external-clients
 
 RUN apk upgrade --no-cache \
   && apk add --no-cache ca-certificates git openssh-client
@@ -11,22 +11,18 @@ RUN apk upgrade --no-cache \
 # Freeze each external generated client at the default-branch revision reviewed
 # with this dependency refresh; builds must not silently follow moving HEADs.
 RUN for client_spec in \
-    challenge-api-v6:61636c78e0703c36386838dc7b86876849fe79cf \
-    identity-api-v6:c7abbb671adbecbc13a969780364e9516e320faf \
-    member-api-v6:a8014c191e5bd2b7ce1d81620d63436628817ade \
-    resource-api-v6:f61b88f0f2dc90a9664136b740d8635faa0387fd; do \
+    challenge-api-v6:8c2bc0d9e1e879bd750d160bd57a041496e075fb \
+    identity-api-v6:7576802a1bb1d156f42d9e77362a0ef8d2bc218a \
+    member-api-v6:c356006aab49b5cc71cbdaf0133f102661772c54 \
+    resource-api-v6:839e585494df48834c02516038e9a7ef79226a47; do \
       client_repo="${client_spec%:*}"; client_revision="${client_spec#*:}"; \
       git init -q "/clients/${client_repo}" \
       && git -C "/clients/${client_repo}" remote add origin "https://github.com/topcoder-platform/${client_repo}.git" \
       && git -C "/clients/${client_repo}" fetch --depth 1 origin "${client_revision}" \
       && git -C "/clients/${client_repo}" checkout --detach FETCH_HEAD || exit 1; \
-    done \
-  && identity_client_version="$(node -p "require('/clients/identity-api-v6/packages/identity-prisma-client/package.json').version")" \
-  && npm install --prefix /tmp/identity-engines --no-save "@prisma/engines@${identity_client_version}" \
-  && cp /tmp/identity-engines/node_modules/@prisma/engines/libquery_engine-linux-musl-openssl-3.0.x.so.node \
-    /clients/identity-api-v6/packages/identity-prisma-client/
+    done
 
-FROM node:${NODE_VERSION}-alpine3.24@sha256:40cd011b55415bc894e45b02fdd5a5dfde056921b7d23a64c74f80497af48797 AS build
+FROM node:${NODE_VERSION}-alpine3.24@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS build
 ARG PNPM_VERSION
 
 RUN apk upgrade --no-cache
@@ -55,11 +51,9 @@ RUN DATABASE_URL="postgresql://user:password@localhost:5432/forums" pnpm prisma:
 FROM alpine:3.24@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS production
 
 ARG NODE_VERSION
-# Alpine replaces old APK patch versions. Keep the configured Node major while
-# accepting maintained patch releases and verify the selected runtime below.
 RUN apk upgrade --no-cache \
-  && apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' "nodejs-current~${NODE_VERSION%%.*}" \
-  && test "$(node -p 'process.versions.node.split(".")[0]')" = "${NODE_VERSION%%.*}" \
+  && apk add --no-cache 'libcrypto3>=3.5.9-r1' 'libssl3>=3.5.9-r1' 'nodejs-current~26.13.1' \
+  && test "$(node -p 'process.versions.node')" = "${NODE_VERSION}" \
   && addgroup -S app \
   && adduser -S -D -H -u 10001 -G app app
 

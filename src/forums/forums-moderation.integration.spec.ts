@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import * as request from 'supertest';
+import request from 'supertest';
 import { IpBan, MemberBan, Topic } from '../../prisma/generated/client';
 import { AuthModule } from '../auth/auth.module';
 import { JwtService } from '../auth/jwt.service';

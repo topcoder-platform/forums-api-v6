@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import * as request from 'supertest';
+import request from 'supertest';
 import { Post, PostReactionType, Topic } from '../../prisma/generated/client';
 import { DbService } from '../db/db.service';
 import { ChallengeAccessService } from './challenge-access.service';

@@ -261,7 +261,7 @@ but the `/moderation` endpoints require administrator role access for humans or
 
 ## Development
 
-The supported local and container runtime is Node.js 26.12.1 with pnpm 11.15.1.
+The supported local and container runtime is Node.js 26.13.1 with pnpm 11.15.1.
 The checked-in `.nvmrc` selects the required Node.js release.
 The production image installs Alpine's dynamically linked Node.js package and
 runs as an unprivileged application user so patched system libraries are used at
