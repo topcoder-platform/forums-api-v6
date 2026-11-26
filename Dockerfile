@@ -11,10 +11,10 @@ RUN apk upgrade --no-cache \
 # Freeze each external generated client at the default-branch revision reviewed
 # with this dependency refresh; builds must not silently follow moving HEADs.
 RUN for client_spec in \
-    challenge-api-v6:8c2bc0d9e1e879bd750d160bd57a041496e075fb \
-    identity-api-v6:7576802a1bb1d156f42d9e77362a0ef8d2bc218a \
-    member-api-v6:c356006aab49b5cc71cbdaf0133f102661772c54 \
-    resource-api-v6:839e585494df48834c02516038e9a7ef79226a47; do \
+    challenge-api-v6:4be7af7df425e836020428ca4ed317e120289de9 \
+    identity-api-v6:09a78bc809d3ed158d891e8481a13b340524faff \
+    member-api-v6:3eac58b10ce1384866e517f724d79f55ad39f58a \
+    resource-api-v6:b7c10fc42c0f64a8d18e3e0a2ab41cb8ae52360f; do \
       client_repo="${client_spec%:*}"; client_revision="${client_spec#*:}"; \
       git init -q "/clients/${client_repo}" \
       && git -C "/clients/${client_repo}" remote add origin "https://github.com/topcoder-platform/${client_repo}.git" \
