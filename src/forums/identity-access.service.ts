@@ -1,3 +1,4 @@
+import { createPostgresAdapter } from '../prisma-adapter';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient as IdentityPrismaClient } from '../../../identity-api-v6/packages/identity-prisma-client';
@@ -117,11 +118,7 @@ export class IdentityAccessService implements OnModuleDestroy {
     }
 
     this.client = new IdentityPrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
+      adapter: createPostgresAdapter(databaseUrl),
     });
 
     return this.client;

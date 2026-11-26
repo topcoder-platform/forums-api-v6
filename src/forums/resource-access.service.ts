@@ -1,3 +1,4 @@
+import { createPostgresAdapter } from '../prisma-adapter';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient as ResourcePrismaClient } from '../../../resource-api-v6/packages/resources-prisma-client';
@@ -199,11 +200,7 @@ export class ResourceAccessService implements OnModuleDestroy {
     }
 
     this.client = new ResourcePrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
+      adapter: createPostgresAdapter(databaseUrl),
     });
 
     return this.client;

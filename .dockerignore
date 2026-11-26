@@ -9,4 +9,4 @@ packages
 prisma/generated
 vanilla-import-report.json
 *.log
-
+**/*.tsbuildinfo

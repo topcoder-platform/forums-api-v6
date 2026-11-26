@@ -1,3 +1,4 @@
+import { createPostgresAdapter } from '../prisma-adapter';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient as MemberPrismaClient } from '../../../member-api-v6/packages/member-prisma-client';
@@ -96,11 +97,7 @@ export class ForumsMemberDirectoryService implements OnModuleDestroy {
     }
 
     this.client = new MemberPrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
+      adapter: createPostgresAdapter(databaseUrl),
     });
 
     return this.client;
